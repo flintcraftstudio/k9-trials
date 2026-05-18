@@ -1,0 +1,89 @@
+package view
+
+templ HomePage() {
+	@Base("Home", "Fast, handcrafted websites built with Go and Tailwind CSS.", homeContent())
+}
+
+templ homeContent() {
+	<!-- Hero -->
+	<section class="relative overflow-hidden py-24 sm:py-32">
+		<div class="mx-auto max-w-5xl px-6 sm:px-12">
+			<p class="mb-4 text-[11px] font-medium uppercase tracking-[0.2em] text-ff-dusk">Client Name</p>
+			<h1 class="max-w-2xl font-display text-[42px] font-medium leading-tight tracking-tight text-ff-paper sm:text-[68px] sm:leading-[1.05]">
+				A headline that says something&nbsp;memorable.
+			</h1>
+			<p class="mt-6 max-w-xl text-[15px] font-light leading-relaxed text-ff-ash">
+				Replace this with a short paragraph about the client. Keep it to two or three sentences that explain what they do and why visitors should care.
+			</p>
+			<div class="mt-10 flex flex-wrap gap-4">
+				<a href="/contact" class="rounded-sm bg-ff-dusk px-[26px] py-[13px] text-[12px] font-medium uppercase tracking-[0.12em] text-white transition hover:bg-ff-dusk-hover active:scale-[0.98]">
+					Get in touch
+				</a>
+				<a href="#services" class="rounded-sm px-[26px] py-[13px] text-[12px] font-medium uppercase tracking-[0.08em] text-ff-ash transition hover:text-ff-cream">
+					Learn more &gt;
+				</a>
+			</div>
+		</div>
+		<!-- Subtle radial glow -->
+		<div class="pointer-events-none absolute -right-20 -top-[60px] h-[420px] w-[500px] bg-[radial-gradient(at_65%_30%,#1e2d52_0%,#161a24_55%,transparent_80%)]"></div>
+	</section>
+
+	<!-- Stats -->
+	<section class="border-y border-ff-border">
+		<div class="mx-auto grid max-w-5xl grid-cols-2 divide-x divide-ff-border sm:grid-cols-4">
+			@stat("100%", "Uptime SLA")
+			@stat("< 1s", "Page loads")
+			@stat("0", "WordPress dependencies")
+			@stat("24h", "Support response")
+		</div>
+	</section>
+
+	<!-- Services -->
+	<section id="services" class="py-24 sm:py-[80px]">
+		<div class="mx-auto max-w-5xl px-6 sm:px-12">
+			@eyebrow("What we offer")
+			<h2 class="mb-12 font-display text-[36px] font-medium tracking-tight text-ff-paper sm:text-[52px]">Services</h2>
+			<div class="grid gap-6 sm:grid-cols-3">
+				@serviceCard("Websites", "Fast, responsive marketing sites handcrafted with modern tools. No bloated page builders.")
+				@serviceCard("Development", "Custom software built to solve your specific problems, not shoehorned into a template.")
+				@serviceCard("Support", "Ongoing maintenance, updates, and a real person to call when something needs to change.")
+			</div>
+		</div>
+	</section>
+
+	<!-- CTA -->
+	<section class="relative overflow-hidden border-t border-ff-border">
+		<div class="mx-auto max-w-5xl px-6 py-24 text-center sm:px-12 sm:py-[80px]">
+			<h2 class="font-display text-[36px] font-medium tracking-tight text-ff-paper">Ready to start?</h2>
+			<p class="mx-auto mt-4 max-w-md text-ff-ash">
+				Tell us about your project. We'll get back to you within one business day.
+			</p>
+			<a href="/contact" class="mt-10 inline-block rounded-sm bg-ff-dusk px-[26px] py-[13px] text-[12px] font-medium uppercase tracking-[0.12em] text-white transition hover:bg-ff-dusk-hover active:scale-[0.98]">
+				Start a project
+			</a>
+		</div>
+		<!-- Subtle radial glow -->
+		<div class="pointer-events-none absolute -bottom-20 -left-[60px] h-[380px] w-[480px] bg-[radial-gradient(at_30%_70%,#1e2d52_0%,#161a24_55%,transparent_80%)]"></div>
+	</section>
+}
+
+templ eyebrow(label string) {
+	<div class="mb-6 flex items-center gap-3">
+		<span class="block h-px w-7 bg-ff-dusk"></span>
+		<span class="text-[11px] font-medium uppercase tracking-[0.2em] text-ff-dusk">{ label }</span>
+	</div>
+}
+
+templ stat(value, label string) {
+	<div class="px-6 py-8 text-center">
+		<p class="font-display text-[22px] font-medium text-ff-paper">{ value }</p>
+		<p class="mt-1 text-[13px] text-ff-ash">{ label }</p>
+	</div>
+}
+
+templ serviceCard(title, description string) {
+	<div class="rounded border border-ff-border bg-ff-panel p-7 transition hover:border-[#5b7ec452]">
+		<h3 class="mb-2 font-display text-[22px] font-medium text-ff-paper">{ title }</h3>
+		<p class="text-[13px] font-light leading-relaxed text-ff-ash">{ description }</p>
+	</div>
+}
