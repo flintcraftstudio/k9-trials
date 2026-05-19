@@ -14,12 +14,20 @@ import (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Fprintf(os.Stderr, "Usage: seed <email> <password>\n")
+		fmt.Fprintf(os.Stderr, "Usage: seed <email> <password> [role]\n  role: admin (default) or judge\n")
 		os.Exit(1)
 	}
 
 	email := os.Args[1]
 	password := os.Args[2]
+	role := "admin"
+	if len(os.Args) >= 4 {
+		role = os.Args[3]
+	}
+	if role != "admin" && role != "judge" {
+		fmt.Fprintf(os.Stderr, "Invalid role %q: must be 'admin' or 'judge'\n", role)
+		os.Exit(1)
+	}
 
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
@@ -39,11 +47,11 @@ func main() {
 	defer db.Close()
 
 	st := store.New(db)
-	id, err := st.CreateUser(context.Background(), email, password)
+	id, err := st.CreateUser(context.Background(), email, password, role)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating user: %v\n", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("Created user %s (id=%d)\n", email, id)
+	fmt.Printf("Created %s %s (id=%d)\n", role, email, id)
 }

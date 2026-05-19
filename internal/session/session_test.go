@@ -23,6 +23,7 @@ type mockSession struct {
 type mockUser struct {
 	id    int64
 	email string
+	role  string
 }
 
 func newMockStore() *mockStore {
@@ -50,16 +51,16 @@ func (m *mockStore) DeleteSession(_ context.Context, token string) error {
 	return nil
 }
 
-func (m *mockStore) GetUserByID(_ context.Context, id int64) (int64, string, error) {
+func (m *mockStore) GetUserByID(_ context.Context, id int64) (int64, string, string, error) {
 	u, ok := m.users[id]
 	if !ok {
-		return 0, "", sql.ErrNoRows
+		return 0, "", "", sql.ErrNoRows
 	}
-	return u.id, u.email, nil
+	return u.id, u.email, u.role, nil
 }
 
 func (m *mockStore) addUser(id int64, email string) {
-	m.users[id] = mockUser{id: id, email: email}
+	m.users[id] = mockUser{id: id, email: email, role: "admin"}
 }
 
 // okHandler returns 200 with the user email if authenticated, or "anonymous".
@@ -319,5 +320,50 @@ func TestDestroy_ClearsCookieAndSession(t *testing.T) {
 func TestFromContext_NilWhenNoUser(t *testing.T) {
 	if u := FromContext(context.Background()); u != nil {
 		t.Fatalf("expected nil, got %+v", u)
+	}
+}
+
+func TestRequireAdmin_AllowsAdmin(t *testing.T) {
+	handler := RequireAdmin(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 1, Email: "a@x", Role: "admin"})
+	req := httptest.NewRequest(http.MethodGet, "/admin", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+}
+
+func TestRequireAdmin_ForbidsJudge(t *testing.T) {
+	handler := RequireAdmin(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 2, Email: "j@x", Role: "judge"})
+	req := httptest.NewRequest(http.MethodGet, "/admin", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d", rec.Code)
+	}
+}
+
+func TestRequireAdmin_RedirectsAnonymous(t *testing.T) {
+	handler := RequireAdmin(okHandler())
+	req := httptest.NewRequest(http.MethodGet, "/admin", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusSeeOther {
+		t.Fatalf("expected 303, got %d", rec.Code)
+	}
+}
+
+func TestRequireJudge_AllowsJudgeAndAdmin(t *testing.T) {
+	for _, role := range []string{"judge", "admin"} {
+		handler := RequireJudge(okHandler())
+		ctx := withUser(context.Background(), &User{ID: 1, Email: "x@x", Role: role})
+		req := httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(ctx)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+		if rec.Code != http.StatusOK {
+			t.Fatalf("role %q: expected 200, got %d", role, rec.Code)
+		}
 	}
 }

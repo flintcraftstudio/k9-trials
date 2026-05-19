@@ -42,7 +42,7 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		userID, _, passwordHash, err := s.GetUserByEmail(r.Context(), email)
+		userID, _, passwordHash, _, err := s.GetUserByEmail(r.Context(), email)
 		if err != nil {
 			if err := view.LoginForm("Invalid email or password.", email).Render(r.Context(), w); err != nil {
 				slog.Error("render error", "err", err)
