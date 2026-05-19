@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/firefly-software-mt/advanced-template/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view"
 )
 
 // Home handles GET / and renders the home page.

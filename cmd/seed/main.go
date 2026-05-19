@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/firefly-software-mt/advanced-template/internal/store"
+	"github.com/flintcraftstudio/k9-trials/internal/store"
 
 	_ "modernc.org/sqlite"
 )

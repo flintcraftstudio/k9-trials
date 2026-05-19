@@ -1,4 +1,4 @@
-module github.com/firefly-software-mt/advanced-template
+module github.com/flintcraftstudio/k9-trials
 
 go 1.25.8
 
@@ -7,6 +7,7 @@ require (
 	github.com/magefile/mage v1.17.1
 	github.com/pressly/goose/v3 v3.27.0
 	golang.org/x/crypto v0.49.0
+	golang.org/x/time v0.15.0
 	modernc.org/sqlite v1.48.0
 )
 
@@ -21,7 +22,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/time v0.15.0 // indirect
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
