@@ -19,6 +19,8 @@
 // pointing to sections of K9_Elements_Rulebook_Working_Draft.
 package scoring
 
+import "math"
+
 // Discipline identifies one of the four K9 Elements disciplines (§1).
 type Discipline string
 
@@ -101,7 +103,7 @@ type Points int
 // points should not occur in practice but the implementation is
 // well-defined.
 func RoundPoints(raw float64) Points {
-	panic("not implemented")
+	return Points(math.Floor(raw + 0.5))
 }
 
 // TemplateVersion identifies the rulebook revision a template encodes.

@@ -17,7 +17,7 @@ package templates
 import (
 	"fmt"
 
-	"github.com/dirtybandana/k9elements/internal/scoring"
+	"github.com/flintcraftstudio/k9-trials/internal/scoring"
 )
 
 // L1OB returns the Level 1 Obedience scoresheet template encoding

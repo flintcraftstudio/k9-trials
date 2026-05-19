@@ -1,5 +1,28 @@
 package scoring
 
+import "math"
+
+// tierThresholdPct maps each non-Insufficient tier to its percentage
+// threshold of max points (§3.1). Indexed by Tier; TierInsufficient (0)
+// has no threshold (it's the fallback).
+var tierThresholdPct = [...]float64{
+	TierInsufficient: 0.0,
+	TierSufficient:   0.70,
+	TierGood:         0.76,
+	TierVeryGood:     0.86,
+	TierExcellent:    0.96,
+}
+
+// tierCutoff returns the inclusive lower-bound point value for a tier on
+// a given max, applying §3.1's ceil-of-percentage rule. TierInsufficient
+// always cuts off at 0.
+func tierCutoff(t Tier, max Points) Points {
+	if t == TierInsufficient {
+		return 0
+	}
+	return Points(math.Ceil(tierThresholdPct[t] * float64(max)))
+}
+
 // BandFor returns the tier a point value falls into, given the maximum
 // possible points for the unit being evaluated. Implements §3.1.
 //
@@ -29,7 +52,15 @@ package scoring
 // §3.2 happens upstream via RoundPoints. This means a score that
 // rounds from 17.5 to 18 is band-evaluated as 18, never as 17.5.
 func BandFor(points, max Points) Tier {
-	panic("not implemented")
+	if max <= 0 {
+		return TierInsufficient
+	}
+	for t := TierExcellent; t > TierInsufficient; t-- {
+		if points >= tierCutoff(t, max) {
+			return t
+		}
+	}
+	return TierInsufficient
 }
 
 // BandCutoffs returns the inclusive lower-bound point value for each
@@ -43,5 +74,21 @@ func BandFor(points, max Points) Tier {
 // Cutoffs are properties of the max value alone, not of any particular
 // exercise. Two exercises with max=10 share cutoffs.
 func BandCutoffs(max Points) map[Tier]Points {
-	panic("not implemented")
+	out := map[Tier]Points{TierInsufficient: 0}
+	if max <= 0 {
+		return out
+	}
+	// Walk from highest tier down. A tier is reachable only if its
+	// cutoff is strictly less than the next-higher reachable tier's
+	// cutoff — otherwise no integer point value lands in its band.
+	prev := tierCutoff(TierExcellent, max)
+	out[TierExcellent] = prev
+	for t := TierVeryGood; t >= TierSufficient; t-- {
+		c := tierCutoff(t, max)
+		if c < prev {
+			out[t] = c
+			prev = c
+		}
+	}
+	return out
 }

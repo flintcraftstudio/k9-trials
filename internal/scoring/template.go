@@ -1,5 +1,7 @@
 package scoring
 
+import "fmt"
+
 // ExerciseKind discriminates how an exercise is scored.
 // Used as the tag on the discriminated union in ExerciseTemplate.
 //
@@ -140,7 +142,82 @@ type ExerciseTemplate struct {
 //	               sum of components' MaxPoints equals this MaxPoints;
 //	               Criteria nil; Events nil; IsAggregateComponent false.
 func (t ExerciseTemplate) Validate(siblings []ExerciseTemplate) error {
-	panic("not implemented")
+	if t.Code == "" {
+		return fmt.Errorf("exercise has no Code")
+	}
+	switch t.Kind {
+	case CriteriaSum:
+		if len(t.Criteria) == 0 {
+			return fmt.Errorf("exercise %s: CriteriaSum requires criteria", t.Code)
+		}
+		if len(t.Events) != 0 {
+			return fmt.Errorf("exercise %s: CriteriaSum must not have events", t.Code)
+		}
+		if len(t.AggregateOf) != 0 {
+			return fmt.Errorf("exercise %s: CriteriaSum must not have AggregateOf", t.Code)
+		}
+		var sum Points
+		for _, c := range t.Criteria {
+			sum += c.MaxPoints
+		}
+		if sum != t.MaxPoints {
+			return fmt.Errorf("exercise %s: criteria sum %d != MaxPoints %d", t.Code, sum, t.MaxPoints)
+		}
+	case PenaltyLedger:
+		if len(t.Events) == 0 {
+			return fmt.Errorf("exercise %s: PenaltyLedger requires events", t.Code)
+		}
+		if len(t.Criteria) != 0 {
+			return fmt.Errorf("exercise %s: PenaltyLedger must not have criteria", t.Code)
+		}
+		if len(t.AggregateOf) != 0 {
+			return fmt.Errorf("exercise %s: PenaltyLedger must not have AggregateOf", t.Code)
+		}
+		siblingCodes := make(map[string]bool, len(siblings))
+		for _, s := range siblings {
+			siblingCodes[s.Code] = true
+		}
+		for _, ev := range t.Events {
+			if ev.OverflowTo != "" && !siblingCodes[ev.OverflowTo] {
+				return fmt.Errorf("exercise %s event %s: OverflowTo %q does not resolve to a sibling",
+					t.Code, ev.Code, ev.OverflowTo)
+			}
+		}
+	case Aggregate:
+		if t.IsAggregateComponent {
+			return fmt.Errorf("exercise %s: Aggregate cannot also be IsAggregateComponent", t.Code)
+		}
+		if len(t.AggregateOf) == 0 {
+			return fmt.Errorf("exercise %s: Aggregate requires AggregateOf entries", t.Code)
+		}
+		if len(t.Criteria) != 0 {
+			return fmt.Errorf("exercise %s: Aggregate must not have criteria", t.Code)
+		}
+		if len(t.Events) != 0 {
+			return fmt.Errorf("exercise %s: Aggregate must not have events", t.Code)
+		}
+		siblingByCode := make(map[string]ExerciseTemplate, len(siblings))
+		for _, s := range siblings {
+			siblingByCode[s.Code] = s
+		}
+		var compSum Points
+		for _, code := range t.AggregateOf {
+			sib, ok := siblingByCode[code]
+			if !ok {
+				return fmt.Errorf("exercise %s: AggregateOf %q does not resolve to a sibling", t.Code, code)
+			}
+			if !sib.IsAggregateComponent {
+				return fmt.Errorf("exercise %s: AggregateOf %q is not marked IsAggregateComponent", t.Code, code)
+			}
+			compSum += sib.MaxPoints
+		}
+		if compSum != t.MaxPoints {
+			return fmt.Errorf("exercise %s: component sum %d != MaxPoints %d", t.Code, compSum, t.MaxPoints)
+		}
+	default:
+		return fmt.Errorf("exercise %s: unknown Kind %d", t.Code, t.Kind)
+	}
+	return nil
 }
 
 // PhaseTemplate is a named grouping of exercises within a scoresheet.
@@ -159,7 +236,14 @@ type PhaseTemplate struct {
 // Aggregate parent's MaxPoints, so only non-component exercises and
 // Aggregate parents contribute to the phase total.
 func (p PhaseTemplate) MaxPoints() Points {
-	panic("not implemented")
+	var total Points
+	for _, ex := range p.Exercises {
+		if ex.IsAggregateComponent {
+			continue
+		}
+		total += ex.MaxPoints
+	}
+	return total
 }
 
 // SelectionMode governs how a judge constructs a ConcretePhase from a
@@ -243,25 +327,86 @@ type ScoresheetTemplate struct {
 // exercise, every cross-reference. Run at process startup before
 // serving traffic. Returns the first error encountered.
 func (t ScoresheetTemplate) Validate() error {
-	panic("not implemented")
+	if t.Version == "" {
+		return fmt.Errorf("template has no Version")
+	}
+	if !t.Level.IsValid() {
+		return fmt.Errorf("template %s: invalid level %d", t.Version, t.Level)
+	}
+	if len(t.Phases) == 0 {
+		return fmt.Errorf("template %s: no phases", t.Version)
+	}
+	seenExercise := make(map[string]bool)
+	seenPhase := make(map[string]bool)
+	for _, ph := range t.Phases {
+		if ph.Code == "" {
+			return fmt.Errorf("phase has no Code")
+		}
+		if seenPhase[ph.Code] {
+			return fmt.Errorf("duplicate phase code %q", ph.Code)
+		}
+		seenPhase[ph.Code] = true
+		for _, ex := range ph.Exercises {
+			if seenExercise[ex.Code] {
+				return fmt.Errorf("duplicate exercise code %q across phases", ex.Code)
+			}
+			seenExercise[ex.Code] = true
+			if err := ex.Validate(ph.Exercises); err != nil {
+				return err
+			}
+		}
+	}
+	// AvailableModifiers: codes must be unique.
+	seenMod := make(map[string]bool)
+	for _, m := range t.AvailableModifiers {
+		if m.Code == "" {
+			return fmt.Errorf("modifier has no Code")
+		}
+		if seenMod[m.Code] {
+			return fmt.Errorf("duplicate modifier code %q", m.Code)
+		}
+		seenMod[m.Code] = true
+	}
+	return nil
 }
 
 // FindExercise returns the named exercise within this template, or
 // false if not present.
 func (t ScoresheetTemplate) FindExercise(code string) (ExerciseTemplate, bool) {
-	panic("not implemented")
+	for _, ph := range t.Phases {
+		for _, ex := range ph.Exercises {
+			if ex.Code == code {
+				return ex, true
+			}
+		}
+	}
+	return ExerciseTemplate{}, false
 }
 
 // FindCriterion returns the named criterion within the named exercise,
 // or false if not present.
 func (t ScoresheetTemplate) FindCriterion(exerciseCode, criterionCode string) (Criterion, bool) {
-	panic("not implemented")
+	ex, ok := t.FindExercise(exerciseCode)
+	if !ok {
+		return Criterion{}, false
+	}
+	for _, c := range ex.Criteria {
+		if c.Code == criterionCode {
+			return c, true
+		}
+	}
+	return Criterion{}, false
 }
 
 // FindModifier returns the named modifier from AvailableModifiers, or
 // false if not present.
 func (t ScoresheetTemplate) FindModifier(code string) (ScoresheetModifier, bool) {
-	panic("not implemented")
+	for _, m := range t.AvailableModifiers {
+		if m.Code == code {
+			return m, true
+		}
+	}
+	return ScoresheetModifier{}, false
 }
 
 // BuildConcrete applies SelectionRule and produces a ConcreteScoresheet
@@ -281,7 +426,72 @@ func (t ScoresheetTemplate) FindModifier(code string) (ScoresheetModifier, bool)
 func (t ScoresheetTemplate) BuildConcrete(
 	selections map[string][]string, // phaseCode -> selected exerciseCodes
 ) (ConcreteScoresheet, error) {
-	panic("not implemented")
+	out := ConcreteScoresheet{
+		TemplateVersion:  t.Version,
+		Discipline:       t.Discipline,
+		Level:            t.Level,
+		PassThresholdPct: t.PassThresholdPct,
+		MaxInsufficients: t.MaxInsufficients,
+		Phases:           make([]ConcretePhase, 0, len(t.Phases)),
+	}
+
+	for _, ph := range t.Phases {
+		sel, hasRule := t.SelectionRule.PerPhase[ph.Code]
+		// Default Mode is SelectAll (zero value); applies when no rule
+		// or when the phase rule's Mode is SelectAll.
+		if !hasRule || sel.Mode == SelectAll {
+			out.Phases = append(out.Phases, ConcretePhase{
+				Code:      ph.Code,
+				Name:      ph.Name,
+				Exercises: append([]ExerciseTemplate(nil), ph.Exercises...),
+			})
+			out.MaxPoints += ph.MaxPoints()
+			continue
+		}
+
+		// SelectFromInventory: resolve judge-selected codes.
+		picked := selections[ph.Code]
+		if len(picked) < sel.Min || len(picked) > sel.Max {
+			return ConcreteScoresheet{}, fmt.Errorf(
+				"phase %s: selected %d exercises, must be in [%d, %d]",
+				ph.Code, len(picked), sel.Min, sel.Max)
+		}
+
+		byCode := make(map[string]ExerciseTemplate, len(ph.Exercises))
+		for _, ex := range ph.Exercises {
+			byCode[ex.Code] = ex
+		}
+
+		cp := ConcretePhase{Code: ph.Code, Name: ph.Name}
+		seen := make(map[string]bool, len(picked))
+		for _, code := range picked {
+			if seen[code] {
+				return ConcreteScoresheet{}, fmt.Errorf(
+					"phase %s: duplicate selection %q", ph.Code, code)
+			}
+			seen[code] = true
+			ex, ok := byCode[code]
+			if !ok {
+				return ConcreteScoresheet{}, fmt.Errorf(
+					"phase %s: selected exercise %q not in phase", ph.Code, code)
+			}
+			cp.Exercises = append(cp.Exercises, ex)
+		}
+		out.Phases = append(out.Phases, cp)
+
+		// MaxPoints for the concrete phase: same component-exclusion
+		// rule as PhaseTemplate.MaxPoints.
+		var phMax Points
+		for _, ex := range cp.Exercises {
+			if ex.IsAggregateComponent {
+				continue
+			}
+			phMax += ex.MaxPoints
+		}
+		out.MaxPoints += phMax
+	}
+
+	return out, nil
 }
 
 // ConcreteScoresheet is the scoresheet shape that gets scored. Built
@@ -316,5 +526,12 @@ type ConcretePhase struct {
 // FindExercise returns the named exercise within this concrete
 // scoresheet, or false if not present.
 func (s ConcreteScoresheet) FindExercise(code string) (ExerciseTemplate, bool) {
-	panic("not implemented")
+	for _, ph := range s.Phases {
+		for _, ex := range ph.Exercises {
+			if ex.Code == code {
+				return ex, true
+			}
+		}
+	}
+	return ExerciseTemplate{}, false
 }
