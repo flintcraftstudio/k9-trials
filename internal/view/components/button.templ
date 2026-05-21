@@ -1,0 +1,26 @@
+package components
+
+// Button renders the marketing-site styled button. Href makes it an <a>;
+// otherwise a <button> using Type ("button" default / "submit" / "reset").
+// Attrs spreads htmx, data-*, aria-* attributes onto the root element.
+templ Button(p ButtonProps) {
+	if p.Href != "" {
+		<a
+			href={ templ.SafeURL(p.Href) }
+			class={ buttonClasses(p) }
+			aria-disabled?={ p.Disabled }
+			{ p.Attrs... }
+		>
+			{ children... }
+		</a>
+	} else {
+		<button
+			type={ buttonType(p.Type) }
+			class={ buttonClasses(p) }
+			disabled?={ p.Disabled }
+			{ p.Attrs... }
+		>
+			{ children... }
+		</button>
+	}
+}

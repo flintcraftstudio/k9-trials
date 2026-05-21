@@ -1,0 +1,2683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K9 Elements — Website Visual Mockups</title>
+<style>
+  /* ================================================================
+     K9 ELEMENTS — Website Mockup Package
+     For: Web Development Team
+     Brand colors derived from K9 Elements logo (orange / blue / green slash)
+     ================================================================ */
+
+  :root {
+    --brand-orange: #E67E22;
+    --brand-blue: #2D7DB3;
+    --brand-green: #27AE60;
+    --ink: #0E1116;
+    --ink-2: #1C232C;
+    --ink-3: #2C3540;
+    --line: #E5E8EC;
+    --line-2: #D4D9DF;
+    --paper: #FAFAF7;
+    --paper-2: #F2F2EC;
+    --white: #FFFFFF;
+    --muted: #6B7380;
+    --muted-2: #98A0AC;
+    --success: #1E8E4A;
+    --warning: #C57A0E;
+    --danger: #B0331E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: var(--paper-2);
+    color: var(--ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================
+     PRESENTATION CHROME (the wrapper around mockups)
+     ============================================ */
+  .deck-header {
+    background: var(--ink);
+    color: var(--white);
+    padding: 32px 48px;
+    border-bottom: 4px solid;
+    border-image: linear-gradient(90deg, var(--brand-orange), var(--brand-blue), var(--brand-green)) 1;
+  }
+  .deck-header h1 {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .deck-header .sub {
+    color: var(--muted-2);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .nav-strip {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 48px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .nav-strip button {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px;
+    white-space: nowrap;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .nav-strip button:hover { background: var(--paper-2); color: var(--ink); }
+  .nav-strip button.active {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .mockup-wrap {
+    padding: 32px 48px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .mockup-section {
+    display: none;
+  }
+  .mockup-section.active { display: block; }
+
+  .mockup-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .mockup-label h2 {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+  .mockup-label .desc {
+    font-size: 13px;
+    color: var(--muted);
+    max-width: 60%;
+    text-align: right;
+  }
+
+  .mockup-frame {
+    background: var(--white);
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(15, 18, 22, 0.08);
+  }
+
+  .mockup-notes {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: #FFFAEC;
+    border-left: 3px solid var(--brand-orange);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .mockup-notes strong { color: var(--brand-orange); }
+  .mockup-notes ul { margin-left: 18px; margin-top: 6px; }
+  .mockup-notes li { margin-bottom: 3px; }
+
+  /* ============================================
+     MOCKUP-INTERNAL STYLES
+     (these recreate what the actual website will look like)
+     ============================================ */
+
+  /* --- Site header (used in most mockups) --- */
+  .site-header {
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+  .site-header .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 38px;
+    height: 38px;
+    position: relative;
+    background: var(--ink);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    overflow: hidden;
+  }
+  .logo-mark::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 35%;
+    width: 6px;
+    height: 120%;
+    background: linear-gradient(180deg, var(--brand-orange), var(--brand-blue), var(--brand-green));
+    transform: rotate(20deg);
+    opacity: 0.85;
+  }
+  .logo-mark span { position: relative; z-index: 2; }
+  .brand-name {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--ink);
+  }
+  .brand-name .sub {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    display: block;
+    line-height: 0.8;
+  }
+  .site-nav {
+    display: flex;
+    gap: 4px;
+  }
+  .site-nav a {
+    padding: 8px 14px;
+    color: var(--ink-2);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .site-nav a:hover { background: var(--paper-2); }
+  .site-nav a.current { color: var(--brand-blue); font-weight: 600; }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--ink); color: var(--white); }
+  .btn-primary:hover { background: var(--ink-2); }
+  .btn-orange { background: var(--brand-orange); color: var(--white); }
+  .btn-orange:hover { background: #d77119; }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-2); }
+  .btn-ghost:hover { background: var(--paper-2); }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+
+  /* ============================================
+     MOCKUP 1 — HOMEPAGE
+     ============================================ */
+  .home-hero {
+    background: var(--ink);
+    color: var(--white);
+    padding: 64px 48px 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-hero::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 60%;
+    height: 140%;
+    background: linear-gradient(135deg, transparent 30%, rgba(230,126,34,0.12) 40%, rgba(45,125,179,0.12) 60%, rgba(39,174,96,0.12) 80%, transparent 90%);
+    transform: rotate(8deg);
+    pointer-events: none;
+  }
+  .home-hero-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 800px;
+  }
+  .hero-eyebrow {
+    color: var(--brand-orange);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 72px;
+    line-height: 0.95;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+  }
+  .hero-title .accent {
+    background: linear-gradient(90deg, var(--brand-orange), var(--brand-blue), var(--brand-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .hero-sub {
+    font-size: 18px;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 32px;
+    max-width: 560px;
+  }
+  .hero-actions { display: flex; gap: 12px; }
+  .btn-hero {
+    padding: 14px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .quick-paths {
+    background: var(--white);
+    padding: 48px 48px;
+    border-bottom: 1px solid var(--line);
+  }
+  .quick-paths-title {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 13px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .path-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+  .path-card {
+    padding: 24px 20px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+  .path-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 4px; height: 100%;
+    background: var(--brand-orange);
+    transition: width 0.2s;
+  }
+  .path-card:nth-child(2)::before { background: var(--brand-blue); }
+  .path-card:nth-child(3)::before { background: var(--brand-green); }
+  .path-card:nth-child(4)::before { background: var(--ink); }
+  .path-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .path-card:hover::before { width: 6px; }
+  .path-icon {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  .path-label {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .path-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .path-desc {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .home-section {
+    padding: 48px 48px;
+  }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+  .section-link { color: var(--brand-blue); text-decoration: none; font-size: 13px; font-weight: 600; }
+
+  .event-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .event-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+  .event-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    transform: translateY(-2px);
+  }
+  .event-banner {
+    height: 80px;
+    background: linear-gradient(135deg, var(--ink), var(--ink-2));
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 12px 16px;
+    color: var(--white);
+  }
+  .event-card:nth-child(1) .event-banner {
+    background: linear-gradient(135deg, var(--brand-orange), #B85F0D);
+  }
+  .event-card:nth-child(2) .event-banner {
+    background: linear-gradient(135deg, var(--brand-blue), #1A567E);
+  }
+  .event-card:nth-child(3) .event-banner {
+    background: linear-gradient(135deg, var(--brand-green), #1B7B43);
+  }
+  .event-type {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .event-body { padding: 16px; }
+  .event-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .event-meta { font-size: 12px; color: var(--muted); display: flex; gap: 12px; margin-bottom: 12px; }
+  .event-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .event-spots {
+    font-size: 11px;
+    color: var(--success);
+    font-weight: 600;
+  }
+
+  /* ============================================
+     MOCKUP 2 — HANDLER PROFILE
+     ============================================ */
+  .profile-page { background: var(--paper-2); }
+  .profile-hero {
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    padding: 32px 48px 0;
+  }
+  .profile-top {
+    display: grid;
+    grid-template-columns: 120px 1fr auto;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--ink), var(--ink-2));
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 44px;
+    letter-spacing: 1px;
+    border: 3px solid var(--brand-orange);
+  }
+  .profile-name {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 38px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .profile-handle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+  .profile-meta-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .profile-meta-row .pill {
+    background: var(--paper-2);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .profile-tabs {
+    display: flex;
+    gap: 4px;
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .profile-tabs button {
+    padding: 12px 18px;
+    background: transparent;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    font-family: inherit;
+  }
+  .profile-tabs button.active {
+    color: var(--ink);
+    border-bottom-color: var(--brand-orange);
+  }
+  .profile-body {
+    padding: 32px 48px;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+  }
+  .profile-main { display: flex; flex-direction: column; gap: 16px; }
+  .panel {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .panel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .panel-title {
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+
+  /* Title strip */
+  .title-strip { display: flex; gap: 8px; flex-wrap: wrap; }
+  .title-badge {
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 14px;
+    letter-spacing: 1px;
+    color: var(--white);
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .title-badge.ob { background: var(--brand-orange); }
+  .title-badge.pr { background: var(--brand-blue); }
+  .title-badge.tr { background: var(--brand-green); }
+  .title-badge.dt { background: var(--ink-3); }
+
+  /* Development log entries */
+  .log-entry {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-date {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+  .log-date strong {
+    display: block;
+    font-size: 14px;
+    color: var(--ink);
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    letter-spacing: 0.5px;
+    font-weight: normal;
+  }
+  .log-content { font-size: 13px; color: var(--ink-3); }
+  .log-content .author {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .log-content .author strong { color: var(--brand-blue); }
+  .log-tags { margin-top: 6px; display: flex; gap: 4px; flex-wrap: wrap; }
+  .log-tag {
+    font-size: 10px;
+    background: var(--paper-2);
+    padding: 2px 8px;
+    border-radius: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Stats card */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-card { padding: 14px; background: var(--paper-2); border-radius: 8px; }
+  .stat-num {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 28px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+  }
+
+  /* Side widgets */
+  .side-widget { display: flex; flex-direction: column; gap: 16px; }
+  .ranking-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 13px; }
+  .ranking-row:not(:last-child) { border-bottom: 1px solid var(--line); }
+  .ranking-row.me { color: var(--brand-orange); font-weight: 700; }
+
+  /* ============================================
+     MOCKUP 3 — DECOY MOBILE NOTES
+     ============================================ */
+  .mobile-context {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
+    padding: 32px;
+    background: var(--paper-2);
+    align-items: start;
+  }
+  .phone-frame {
+    width: 320px;
+    height: 640px;
+    background: var(--ink);
+    border-radius: 36px;
+    padding: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  }
+  .phone-screen {
+    width: 100%;
+    height: 100%;
+    background: var(--white);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .phone-statusbar {
+    background: var(--ink);
+    color: var(--white);
+    padding: 8px 16px;
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .phone-header {
+    background: var(--white);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .phone-back { color: var(--brand-blue); font-size: 14px; }
+  .phone-title { font-size: 14px; font-weight: 700; }
+  .phone-body {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  .phone-handler-card {
+    background: var(--paper-2);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phone-handler-avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--ink);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    border: 2px solid var(--brand-orange);
+  }
+  .phone-handler-info .name { font-size: 13px; font-weight: 700; }
+  .phone-handler-info .meta { font-size: 11px; color: var(--muted); }
+
+  .session-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .meta-input {
+    background: var(--paper-2);
+    padding: 8px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+  .meta-input .label {
+    color: var(--muted);
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+  .meta-input .value { color: var(--ink); font-weight: 600; }
+
+  .voice-note-area {
+    background: var(--paper-2);
+    border: 2px dashed var(--line-2);
+    border-radius: 12px;
+    padding: 20px 16px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .mic-button {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--brand-orange);
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 24px;
+    box-shadow: 0 4px 16px rgba(230,126,34,0.4);
+  }
+  .voice-prompt {
+    font-size: 12px;
+    color: var(--ink-3);
+    font-weight: 600;
+  }
+  .voice-sub {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  .transcript-box {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--ink-2);
+    margin-bottom: 12px;
+    min-height: 80px;
+  }
+  .transcript-box .ai-tag {
+    font-size: 9px;
+    color: var(--brand-blue);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .quick-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .quick-tag {
+    background: var(--white);
+    border: 1px solid var(--line-2);
+    border-radius: 12px;
+    padding: 4px 10px;
+    font-size: 10px;
+    color: var(--ink-2);
+  }
+  .quick-tag.active {
+    background: var(--brand-orange);
+    color: var(--white);
+    border-color: var(--brand-orange);
+  }
+  .save-row { display: flex; gap: 8px; }
+  .save-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .save-btn.primary { background: var(--ink); color: var(--white); }
+  .save-btn.secondary { background: var(--paper-2); color: var(--ink); }
+
+  .mobile-explainer {
+    padding-top: 16px;
+  }
+  .mobile-explainer h3 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 24px;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .mobile-explainer p { font-size: 14px; color: var(--ink-3); margin-bottom: 12px; }
+  .mobile-explainer ul {
+    margin-left: 20px;
+    color: var(--ink-3);
+    font-size: 13px;
+  }
+  .mobile-explainer ul li { margin-bottom: 6px; }
+  .mobile-explainer .feature-callout {
+    background: var(--ink);
+    color: var(--white);
+    padding: 16px;
+    border-radius: 10px;
+    margin-top: 16px;
+    border-left: 4px solid var(--brand-orange);
+  }
+  .mobile-explainer .feature-callout strong { color: var(--brand-orange); display: block; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+
+  /* ============================================
+     MOCKUP 4 — JUDGE SCORING INTERFACE (TABLET)
+     ============================================ */
+  .tablet-frame {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    background: var(--ink);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+  }
+  .tablet-screen {
+    background: var(--white);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .scoring-header {
+    background: var(--ink);
+    color: var(--white);
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 16px;
+  }
+  .scoring-handler-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .scoring-handler-info .name {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .scoring-handler-info .dog { font-size: 12px; color: rgba(255,255,255,0.7); }
+  .scoring-event-info {
+    text-align: center;
+    padding: 0 24px;
+    border-left: 1px solid rgba(255,255,255,0.15);
+    border-right: 1px solid rgba(255,255,255,0.15);
+  }
+  .scoring-event-info .label { font-size: 10px; letter-spacing: 2px; color: var(--brand-orange); text-transform: uppercase; font-weight: 700; }
+  .scoring-event-info .name { font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .scoring-controls { text-align: right; display: flex; gap: 8px; justify-content: flex-end; }
+  .total-score {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    line-height: 1;
+    background: linear-gradient(90deg, var(--brand-orange), var(--brand-blue), var(--brand-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .total-label { font-size: 9px; color: rgba(255,255,255,0.6); letter-spacing: 2px; text-transform: uppercase; }
+
+  .scoring-body {
+    display: grid;
+    grid-template-columns: 240px 1fr 280px;
+    min-height: 480px;
+  }
+  .phase-list {
+    background: var(--paper-2);
+    border-right: 1px solid var(--line);
+    padding: 16px 0;
+  }
+  .phase-row {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+  }
+  .phase-row:hover { background: var(--white); }
+  .phase-row.current { background: var(--white); border-left: 4px solid var(--brand-orange); padding-left: 16px; }
+  .phase-row .num {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .phase-row .name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .phase-row .pts {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .phase-row.complete .pts { color: var(--success); }
+  .phase-row.locked .pts { color: var(--muted-2); }
+
+  .scoring-mid {
+    padding: 24px;
+  }
+  .exercise-head {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+  }
+  .exercise-eyebrow {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--brand-orange);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .exercise-title {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .exercise-desc {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .scoring-row {
+    display: grid;
+    grid-template-columns: 1fr 220px 60px;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    align-items: center;
+  }
+  .criterion-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .criterion-max { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .pts-controls {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .pts-btn {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line-2);
+    background: var(--white);
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+  .pts-input {
+    flex: 1;
+    text-align: center;
+    padding: 6px;
+    border: 1px solid var(--line-2);
+    border-radius: 6px;
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 18px;
+    color: var(--ink);
+  }
+  .criterion-score {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    text-align: right;
+    color: var(--ink);
+  }
+
+  .scoring-side {
+    background: var(--paper-2);
+    border-left: 1px solid var(--line);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .deduction-card {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .deduction-title {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .deduction-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 12px;
+  }
+  .deduction-row + .deduction-row { border-top: 1px dashed var(--line); }
+  .ded-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-right: 4px;
+    color: var(--white);
+    font-weight: 700;
+  }
+  .ded-tag.minor { background: var(--warning); }
+  .ded-tag.major { background: var(--danger); }
+  .judge-notes-area {
+    background: var(--white);
+    border-radius: 8px;
+    padding: 12px;
+    flex: 1;
+  }
+  .judge-notes-area textarea {
+    width: 100%;
+    border: none;
+    resize: none;
+    height: 90px;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    background: transparent;
+  }
+  .judge-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .judge-actions .btn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* ============================================
+     MOCKUP 5 — EVENT REGISTRATION
+     ============================================ */
+  .event-detail-hero {
+    background: linear-gradient(135deg, var(--ink), var(--ink-2));
+    color: var(--white);
+    padding: 40px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .event-detail-hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 50%, rgba(230,126,34,0.08) 60%, rgba(45,125,179,0.08) 75%, rgba(39,174,96,0.08) 90%);
+  }
+  .event-detail-hero > * { position: relative; z-index: 2; }
+  .event-eyebrow {
+    color: var(--brand-orange);
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .event-detail-title {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 48px;
+    letter-spacing: 1px;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .event-detail-meta {
+    display: flex;
+    gap: 32px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.85);
+  }
+  .event-detail-meta .item .lab {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .event-detail-body {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 32px;
+    padding: 32px 48px;
+  }
+  .reg-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 24px;
+    position: sticky;
+    top: 80px;
+  }
+  .reg-card h4 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  .entry-option {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .entry-option:hover { border-color: var(--brand-orange); }
+  .entry-option.selected {
+    border-color: var(--brand-orange);
+    background: #FFFAEC;
+  }
+  .entry-option .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .entry-option .name { font-size: 13px; font-weight: 700; }
+  .entry-option .price { font-size: 16px; font-weight: 700; color: var(--ink); }
+  .entry-option .desc { font-size: 11px; color: var(--muted); }
+  .entry-option .availability {
+    font-size: 10px;
+    margin-top: 4px;
+    color: var(--success);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .entry-option .availability.low { color: var(--warning); }
+
+  .reg-summary {
+    background: var(--paper-2);
+    padding: 14px;
+    border-radius: 8px;
+    margin-top: 12px;
+  }
+  .reg-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+  }
+  .reg-summary-row.total {
+    font-size: 16px;
+    font-weight: 700;
+    border-top: 1px solid var(--line-2);
+    padding-top: 10px;
+    margin-top: 6px;
+  }
+
+  /* ============================================
+     MOCKUP 6 — ADMIN DASHBOARD
+     ============================================ */
+  .dash-page { background: var(--paper-2); min-height: 600px; }
+  .dash-shell {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100%;
+  }
+  .dash-side {
+    background: var(--ink);
+    color: var(--white);
+    padding: 24px 0;
+  }
+  .dash-side .brand {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 16px;
+  }
+  .dash-side-section {
+    padding: 12px 20px 4px;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .dash-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    font-size: 13px;
+    border-left: 3px solid transparent;
+  }
+  .dash-link:hover { background: rgba(255,255,255,0.05); color: var(--white); }
+  .dash-link.active { background: rgba(255,255,255,0.05); color: var(--white); border-left-color: var(--brand-orange); font-weight: 600; }
+
+  .dash-main { padding: 24px 32px; }
+  .dash-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+  }
+  .dash-title {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    color: var(--ink);
+  }
+  .dash-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, transparent 50%, rgba(230,126,34,0.1) 100%);
+  }
+  .kpi-card:nth-child(2)::after { background: linear-gradient(135deg, transparent 50%, rgba(45,125,179,0.1) 100%); }
+  .kpi-card:nth-child(3)::after { background: linear-gradient(135deg, transparent 50%, rgba(39,174,96,0.1) 100%); }
+  .kpi-card:nth-child(4)::after { background: linear-gradient(135deg, transparent 50%, rgba(28,35,44,0.1) 100%); }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+  .kpi-num {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 36px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .kpi-trend {
+    font-size: 11px;
+    margin-top: 6px;
+  }
+  .kpi-trend.up { color: var(--success); }
+  .kpi-trend.dn { color: var(--danger); }
+
+  .dash-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  /* Mini chart */
+  .chart {
+    height: 180px;
+    position: relative;
+    margin-top: 16px;
+  }
+  .chart-bars {
+    display: flex;
+    align-items: flex-end;
+    height: 100%;
+    gap: 8px;
+    padding: 0 8px;
+  }
+  .chart-bar {
+    flex: 1;
+    background: linear-gradient(180deg, var(--brand-orange), #B85F0D);
+    border-radius: 3px 3px 0 0;
+    position: relative;
+    min-height: 8px;
+  }
+  .chart-bar:nth-child(2n) { background: linear-gradient(180deg, var(--brand-blue), #1A567E); }
+  .chart-bar:nth-child(3n) { background: linear-gradient(180deg, var(--brand-green), #1B7B43); }
+  .chart-labels {
+    display: flex;
+    gap: 8px;
+    padding: 4px 8px 0;
+    font-size: 10px;
+    color: var(--muted);
+  }
+  .chart-labels span { flex: 1; text-align: center; }
+
+  /* Activity feed */
+  .activity-row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+  .activity-row:last-child { border-bottom: none; }
+  .activity-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--paper-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .activity-content .who { font-weight: 700; color: var(--ink); }
+  .activity-content .what { color: var(--ink-3); }
+  .activity-content .when { color: var(--muted); font-size: 10px; margin-top: 2px; }
+
+  /* ============================================
+     MOCKUP 7 — INTERACTIVE RULEBOOK
+     ============================================ */
+  .rulebook-shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    min-height: 600px;
+  }
+  .rulebook-toc {
+    background: var(--paper-2);
+    border-right: 1px solid var(--line);
+    padding: 24px 0;
+  }
+  .toc-search {
+    margin: 0 20px 20px;
+    padding: 8px 12px;
+    background: var(--white);
+    border: 1px solid var(--line-2);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .toc-section {
+    padding: 8px 20px;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .toc-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 20px;
+    color: var(--ink-2);
+    font-size: 13px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  .toc-link:hover { background: var(--white); }
+  .toc-link.current { background: var(--white); border-left-color: var(--brand-blue); font-weight: 700; }
+  .toc-link .badge {
+    font-size: 9px;
+    background: var(--brand-orange);
+    color: var(--white);
+    padding: 1px 6px;
+    border-radius: 8px;
+    letter-spacing: 0.5px;
+  }
+  .rulebook-body { padding: 32px 40px; }
+  .rule-bread {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .rule-h1 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 20px;
+  }
+  .rule-callout {
+    background: linear-gradient(90deg, #FFFAEC, var(--white));
+    border-left: 4px solid var(--brand-orange);
+    padding: 14px 18px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .rule-callout strong {
+    display: block;
+    color: var(--brand-orange);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .rule-h2 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--ink);
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  .rule-body p { font-size: 14px; color: var(--ink-2); margin-bottom: 12px; }
+  .rule-body ul { margin-left: 20px; font-size: 14px; color: var(--ink-2); }
+  .rule-body ul li { margin-bottom: 6px; }
+  .rule-related {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  .rule-related h4 { font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  .related-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .related-chip {
+    background: var(--paper-2);
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .related-chip:hover { background: var(--ink); color: var(--white); border-color: var(--ink); }
+
+  .ai-coach-fab {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: var(--ink);
+    color: var(--white);
+    padding: 12px 20px;
+    border-radius: 28px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    border-left: 3px solid var(--brand-orange);
+  }
+  .ai-coach-fab .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--brand-green);
+    box-shadow: 0 0 0 4px rgba(39,174,96,0.2);
+  }
+
+  /* ============================================
+     MOCKUP 8 — ROLE-BASED ACCESS MATRIX
+     ============================================ */
+  .access-page { padding: 32px 40px; background: var(--white); }
+  .access-page h2 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .access-page .lede { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .access-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .access-table th {
+    text-align: left;
+    padding: 10px 8px;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .access-table th:first-child { width: 240px; }
+  .access-table td {
+    padding: 8px;
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .access-table tr:nth-child(odd) td { background: var(--paper); }
+  .access-table td.feat {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .ax-yes { color: var(--success); font-weight: 700; }
+  .ax-no { color: var(--line-2); }
+  .ax-some { color: var(--warning); font-weight: 700; }
+
+  /* ============================================
+     RESPONSIVE FALLBACK
+     ============================================ */
+  @media (max-width: 900px) {
+    .deck-header { padding: 20px 24px; }
+    .nav-strip { padding: 8px 16px; }
+    .mockup-wrap { padding: 16px 16px 40px; }
+    .path-grid { grid-template-columns: 1fr 1fr; }
+    .event-strip { grid-template-columns: 1fr; }
+    .profile-body { grid-template-columns: 1fr; }
+    .scoring-body { grid-template-columns: 1fr; }
+    .event-detail-body { grid-template-columns: 1fr; }
+    .dash-shell { grid-template-columns: 1fr; }
+    .rulebook-shell { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: 1fr 1fr; }
+    .dash-grid { grid-template-columns: 1fr; }
+    .mobile-context { grid-template-columns: 1fr; }
+    .phone-frame { margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="deck-header">
+  <h1>K9 ELEMENTS — WEBSITE VISUAL CONCEPT</h1>
+  <div class="sub">Mockup deck for development team · v1 · prepared April 2026</div>
+</header>
+
+<nav class="nav-strip">
+  <button class="active" data-tab="home">1 · Homepage</button>
+  <button data-tab="profile">2 · Handler Profile</button>
+  <button data-tab="mobile">3 · Decoy Mobile Notes</button>
+  <button data-tab="scoring">4 · Judge Scoring (Tablet)</button>
+  <button data-tab="event">5 · Event Registration</button>
+  <button data-tab="dash">6 · Admin Dashboard</button>
+  <button data-tab="rules">7 · Interactive Rulebook</button>
+  <button data-tab="access">8 · Role-Based Access Matrix</button>
+</nav>
+
+<div class="mockup-wrap">
+
+<!-- ============================================
+     MOCKUP 1: HOMEPAGE
+     ============================================ -->
+<section class="mockup-section active" data-tab-content="home">
+  <div class="mockup-label">
+    <div>
+      <h2>1 · Homepage</h2>
+    </div>
+    <div class="desc">First-touch surface. Establishes brand, surfaces upcoming events, drives users into one of four primary paths matched to their role.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="site-header">
+      <div class="brand">
+        <div class="logo-mark"><span>K9</span></div>
+        <div class="brand-name">K9 ELEMENTS<span class="sub">PROFESSIONAL K9 SPORT</span></div>
+      </div>
+      <nav class="site-nav">
+        <a class="current">Home</a>
+        <a>Events</a>
+        <a>Education</a>
+        <a>Rulebook</a>
+        <a>Rankings</a>
+        <a>Officials</a>
+        <a>Shop</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-ghost">Sign In</button>
+        <button class="btn btn-orange">Become a Member</button>
+      </div>
+    </div>
+
+    <div class="home-hero">
+      <div class="home-hero-inner">
+        <div class="hero-eyebrow">Obedience · Protection · Tracking · Detection</div>
+        <h1 class="hero-title">A NEW STANDARD<br>FOR <span class="accent">WORKING DOG SPORT.</span></h1>
+        <p class="hero-sub">Professional infrastructure for a sport that has long deserved it. One platform for trials, education, certification, scoring, and community.</p>
+        <div class="hero-actions">
+          <button class="btn btn-orange btn-hero">Find an Event</button>
+          <button class="btn btn-ghost btn-hero" style="color:#fff;border-color:rgba(255,255,255,0.3)">Watch the Sport →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-paths">
+      <div class="quick-paths-title">Where do you want to start?</div>
+      <div class="path-grid">
+        <div class="path-card">
+          <div class="path-icon">🎯</div>
+          <div class="path-label">For Handlers</div>
+          <div class="path-title">Compete & Train</div>
+          <div class="path-desc">Find events, register, track your titles, access training resources.</div>
+        </div>
+        <div class="path-card">
+          <div class="path-icon">⚖️</div>
+          <div class="path-label">For Officials</div>
+          <div class="path-title">Judge / Decoy / Secretary</div>
+          <div class="path-desc">Apply, certify, manage assignments, attend College sessions.</div>
+        </div>
+        <div class="path-card">
+          <div class="path-icon">🏛️</div>
+          <div class="path-label">For Clubs</div>
+          <div class="path-title">Affiliate & Host Trials</div>
+          <div class="path-desc">Affiliation tools, trial planning modules, club development resources.</div>
+        </div>
+        <div class="path-card">
+          <div class="path-icon">📚</div>
+          <div class="path-label">For Newcomers</div>
+          <div class="path-title">Learn the Sport</div>
+          <div class="path-desc">What is K9 Elements? Discipline overviews, getting started, find a coach.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <div class="section-head">
+        <div class="section-title">Upcoming Events</div>
+        <a class="section-link">View Full Calendar →</a>
+      </div>
+      <div class="event-strip">
+        <div class="event-card">
+          <div class="event-banner"><span class="event-type">Trial · OB + PR</span></div>
+          <div class="event-body">
+            <div class="event-title">North Texas Spring Trial</div>
+            <div class="event-meta"><span>📅 May 15–17</span><span>📍 Frisco, TX</span></div>
+            <div class="event-foot">
+              <span class="event-spots">12 spots open</span>
+              <button class="btn btn-primary btn-sm">Register</button>
+            </div>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-banner"><span class="event-type">Decoy Camp</span></div>
+          <div class="event-body">
+            <div class="event-title">Trial Decoy Certification Camp</div>
+            <div class="event-meta"><span>📅 June 6–9</span><span>📍 Austin, TX</span></div>
+            <div class="event-foot">
+              <span class="event-spots">Application required</span>
+              <button class="btn btn-primary btn-sm">Apply</button>
+            </div>
+          </div>
+        </div>
+        <div class="event-card">
+          <div class="event-banner"><span class="event-type">Trial · TR + DT</span></div>
+          <div class="event-body">
+            <div class="event-title">Pacific Northwest Tracking Trial</div>
+            <div class="event-meta"><span>📅 June 21–22</span><span>📍 Bend, OR</span></div>
+            <div class="event-foot">
+              <span class="event-spots">Filling fast</span>
+              <button class="btn btn-primary btn-sm">Register</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>The slash-gradient (orange → blue → green) carries from logo into hero accent text and event-card banners. This becomes the brand spine.</li>
+      <li>"Where do you want to start?" path-cards address the one-stop-shop mandate: every visitor is routed by role within one click. Wireframe assumes four roles; exact copy adapts based on auth state (logged-out shows recruiting copy, logged-in shows next-action copy).</li>
+      <li>Event cards display SportsEngine-native registration data; "Apply" vs. "Register" branches handle event-type variation (trials vs. camps with screening).</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 2: HANDLER PROFILE
+     ============================================ -->
+<section class="mockup-section" data-tab-content="profile">
+  <div class="mockup-label">
+    <div><h2>2 · Handler Profile</h2></div>
+    <div class="desc">Public-facing identity + private development record. Title strip, scoring history, decoy notes, ranking position. The profile is also the entry point for the development log.</div>
+  </div>
+
+  <div class="mockup-frame profile-page">
+    <div class="site-header">
+      <div class="brand">
+        <div class="logo-mark"><span>K9</span></div>
+        <div class="brand-name">K9 ELEMENTS<span class="sub">PROFESSIONAL K9 SPORT</span></div>
+      </div>
+      <nav class="site-nav">
+        <a>Home</a>
+        <a>Events</a>
+        <a>Education</a>
+        <a>Rulebook</a>
+        <a class="current">Rankings</a>
+        <a>Officials</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm">My Account</button>
+      </div>
+    </div>
+
+    <div class="profile-hero">
+      <div class="profile-top">
+        <div class="profile-avatar">SM</div>
+        <div>
+          <div class="profile-name">SARAH MARTINEZ</div>
+          <div class="profile-handle">@sarah.m · Iron Pack K9 Club · Member since 2023</div>
+          <div class="profile-meta-row">
+            <span class="pill">Handler</span>
+            <span class="pill">Apprentice Decoy (Development)</span>
+            <span>🐕 2 active dogs</span>
+            <span>🏆 5 titles earned</span>
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-orange">Edit Profile</button>
+        </div>
+      </div>
+      <div class="profile-tabs">
+        <button class="active">Overview</button>
+        <button>Dogs</button>
+        <button>Title History</button>
+        <button>Development Log</button>
+        <button>Rankings</button>
+        <button>Settings</button>
+      </div>
+    </div>
+
+    <div class="profile-body">
+      <div class="profile-main">
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Active Titles</div>
+            <a class="section-link">All titles →</a>
+          </div>
+          <div class="title-strip">
+            <div class="title-badge ob">K9E1-OB · 84pt</div>
+            <div class="title-badge ob">K9E2-OB · 79pt</div>
+            <div class="title-badge pr">K9E1-PR · 76pt</div>
+            <div class="title-badge tr">K9E1-TR · Pass</div>
+            <div class="title-badge dt">K9E1-DT · 88pt</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Development Log · Recent Entries</div>
+            <a class="section-link">Add entry →</a>
+          </div>
+          <div class="log-entry">
+            <div class="log-date"><strong>APR 24</strong>2026</div>
+            <div class="log-content">
+              <div class="author">Decoy note · <strong>Mike Torres</strong> · Development Decoy</div>
+              <div>Strong full grip on bicep target today, calmer on the bite than last session. Out is hesitant under pressure — handler may need to revisit foundation outs in calm setting before adding stick. Recommend 2 sessions on out clarity before next escalation.</div>
+              <div class="log-tags"><span class="log-tag">Protection</span><span class="log-tag">Out command</span><span class="log-tag">Voice memo</span></div>
+            </div>
+          </div>
+          <div class="log-entry">
+            <div class="log-date"><strong>APR 17</strong>2026</div>
+            <div class="log-content">
+              <div class="author">Self-entry · <strong>Sarah Martinez</strong></div>
+              <div>Worked tracking on aged scent, 90-min track. Indication on first article was strong. Lost track at second turn, recovered after ~30 sec cast. Need to trust the dog more on turns.</div>
+              <div class="log-tags"><span class="log-tag">Tracking</span><span class="log-tag">Self-reflection</span></div>
+            </div>
+          </div>
+          <div class="log-entry">
+            <div class="log-date"><strong>APR 10</strong>2026</div>
+            <div class="log-content">
+              <div class="author">Coach session · <strong>Live Online</strong> · 45 min</div>
+              <div>Reviewed video from last trial. Discussed heeling pace consistency. Action items: tempo drills 3x/week, video review next session.</div>
+              <div class="log-tags"><span class="log-tag">Obedience</span><span class="log-tag">Coaching</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div class="panel-title">Trial Performance · Last 12 Months</div>
+            <a class="section-link">View all results →</a>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-card">
+              <div class="stat-num">8</div>
+              <div class="stat-label">Trials Entered</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">6</div>
+              <div class="stat-label">Qualifying Scores</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">81.4</div>
+              <div class="stat-label">Avg Score (OB)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-num">75%</div>
+              <div class="stat-label">Pass Rate</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side-widget">
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">My Dogs</div></div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);">
+            <div style="width:40px;height:40px;border-radius:8px;background:var(--brand-orange);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">RX</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;">Rex</div>
+              <div style="font-size:11px;color:var(--muted);">Malinois · 4yo · Active</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;">
+            <div style="width:40px;height:40px;border-radius:8px;background:var(--brand-blue);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">NV</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;">Nova</div>
+              <div style="font-size:11px;color:var(--muted);">Dutch Shepherd · 2yo · In training</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Regional Ranking · OB L2</div></div>
+          <div class="ranking-row"><span>1. K. Reyes</span><span>87.5</span></div>
+          <div class="ranking-row"><span>2. T. Brennan</span><span>85.2</span></div>
+          <div class="ranking-row"><span>3. J. Lee</span><span>82.8</span></div>
+          <div class="ranking-row me"><span>4. S. Martinez (you)</span><span>79.0</span></div>
+          <div class="ranking-row"><span>5. M. Park</span><span>77.3</span></div>
+        </div>
+
+        <div class="panel" style="background:var(--ink);color:var(--white);border:none;">
+          <div style="font-size:11px;letter-spacing:2px;color:var(--brand-orange);text-transform:uppercase;font-weight:700;margin-bottom:8px;">Coach Reminder</div>
+          <div style="font-size:13px;margin-bottom:12px;">You haven't booked a live coaching session in 23 days. Stay sharp.</div>
+          <button class="btn btn-orange btn-sm">Book session</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li><strong>Development Log is the breakthrough feature.</strong> Entries can be added by the handler (self-reflection), by an authorized decoy (post-session note from mobile), by a coach (after session), or auto-generated from trial scores. Voice memos are transcribed and tagged.</li>
+      <li>Profile has two surfaces: a public face (titles, dogs, rankings, club) and a private layer (development log, coach notes, performance trends) gated by access tier.</li>
+      <li>Ranking widget shows the user's position with brand-orange accent — competitive context without being abrasive.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 3: DECOY MOBILE NOTE ENTRY
+     ============================================ -->
+<section class="mockup-section" data-tab-content="mobile">
+  <div class="mockup-label">
+    <div><h2>3 · Decoy Mobile Note Entry</h2></div>
+    <div class="desc">Mobile-first quick-entry surface. After a development session, a decoy can enter a handler's record in under 60 seconds — typed or dictated.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="mobile-context">
+
+      <div class="phone-frame">
+        <div class="phone-screen">
+          <div class="phone-statusbar"><span>9:41</span><span>📶 100%</span></div>
+          <div class="phone-header">
+            <span class="phone-back">←</span>
+            <div class="phone-title">New Session Note</div>
+          </div>
+          <div class="phone-body">
+
+            <div class="phone-handler-card">
+              <div class="phone-handler-avatar">SM</div>
+              <div class="phone-handler-info">
+                <div class="name">Sarah Martinez · Rex</div>
+                <div class="meta">Last session: April 17</div>
+              </div>
+            </div>
+
+            <div class="session-meta-grid">
+              <div class="meta-input">
+                <div class="label">Date</div>
+                <div class="value">Apr 24, 2026</div>
+              </div>
+              <div class="meta-input">
+                <div class="label">Discipline</div>
+                <div class="value">Protection</div>
+              </div>
+              <div class="meta-input">
+                <div class="label">Phase Focus</div>
+                <div class="value">Out Command</div>
+              </div>
+              <div class="meta-input">
+                <div class="label">Duration</div>
+                <div class="value">35 min</div>
+              </div>
+            </div>
+
+            <div class="voice-note-area">
+              <div class="mic-button">🎙</div>
+              <div class="voice-prompt">Tap to dictate notes</div>
+              <div class="voice-sub">or type below · auto-saved</div>
+            </div>
+
+            <div class="transcript-box">
+              <div class="ai-tag">⏺ Recording transcribed</div>
+              Strong full grip on bicep target today, calmer on the bite than last session. Out is hesitant under pressure — handler may need to revisit foundation outs in calm setting before adding stick.
+            </div>
+
+            <div class="quick-tags">
+              <span class="quick-tag active">#out</span>
+              <span class="quick-tag active">#grip-quality</span>
+              <span class="quick-tag">#confidence</span>
+              <span class="quick-tag">#targeting</span>
+              <span class="quick-tag">+</span>
+            </div>
+
+            <div class="save-row">
+              <button class="save-btn secondary">Save Draft</button>
+              <button class="save-btn primary">Submit to Log</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-explainer">
+        <h3>POST-SESSION NOTES, IN UNDER A MINUTE.</h3>
+        <p>The biggest gap in working dog sport is institutional memory. Notes get scribbled on paper, lost, or never recorded at all. Handlers can't track patterns across decoys; decoys can't track patterns across handlers.</p>
+        <p>K9 Elements solves this with a mobile-first capture surface optimized for the post-session moment.</p>
+        <ul>
+          <li><strong>Voice-first.</strong> One-tap dictation. Transcription happens in seconds.</li>
+          <li><strong>Auto-tagging.</strong> AI suggests tags based on transcript content; decoy confirms or edits.</li>
+          <li><strong>Context-aware.</strong> Decoy selects handler from their assigned roster; pulls last session for reference.</li>
+          <li><strong>Permission-aware.</strong> Notes flow to the handler's development log immediately, scoped to the dog and session — no leak between handlers.</li>
+          <li><strong>Search-aware.</strong> Tags become filters on the handler's profile (e.g. "show me everything about out commands").</li>
+        </ul>
+        <div class="feature-callout">
+          <strong>Why this matters</strong>
+          The development log becomes a living, searchable record that follows the handler-dog team across years and across multiple decoys. A new decoy can read 18 months of context in 5 minutes.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>This screen needs a true mobile build — likely a PWA or native shell — not a responsive crunch of the desktop site. The post-session moment is field-time, often outdoors, often with one hand. Voice-first is non-negotiable.</li>
+      <li>Transcription provider (e.g. Whisper API or Deepgram) needs evaluation; tag-suggestion can be a lighter-weight call to the AI coach model with a tag taxonomy in the prompt.</li>
+      <li>Privacy: a development decoy can only see/write notes for handlers they're assigned to (via the club affiliation or seminar registration). This is an access-tier rule, not a UI rule.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 4: JUDGE SCORING TABLET
+     ============================================ -->
+<section class="mockup-section" data-tab-content="scoring">
+  <div class="mockup-label">
+    <div><h2>4 · Judge Scoring (Tablet)</h2></div>
+    <div class="desc">Replaces paper scoresheets with an in-field tablet interface. Auto-calculates totals, attaches deductions to specific exercises, captures judge notes, syncs to the trial secretary in real time.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="tablet-frame">
+      <div class="tablet-screen">
+
+        <div class="scoring-header">
+          <div class="scoring-handler-info">
+            <div style="width:48px;height:48px;border-radius:8px;background:var(--brand-orange);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;">SM</div>
+            <div>
+              <div class="name">SARAH MARTINEZ</div>
+              <div class="dog">Rex · Malinois M · 4yo</div>
+            </div>
+          </div>
+          <div class="scoring-event-info">
+            <div class="label">Level 2 Obedience</div>
+            <div class="name">North Texas Spring Trial · Run 7 of 14</div>
+          </div>
+          <div class="scoring-controls">
+            <div>
+              <div class="total-label">RUNNING TOTAL</div>
+              <div class="total-score">73 / 100</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scoring-body">
+
+          <div class="phase-list">
+            <div class="phase-row complete">
+              <div>
+                <div class="num">PHASE 1 · COMPLETE</div>
+                <div class="name">Off-Leash Heeling w/ Distractions</div>
+              </div>
+              <div class="pts">22<span style="font-size:12px;color:var(--muted-2);">/30</span></div>
+            </div>
+            <div class="phase-row current">
+              <div>
+                <div class="num">PHASE 2 · IN PROGRESS</div>
+                <div class="name">Positions in Motion</div>
+              </div>
+              <div class="pts">18<span style="font-size:12px;color:var(--muted-2);">/25</span></div>
+            </div>
+            <div class="phase-row locked">
+              <div>
+                <div class="num">PHASE 3 · UPCOMING</div>
+                <div class="name">Recall with Distractions</div>
+              </div>
+              <div class="pts">—<span style="font-size:12px;color:var(--muted-2);">/20</span></div>
+            </div>
+            <div class="phase-row locked">
+              <div>
+                <div class="num">PHASE 4 · UPCOMING</div>
+                <div class="name">Send-Away & Directed Positions</div>
+              </div>
+              <div class="pts">—<span style="font-size:12px;color:var(--muted-2);">/25</span></div>
+            </div>
+          </div>
+
+          <div class="scoring-mid">
+            <div class="exercise-head">
+              <div class="exercise-eyebrow">Phase 2 · Currently Scoring</div>
+              <div class="exercise-title">POSITIONS IN MOTION</div>
+              <div class="exercise-desc">Sit, down, and stand each called once during heeling pattern. Dog must hold position while handler continues 10 ft, then return.</div>
+            </div>
+
+            <div class="scoring-row">
+              <div>
+                <div class="criterion-name">Prompt drop into position</div>
+                <div class="criterion-max">Max 15 pts</div>
+              </div>
+              <div class="pts-controls">
+                <button class="pts-btn">−</button>
+                <input class="pts-input" value="11" />
+                <button class="pts-btn">+</button>
+              </div>
+              <div class="criterion-score">11</div>
+            </div>
+
+            <div class="scoring-row">
+              <div>
+                <div class="criterion-name">Holds position while handler walks</div>
+                <div class="criterion-max">Max 5 pts</div>
+              </div>
+              <div class="pts-controls">
+                <button class="pts-btn">−</button>
+                <input class="pts-input" value="4" />
+                <button class="pts-btn">+</button>
+              </div>
+              <div class="criterion-score">4</div>
+            </div>
+
+            <div class="scoring-row">
+              <div>
+                <div class="criterion-name">Handler timing &amp; clarity</div>
+                <div class="criterion-max">Max 5 pts</div>
+              </div>
+              <div class="pts-controls">
+                <button class="pts-btn">−</button>
+                <input class="pts-input" value="3" />
+                <button class="pts-btn">+</button>
+              </div>
+              <div class="criterion-score">3</div>
+            </div>
+
+            <div style="margin-top:24px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;">
+              <div style="font-size:13px;color:var(--muted);">Phase 2 Subtotal</div>
+              <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:32px;color:var(--ink);">18 <span style="font-size:14px;color:var(--muted-2);">/25</span></div>
+            </div>
+          </div>
+
+          <div class="scoring-side">
+            <div class="deduction-card">
+              <div class="deduction-title">Deductions Logged</div>
+              <div class="deduction-row">
+                <span><span class="ded-tag minor">Minor</span>Slow drop on Sit</span>
+                <span style="color:var(--danger);font-weight:700;">−2</span>
+              </div>
+              <div class="deduction-row">
+                <span><span class="ded-tag minor">Minor</span>Repeat Stand cmd</span>
+                <span style="color:var(--danger);font-weight:700;">−2</span>
+              </div>
+              <div style="text-align:center;margin-top:8px;">
+                <button class="btn btn-ghost btn-sm">+ Add deduction</button>
+              </div>
+            </div>
+
+            <div class="judge-notes-area">
+              <div class="deduction-title">Judge Notes</div>
+              <textarea>Dog showed strong focus on heeling pattern. Slight delay on positions in motion — needs sharper drop. Handler patient and clear. Watch for tempo consistency in Phase 3.</textarea>
+            </div>
+
+            <div class="judge-actions">
+              <button class="btn btn-ghost">Pause Run</button>
+              <button class="btn btn-orange">Next Phase →</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>Tablet form-factor (iPad / Android tablet) — judges hold this in the field. Touch targets sized accordingly. Numeric +/− preferred over keyboard for fast entry between exercises.</li>
+      <li>Running total updates live in the header so judges always see where the score sits relative to pass thresholds (70 / 75).</li>
+      <li>Auto-syncs to trial secretary's view (Mockup 6 area) in real time. No paper, no walking scoresheets between stations.</li>
+      <li>Critical: deduction taxonomy comes directly from the rulebook (Section 7.1 minor/moderate/major, plus discipline-specific automatic failure triggers). Building this requires structured rule data — see technical spec.</li>
+      <li>Title sheets remain physical (per stakeholder requirement) — printed at trial-end from auto-generated PDFs once secretary signs off.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 5: EVENT REGISTRATION
+     ============================================ -->
+<section class="mockup-section" data-tab-content="event">
+  <div class="mockup-label">
+    <div><h2>5 · Event Registration</h2></div>
+    <div class="desc">Trial detail + registration page. Built on SportsEngine registration architecture; custom layer adds discipline-specific entry options, prerequisite validation, and roster visibility.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="site-header">
+      <div class="brand">
+        <div class="logo-mark"><span>K9</span></div>
+        <div class="brand-name">K9 ELEMENTS<span class="sub">PROFESSIONAL K9 SPORT</span></div>
+      </div>
+      <nav class="site-nav">
+        <a>Home</a>
+        <a class="current">Events</a>
+        <a>Education</a>
+        <a>Rulebook</a>
+        <a>Rankings</a>
+      </nav>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm">My Account</button>
+      </div>
+    </div>
+
+    <div class="event-detail-hero">
+      <div class="event-eyebrow">Sanctioned Trial · Obedience + Protection</div>
+      <h1 class="event-detail-title">NORTH TEXAS SPRING TRIAL</h1>
+      <div class="event-detail-meta">
+        <div class="item"><div class="lab">Dates</div>May 15–17, 2026</div>
+        <div class="item"><div class="lab">Location</div>Frisco, TX</div>
+        <div class="item"><div class="lab">Host Club</div>Iron Pack K9 Club</div>
+        <div class="item"><div class="lab">Judge</div>K. Anderson, Master</div>
+        <div class="item"><div class="lab">Trial Decoy</div>R. Powell, Certified</div>
+      </div>
+    </div>
+
+    <div class="event-detail-body">
+      <div>
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head"><div class="panel-title">About this trial</div></div>
+          <p style="font-size:14px;color:var(--ink-2);margin-bottom:10px;">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Field is 130×200 ft maintained grass with full boundary fencing.</p>
+          <p style="font-size:14px;color:var(--ink-2);margin-bottom:10px;">Saturday: Obedience runs (Level 1 morning, Level 2/3 afternoon). Sunday: Protection. Monday: Title walk-through and feedback session with judge.</p>
+          <p style="font-size:14px;color:var(--ink-2);">Live streaming will be available for all runs. Title sheets issued same-day upon qualifying score.</p>
+        </div>
+
+        <div class="panel" style="margin-bottom:16px;">
+          <div class="panel-head"><div class="panel-title">Schedule</div></div>
+          <div style="display:grid;grid-template-columns:80px 1fr;gap:12px;font-size:13px;">
+            <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:18px;">FRI</div>
+            <div>Check-in 4–7pm · Vaccination verification · Walkthrough 7pm</div>
+            <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:18px;">SAT</div>
+            <div>OB Level 1 (8am–noon) · OB Level 2 (1–4pm) · OB Level 3 (4–6pm)</div>
+            <div style="font-family:'Bebas Neue',Impact,sans-serif;font-size:18px;">SUN</div>
+            <div>PR Level 1 (9am–noon) · PR Level 2 (1–4pm) · Awards 5pm</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">Prerequisites</div></div>
+          <ul style="margin-left:20px;font-size:13px;color:var(--ink-2);">
+            <li style="margin-bottom:6px;">K9 Elements active membership in good standing</li>
+            <li style="margin-bottom:6px;">Vaccination records uploaded (DHPP, rabies)</li>
+            <li style="margin-bottom:6px;">Dog minimum 18 months for Level 1, prior level title for L2/L3</li>
+            <li>Liability waiver e-signed</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="reg-card">
+        <h4>REGISTER YOUR ENTRY</h4>
+
+        <div class="entry-option selected">
+          <div class="top">
+            <div class="name">OB Level 1</div>
+            <div class="price">$95</div>
+          </div>
+          <div class="desc">Saturday morning · Foundation obedience</div>
+          <div class="availability">8 spots remaining</div>
+        </div>
+
+        <div class="entry-option">
+          <div class="top">
+            <div class="name">OB Level 2</div>
+            <div class="price">$115</div>
+          </div>
+          <div class="desc">Saturday afternoon · Requires K9E1-OB</div>
+          <div class="availability">12 spots remaining</div>
+        </div>
+
+        <div class="entry-option">
+          <div class="top">
+            <div class="name">OB Level 3</div>
+            <div class="price">$130</div>
+          </div>
+          <div class="desc">Saturday late · Requires K9E2-OB</div>
+          <div class="availability low">3 spots remaining</div>
+        </div>
+
+        <div class="entry-option">
+          <div class="top">
+            <div class="name">PR Level 1</div>
+            <div class="price">$125</div>
+          </div>
+          <div class="desc">Sunday morning · Foundation protection</div>
+          <div class="availability">15 spots remaining</div>
+        </div>
+
+        <div class="reg-summary">
+          <div class="reg-summary-row"><span>OB Level 1 · Rex</span><span>$95.00</span></div>
+          <div class="reg-summary-row"><span>K9E member discount</span><span>−$10.00</span></div>
+          <div class="reg-summary-row total"><span>Total</span><span>$85.00</span></div>
+        </div>
+
+        <button class="btn btn-orange" style="width:100%;justify-content:center;margin-top:12px;padding:12px;">Continue to Checkout →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>Built atop SportsEngine registration where possible. The custom layer enforces prerequisite logic (e.g. can't enter L2 without an L1 title on the active dog).</li>
+      <li>Multi-discipline check (rulebook 4.3): handler can only choose one discipline per day except at Grand Master events. UI hides incompatible options based on schedule conflict.</li>
+      <li>Live spot counts pull from registration backend in real time. "Application required" branches into screening flow for camps and certification events.</li>
+      <li>Liability waiver and vaccination records pre-validate from member profile — handler doesn't re-upload at every event.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 6: ADMIN DASHBOARD
+     ============================================ -->
+<section class="mockup-section" data-tab-content="dash">
+  <div class="mockup-label">
+    <div><h2>6 · Trial Director / Admin Dashboard</h2></div>
+    <div class="desc">Operations surface for trial directors, secretaries, and K9 Elements admin staff. KPIs at a glance, real-time scoring sync, member activity, grievance queue.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="dash-page">
+      <div class="dash-shell">
+
+        <aside class="dash-side">
+          <div class="brand">
+            <div class="logo-mark"><span>K9</span></div>
+            <div class="brand-name" style="color:#fff;">K9 ELEMENTS<span class="sub" style="color:rgba(255,255,255,0.4);">ADMIN</span></div>
+          </div>
+          <div class="dash-side-section">Operations</div>
+          <a class="dash-link active">▦ Dashboard</a>
+          <a class="dash-link">📅 Events</a>
+          <a class="dash-link">📊 Live Scoring</a>
+          <a class="dash-link">🏆 Title Processing</a>
+          <a class="dash-link">📝 Grievances <span style="margin-left:auto;background:var(--danger);color:#fff;font-size:9px;padding:1px 6px;border-radius:8px;">3</span></a>
+
+          <div class="dash-side-section">Community</div>
+          <a class="dash-link">👥 Members</a>
+          <a class="dash-link">🏛️ Clubs</a>
+          <a class="dash-link">⚖️ Officials</a>
+          <a class="dash-link">📚 Education</a>
+
+          <div class="dash-side-section">System</div>
+          <a class="dash-link">📨 Communications</a>
+          <a class="dash-link">📈 Reports</a>
+          <a class="dash-link">⚙️ Settings</a>
+        </aside>
+
+        <main class="dash-main">
+          <div class="dash-head">
+            <div>
+              <div class="dash-title">OPERATIONS DASHBOARD</div>
+              <div class="dash-sub">Tuesday, April 28, 2026 · K9 Elements live data</div>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <button class="btn btn-ghost btn-sm">Export Report</button>
+              <button class="btn btn-orange btn-sm">+ New Trial</button>
+            </div>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">Active Members</div>
+              <div class="kpi-num">1,247</div>
+              <div class="kpi-trend up">↑ 89 this month</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Trials in next 60d</div>
+              <div class="kpi-num">14</div>
+              <div class="kpi-trend up">↑ 3 vs last period</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Open Registrations</div>
+              <div class="kpi-num">312</div>
+              <div class="kpi-trend up">↑ 24 since yesterday</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">Open Grievances</div>
+              <div class="kpi-num">3</div>
+              <div class="kpi-trend dn">2 awaiting review</div>
+            </div>
+          </div>
+
+          <div class="dash-grid">
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Trial Volume · Last 12 Months</div>
+                <a class="section-link">Full report →</a>
+              </div>
+              <div class="chart">
+                <div class="chart-bars">
+                  <div class="chart-bar" style="height:30%;"></div>
+                  <div class="chart-bar" style="height:42%;"></div>
+                  <div class="chart-bar" style="height:38%;"></div>
+                  <div class="chart-bar" style="height:55%;"></div>
+                  <div class="chart-bar" style="height:62%;"></div>
+                  <div class="chart-bar" style="height:78%;"></div>
+                  <div class="chart-bar" style="height:85%;"></div>
+                  <div class="chart-bar" style="height:72%;"></div>
+                  <div class="chart-bar" style="height:68%;"></div>
+                  <div class="chart-bar" style="height:88%;"></div>
+                  <div class="chart-bar" style="height:92%;"></div>
+                  <div class="chart-bar" style="height:96%;"></div>
+                </div>
+                <div class="chart-labels">
+                  <span>May</span><span>Jun</span><span>Jul</span><span>Aug</span><span>Sep</span><span>Oct</span><span>Nov</span><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <div class="panel-title">Recent Activity</div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">🏆</div>
+                <div class="activity-content">
+                  <div><span class="who">S. Martinez</span> <span class="what">earned K9E1-DT (88pt)</span></div>
+                  <div class="when">12 minutes ago</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">📝</div>
+                <div class="activity-content">
+                  <div><span class="who">J. Walsh</span> <span class="what">filed grievance · OB scoring</span></div>
+                  <div class="when">2 hours ago</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">⚖️</div>
+                <div class="activity-content">
+                  <div><span class="who">M. Torres</span> <span class="what">applied for Provisional Decoy</span></div>
+                  <div class="when">5 hours ago</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">🏛️</div>
+                <div class="activity-content">
+                  <div><span class="who">Iron Pack K9 Club</span> <span class="what">submitted trial application</span></div>
+                  <div class="when">Yesterday</div>
+                </div>
+              </div>
+              <div class="activity-row">
+                <div class="activity-icon">👥</div>
+                <div class="activity-content">
+                  <div><span class="who">12 new members</span> <span class="what">joined this week</span></div>
+                  <div class="when">Last 7 days</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>This dashboard is the "ops cockpit." Trial directors see a different default view (their upcoming trials only); admin staff see organization-wide.</li>
+      <li>Grievance queue is surfaced prominently in the side nav with a count badge — keeps the operations team accountable to the SLA in rulebook §15.3.</li>
+      <li>Member growth, trial volume, and pass-rate trends are the three KPIs leadership will watch quarterly. Report exports go to PDF for board meetings.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 7: INTERACTIVE RULEBOOK
+     ============================================ -->
+<section class="mockup-section" data-tab-content="rules">
+  <div class="mockup-label">
+    <div><h2>7 · Interactive Rulebook</h2></div>
+    <div class="desc">The rulebook becomes a living, searchable, cross-linked document. AI coach available in context to answer "what does this mean for me?" — not a static PDF.</div>
+  </div>
+
+  <div class="mockup-frame" style="position:relative;">
+    <div class="site-header">
+      <div class="brand">
+        <div class="logo-mark"><span>K9</span></div>
+        <div class="brand-name">K9 ELEMENTS<span class="sub">PROFESSIONAL K9 SPORT</span></div>
+      </div>
+      <nav class="site-nav">
+        <a>Home</a>
+        <a>Events</a>
+        <a>Education</a>
+        <a class="current">Rulebook</a>
+        <a>Rankings</a>
+      </nav>
+    </div>
+
+    <div class="rulebook-shell">
+      <aside class="rulebook-toc">
+        <div class="toc-search">🔍 Search rulebook…</div>
+        <div class="toc-section">Foundation</div>
+        <div class="toc-link">§1 Introduction & Philosophy</div>
+        <div class="toc-link">§2 Sport Structure</div>
+        <div class="toc-link">§3 Code of Conduct</div>
+        <div class="toc-section">Competition</div>
+        <div class="toc-link">§4 General Competition Rules</div>
+        <div class="toc-link">§5 Trial Procedures</div>
+        <div class="toc-link">§6 Equipment &amp; Venue</div>
+        <div class="toc-section">Disciplines</div>
+        <div class="toc-link current">§7 Obedience<span class="badge">UPDATED</span></div>
+        <div class="toc-link">§8 Protection</div>
+        <div class="toc-link">§9 Tracking</div>
+        <div class="toc-link">§10 Detection</div>
+        <div class="toc-section">Operations</div>
+        <div class="toc-link">§14 Trial Hosting</div>
+        <div class="toc-link">§15 Grievance Process</div>
+      </aside>
+
+      <main class="rulebook-body">
+        <div class="rule-bread">Disciplines · Obedience · Level 1</div>
+        <h1 class="rule-h1">§7.2 LEVEL 1 — FOUNDATION OBEDIENCE</h1>
+
+        <div class="rule-callout">
+          <strong>What you'll need to know</strong>
+          Level 1 tests four phases — Muzzle &amp; Stability, Area Search, Obstacles, and Retrieve — for a total of 100 points. Pass threshold is 70. This is the foundation level: it's about communication, control, and the dog's neutrality.
+        </div>
+
+        <h3 class="rule-h2">Pass Criteria</h3>
+        <div class="rule-body">
+          <ul>
+            <li>70+ points out of 100</li>
+            <li>One qualifying score earns the K9E1-OB title</li>
+            <li>No automatic failure triggers (see §4.5)</li>
+          </ul>
+        </div>
+
+        <h3 class="rule-h2">Phase 1 — Muzzle &amp; Stability (25 pts)</h3>
+        <div class="rule-body">
+          <p><strong>Equipment:</strong> 3–4' leash, flat or fur saver collar.</p>
+          <p><strong>Purpose:</strong> Demonstrate handler control, dog stability, and neutrality in a muzzled state. This phase tests safety, culture, and the dog's ability to remain calm under mild social pressure.</p>
+          <ul>
+            <li><strong>Heeling with Muzzle</strong> — 2 turns + 1 halt. Position, engagement, neutrality despite muzzle.</li>
+            <li><strong>Muzzle Stability</strong> — Dog remains calm while steward approaches handler with questions.</li>
+            <li><strong>Long Stay</strong> — 30-second sit or down stay, handler 10 m away.</li>
+            <li><strong>Food Refusal</strong> — Post-muzzle. Impulse control to passive food presentation.</li>
+          </ul>
+        </div>
+
+        <div class="rule-related">
+          <h4>Related</h4>
+          <div class="related-row">
+            <span class="related-chip">§4.2 Equipment Standards</span>
+            <span class="related-chip">§4.5 Automatic Failures</span>
+            <span class="related-chip">§7.3 Level 2 Obedience →</span>
+            <span class="related-chip">Decoy Handbook §6B.1</span>
+            <span class="related-chip">📺 Video walkthrough</span>
+            <span class="related-chip">📄 Sample scoresheet</span>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div class="ai-coach-fab">
+      <div class="dot"></div>
+      <span>Ask the K9 Coach</span>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>Rulebook content lives as structured data (not a PDF). Every section, sub-section, scoresheet criterion, and deduction rule has its own ID. This is what powers the scoring tablet and the AI coach.</li>
+      <li>Cross-references render as live chips — tapping "§4.5 Automatic Failures" navigates contextually without losing place. A "Related" surface at the bottom of every page connects rules to handbooks, videos, and example scoresheets.</li>
+      <li>The AI coach FAB bottom-right is contextual: it knows which section the user is reading and answers questions scoped to that rule. ("If my dog breaks the long stay, do I lose all 25 points or just the long stay points?")</li>
+      <li>Version control is essential — when the rulebook updates, members need diff views and changelog entries. The "UPDATED" badge in the TOC flags recently changed sections.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================
+     MOCKUP 8: ROLE-BASED ACCESS MATRIX
+     ============================================ -->
+<section class="mockup-section" data-tab-content="access">
+  <div class="mockup-label">
+    <div><h2>8 · Role-Based Access Matrix</h2></div>
+    <div class="desc">Reference document for the dev team. Defines what each role sees and does. Drives both UI gating and API permissions.</div>
+  </div>
+
+  <div class="mockup-frame">
+    <div class="access-page">
+      <h2>WHO SEES WHAT, WHO DOES WHAT</h2>
+      <p class="lede">Eight primary roles. Permissions stack — a Master Judge who is also a club officer holds the union of both role sets. Tier within a role (Apprentice / Provisional / Certified / Master) further gates specific actions.</p>
+
+      <table class="access-table">
+        <thead>
+          <tr>
+            <th>Capability</th>
+            <th>Public</th>
+            <th>Member<br>(Handler)</th>
+            <th>Club Officer</th>
+            <th>Decoy<br>(Dev / Trial)</th>
+            <th>Judge</th>
+            <th>Secretary</th>
+            <th>Director<br>(of Judges/Decoys/etc)</th>
+            <th>Admin /<br>Board</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="feat">View rulebook + public pages</td>
+            <td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Register for trials</td>
+            <td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">View own profile + dev log</td>
+            <td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">View other handlers' public profile</td>
+            <td class="ax-some">limited</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Write to assigned handler's dev log</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Score trials in field (tablet)</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-some">view</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Apply scores after trial</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Issue title certificates</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Manage trial registration / running order</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">own club</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Submit trial application (host)</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">File grievance</td>
+            <td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Review / decide grievances</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Mentor apprentice (judge / decoy)</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">Cert+</td><td class="ax-some">Cert+</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Access College of Judges/Decoys</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">Cert+</td><td class="ax-some">Cert+</td><td class="ax-no">—</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Send mass communications</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">own club</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">trial-scope</td><td class="ax-yes">✓</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Manage members / suspend</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">role-scope</td><td class="ax-yes">✓</td>
+          </tr>
+          <tr>
+            <td class="feat">Edit rulebook content</td>
+            <td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-no">—</td><td class="ax-some">propose</td><td class="ax-yes">✓</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:12px;">
+        <div style="padding:12px;background:var(--paper-2);border-radius:8px;"><span class="ax-yes" style="font-size:14px;">✓</span> Full access to capability</div>
+        <div style="padding:12px;background:var(--paper-2);border-radius:8px;"><span class="ax-some" style="font-size:14px;">scope</span> Conditional access (own club, own trial, own tier+)</div>
+        <div style="padding:12px;background:var(--paper-2);border-radius:8px;"><span class="ax-no" style="font-size:14px;">—</span> No access</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-notes">
+    <strong>Designer notes</strong>
+    <ul>
+      <li>This matrix is the contract for the auth layer. Every API endpoint and UI element should reference these capabilities directly. New features get a new row.</li>
+      <li>Tier-within-role is a second axis: Apprentice Decoy can write to dev logs but cannot run a Trial Decoy assignment alone; Provisional Judge can score Level 1 alone but needs a Certified+ shadow at Level 2/3. The matrix shows the headline rule; the rulebook governs the detail.</li>
+      <li>"Conditional" access cells (yellow) need explicit scope rules in the data model — e.g. "club officer" of Iron Pack K9 Club only sees Iron Pack data.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.nav-strip button');
+  const sections = document.querySelectorAll('.mockup-section');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const tab = t.dataset.tab;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    sections.forEach(s => s.classList.toggle('active', s.dataset.tabContent === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
+</script>
+
+</body>
+</html>

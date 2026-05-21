@@ -1,0 +1,38 @@
+package components
+
+// Field wraps one label + control + optional description + optional
+// error. Vertical flex with consistent gap.
+templ Field(p FieldProps) {
+	<div class={ fieldClasses(p) } { p.Attrs... }>
+		{ children... }
+	</div>
+}
+
+// FieldGroup vertically stacks multiple Fields with a larger gap so
+// successive label/control pairs read as separate questions.
+templ FieldGroup(p FieldProps) {
+	<div class={ fieldGroupClasses(p) } { p.Attrs... }>
+		{ children... }
+	</div>
+}
+
+// Label renders the field label and wires up the <label for=""> target.
+templ Label(p LabelProps) {
+	<label for={ p.For } data-slot="label" class={ labelClasses(p) } { p.Attrs... }>
+		{ children... }
+	</label>
+}
+
+// Description is supporting hint text shown below the label or control.
+templ Description(p FieldProps) {
+	<p data-slot="description" class={ descriptionClasses(p) } { p.Attrs... }>
+		{ children... }
+	</p>
+}
+
+// ErrorMessage is the validation error shown under a control.
+templ ErrorMessage(p FieldProps) {
+	<p data-slot="error" class={ errorMessageClasses(p) } { p.Attrs... }>
+		{ children... }
+	</p>
+}

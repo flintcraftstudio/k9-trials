@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Body Type — Inter Alternatives</title>
+<link rel="stylesheet" href="../colors_and_type.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Sofia+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Public+Sans:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Asap:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    padding: 40px 48px 80px;
+    background: var(--paper-2);
+  }
+  .page-head {
+    max-width: 980px;
+    margin: 0 0 40px;
+  }
+  .page-head h1 {
+    font: var(--t-display-l);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+    color: var(--ink);
+  }
+  .page-head p {
+    font: var(--t-body-l);
+    color: var(--ink-3);
+    margin: 0;
+    max-width: 720px;
+  }
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    padding: 12px 16px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--r-md);
+    font: var(--t-body-s);
+    color: var(--ink-3);
+  }
+  .legend strong { color: var(--ink); font-weight: 600; }
+
+  /* Each candidate is its own card */
+  .candidate {
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-1);
+    padding: 28px 32px;
+    margin-bottom: 24px;
+    max-width: 1180px;
+  }
+  .candidate.baseline {
+    background: #FAF7EE;
+    border-color: var(--line-2);
+  }
+  .candidate.recommended {
+    border: 2px solid var(--brand-orange);
+  }
+
+  .cand-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .cand-head-left {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .cand-name {
+    font-family: var(--font-display);
+    font-size: 32px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .cand-tag {
+    font: var(--t-micro);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-eyebrow);
+    color: var(--muted);
+  }
+  .cand-tag.rec { color: var(--brand-orange); }
+  .cand-tag.base { color: var(--brand-blue); }
+  .cand-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .cand-pitch {
+    font: var(--t-body-s);
+    color: var(--ink-3);
+    margin: -4px 0 16px;
+    max-width: 760px;
+  }
+
+  /* The actual specimen block */
+  .specimen {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px 40px;
+  }
+  .col-scale, .col-passage { min-width: 0; }
+  .scale-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--line);
+  }
+  .scale-row:last-child { border-bottom: none; }
+  .scale-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .scale-sample-h1 { font-weight: 700; font-size: 32px; line-height: 1.15; color: var(--ink); }
+  .scale-sample-h2 { font-weight: 700; font-size: 22px; line-height: 1.2;  color: var(--ink); }
+  .scale-sample-h3 { font-weight: 700; font-size: 16px; line-height: 1.3;  color: var(--ink); }
+  .scale-sample-bl { font-weight: 400; font-size: 16px; line-height: 1.55; color: var(--ink-3); }
+  .scale-sample-b  { font-weight: 400; font-size: 14px; line-height: 1.5;  color: var(--ink-3); }
+  .scale-sample-bs { font-weight: 400; font-size: 13px; line-height: 1.5;  color: var(--ink-3); }
+  .scale-sample-mc { font-weight: 600; font-size: 11px; line-height: 1.3;  color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
+
+  /* Passage column — eyebrow + headline + paragraph + ui chrome */
+  .passage-eyebrow {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brand-orange);
+    margin-bottom: 8px;
+  }
+  .passage-h2 {
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--ink);
+    margin: 0 0 12px;
+  }
+  .passage-body {
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink-3);
+    margin: 0 0 16px;
+  }
+  .passage-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+    margin-top: 16px;
+  }
+  .ui-btn {
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: var(--r-sm);
+    background: var(--ink);
+    color: var(--white);
+    border: none;
+    letter-spacing: 0.1px;
+  }
+  .ui-btn.ghost {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+  }
+  .ui-pill {
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    background: var(--tint-orange);
+    color: var(--brand-orange);
+  }
+  .ui-input {
+    flex: 1;
+    min-width: 200px;
+    font-weight: 400;
+    font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-sm);
+    background: var(--white);
+    color: var(--ink);
+  }
+  .ui-input::placeholder { color: var(--muted-2); }
+
+  /* Per-candidate font assignments */
+  .f-geist  .specimen, .f-geist  .passage-eyebrow, .f-geist  .passage-h2, .f-geist  .passage-body, .f-geist  .ui-btn, .f-geist  .ui-pill, .f-geist  .ui-input { font-family: 'Geist', sans-serif; }
+  .f-sofia  .specimen, .f-sofia  .passage-eyebrow, .f-sofia  .passage-h2, .f-sofia  .passage-body, .f-sofia  .ui-btn, .f-sofia  .ui-pill, .f-sofia  .ui-input { font-family: 'Sofia Sans', sans-serif; }
+  .f-manrope .specimen, .f-manrope .passage-eyebrow, .f-manrope .passage-h2, .f-manrope .passage-body, .f-manrope .ui-btn, .f-manrope .ui-pill, .f-manrope .ui-input { font-family: 'Manrope', sans-serif; }
+  .f-public .specimen, .f-public .passage-eyebrow, .f-public .passage-h2, .f-public .passage-body, .f-public .ui-btn, .f-public .ui-pill, .f-public .ui-input { font-family: 'Public Sans', sans-serif; }
+  .f-hanken .specimen, .f-hanken .passage-eyebrow, .f-hanken .passage-h2, .f-hanken .passage-body, .f-hanken .ui-btn, .f-hanken .ui-pill, .f-hanken .ui-input { font-family: 'Hanken Grotesk', sans-serif; }
+  .f-figtree .specimen, .f-figtree .passage-eyebrow, .f-figtree .passage-h2, .f-figtree .passage-body, .f-figtree .ui-btn, .f-figtree .ui-pill, .f-figtree .ui-input { font-family: 'Figtree', sans-serif; }
+  .f-bevn   .specimen, .f-bevn   .passage-eyebrow, .f-bevn   .passage-h2, .f-bevn   .passage-body, .f-bevn   .ui-btn, .f-bevn   .ui-pill, .f-bevn   .ui-input { font-family: 'Be Vietnam Pro', sans-serif; }
+  .f-asap   .specimen, .f-asap   .passage-eyebrow, .f-asap   .passage-h2, .f-asap   .passage-body, .f-asap   .ui-btn, .f-asap   .ui-pill, .f-asap   .ui-input { font-family: 'Asap', sans-serif; }
+  .f-inter  .specimen, .f-inter  .passage-eyebrow, .f-inter  .passage-h2, .f-inter  .passage-body, .f-inter  .ui-btn, .f-inter  .ui-pill, .f-inter  .ui-input { font-family: 'Inter', sans-serif; }
+
+  .verdict {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--paper-2);
+    border-left: 3px solid var(--ink);
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-3);
+  }
+  .verdict.rec { border-left-color: var(--brand-orange); background: var(--tint-orange); }
+  .verdict strong { color: var(--ink); font-weight: 600; }
+
+  .footer-note {
+    margin-top: 32px;
+    padding: 20px 24px;
+    background: var(--ink);
+    color: rgba(255,255,255,0.85);
+    border-radius: var(--r-lg);
+    max-width: 1180px;
+    font: var(--t-body-s);
+    line-height: 1.6;
+  }
+  .footer-note strong { color: var(--white); font-weight: 600; }
+  .footer-note code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    background: rgba(255,255,255,0.08);
+    padding: 1px 6px;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+
+<header class="page-head">
+  <div class="k9-eyebrow" style="margin-bottom:10px">Type · Body family · Exploration</div>
+  <h1>Inter alternatives</h1>
+  <p>Inter is the current body face. It works, but it's everywhere — Vercel, Linear, Notion, Stripe, half of Y Combinator. K9 Elements deserves something with more identity. Below: eight alternatives, each shown at the system's full type scale alongside an editorial passage and a UI row, so you can read each one in the contexts it'll actually live in. Display (Bebas Neue) and mono (IBM Plex Mono) are unchanged.</p>
+  <div class="legend">
+    <span><strong>Each card:</strong></span>
+    <span>left — H1/H2/H3 + Body L/M/S + Eyebrow at production sizes</span>
+    <span>right — eyebrow → H2 → paragraph → button row, the most common K9E pattern</span>
+  </div>
+</header>
+
+<!-- ============================================================
+     SHARED SPECIMEN MARKUP — copied per candidate
+     ============================================================ -->
+
+<!-- 1. GEIST — recommended -->
+<section class="candidate recommended f-geist">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Geist</span>
+      <span class="cand-tag rec">Recommended</span>
+    </div>
+    <span class="cand-meta">Vercel · Open source · 9 weights</span>
+  </div>
+  <p class="cand-pitch">Vercel's in-house grotesk. Same operational, screen-first lineage as Inter (it's openly inspired by it) but with subtly more character — slightly narrower, slightly more contrast, a sturdier "g" and "a." Reads as deliberate engineering rather than default. Pairs cleanly with Bebas Neue's condensed athletic display.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict rec"><strong>Why this one.</strong> Closest to Inter's pragmatic feel, so you don't lose anything operational. The slightly higher x-height variation and squarer terminals give the system a more "designed" voice without leaning stylistic. Also: not yet ubiquitous on Google Fonts because it's recent. Risk: still grotesk-family, so the change is subtle in screenshots — feels obvious only when you read paragraphs.</div>
+</section>
+
+<!-- 2. PUBLIC SANS -->
+<section class="candidate f-public">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Public Sans</span>
+      <span class="cand-tag">Strong second</span>
+    </div>
+    <span class="cand-meta">USWDS · US Gov't standard · 9 weights</span>
+  </div>
+  <p class="cand-pitch">The official typeface of the US Web Design System. Operational, neutral, slightly warmer than Inter — designed for forms, tables, and dense regulatory text. Matches the "respected coach explaining the rules" tone almost perfectly. Has a faint civic / institutional gravity that suits a sanctioning body.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> The institutional / regulatory tone matches §-numbered rulebooks and grievance lifecycles. Reads as something issued by an authority, not a startup. Risk: maybe too neutral — could cede the personality job entirely to Bebas Neue display.</div>
+</section>
+
+<!-- 3. SOFIA SANS -->
+<section class="candidate f-sofia">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Sofia Sans</span>
+      <span class="cand-tag">Athletic</span>
+    </div>
+    <span class="cand-meta">Lettersoup · Variable · Wide weight range</span>
+  </div>
+  <p class="cand-pitch">Slightly condensed humanist grotesk. Narrower aperture, more vertical, a touch sportier — picks up the "athletic" energy from Bebas Neue and carries it into the body without going full sports-uniform. Excellent at small sizes; the tighter forms hold density well in tables and rosters.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Reinforces the working-dog-sport energy Bebas Neue is doing on display. Risk: vertical proportions can feel "techy" at small sizes; check against IBM Plex Mono for visual harmony.</div>
+</section>
+
+<!-- 4. HANKEN GROTESK -->
+<section class="candidate f-hanken">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Hanken Grotesk</span>
+      <span class="cand-tag">Workhorse</span>
+    </div>
+    <span class="cand-meta">Hanken Design · 9 weights · Variable</span>
+  </div>
+  <p class="cand-pitch">Neo-grotesk in the Akzidenz / Helvetica lineage but redrawn for screens. Denser than Inter, slightly more authoritative. Reads like a serious operations manual. Less stylistic than Geist, more character than Public Sans.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Densest of the alternatives — packs more rulebook text into less space without crushing legibility. Risk: low character. May still feel "default-ish."</div>
+</section>
+
+<!-- 5. MANROPE -->
+<section class="candidate f-manrope">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Manrope</span>
+      <span class="cand-tag">Distinctive</span>
+    </div>
+    <span class="cand-meta">Mikhail Sharanda · Open · 7 weights</span>
+  </div>
+  <p class="cand-pitch">Geometric-leaning sans with a slight softness in the curves and a notably warm "a" / "g" / "e." More personality than Inter or Geist. Risk-side: leans a bit "modern startup."</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Most "branded" feeling of the candidates without going decorative. Risk: the warmth might fight the disciplined / official tone of the rulebook.</div>
+</section>
+
+<!-- 6. FIGTREE -->
+<section class="candidate f-figtree">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Figtree</span>
+      <span class="cand-tag">Friendly + tight</span>
+    </div>
+    <span class="cand-meta">Erik D. Kennedy / Mass-Driver · 5 weights</span>
+  </div>
+  <p class="cand-pitch">Geometric sans designed specifically for product UI. Tighter spacing than Manrope, less default than Inter. Generous x-height keeps Body S legible. Slightly friendlier — could soften the "handler" vs "club officer" UX patterns.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Best balance of warmth and operational rigor for a community-platform context. Risk: friendliness reads as too consumer for a sanctioning body.</div>
+</section>
+
+<!-- 7. BE VIETNAM PRO -->
+<section class="candidate f-bevn">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Be Vietnam Pro</span>
+      <span class="cand-tag">Sturdy</span>
+    </div>
+    <span class="cand-meta">Lâm Bình Minh · 9 weights · Variable</span>
+  </div>
+  <p class="cand-pitch">Humanist sans with sturdy, almost square forms. Excellent at very small sizes (matters for the judge tablet and decoy phone). Slightly distinctive lowercase "g" and double-story "a." Pairs respectfully with Bebas Neue.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Best small-size legibility — important for the judging tablet (dense rubrics) and the decoy phone (gloved fingers, glance-and-go). Risk: the squarer forms can feel slightly utilitarian on marketing surfaces.</div>
+</section>
+
+<!-- 8. ASAP -->
+<section class="candidate f-asap">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Asap</span>
+      <span class="cand-tag">Condensed sibling to Bebas</span>
+    </div>
+    <span class="cand-meta">Omnibus-Type · 9 weights · Variable</span>
+  </div>
+  <p class="cand-pitch">Slightly condensed sans-serif. The narrower proportions echo Bebas Neue's condensed display and create the strongest family resemblance of the alternatives. Editorial feel — works for long-form rulebook prose. Risk: condensed body can be hard work in dense tables.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="verdict"><strong>Why consider.</strong> Most cohesive with Bebas Neue display — both lean condensed, so headlines and body share DNA. Risk: condensed body fatigue in long forms or dense tables.</div>
+</section>
+
+<!-- 9. INTER (BASELINE) -->
+<section class="candidate baseline f-inter">
+  <div class="cand-head">
+    <div class="cand-head-left">
+      <span class="cand-name">Inter</span>
+      <span class="cand-tag base">Current baseline</span>
+    </div>
+    <span class="cand-meta">Rasmus Andersson · The default · 9 weights</span>
+  </div>
+  <p class="cand-pitch">For comparison. Excellent face — that's why everyone uses it. The argument against isn't quality, it's identity: K9 Elements wants to feel like a deliberate sanctioning body, not another tech product.</p>
+
+  <div class="specimen">
+    <div class="col-scale">
+      <div class="scale-row"><span class="scale-label">H1 · 32 / 1.15 · 700</span><div class="scale-sample-h1">Handler profile</div></div>
+      <div class="scale-row"><span class="scale-label">H2 · 22 / 1.2 · 700</span><div class="scale-sample-h2">About this trial</div></div>
+      <div class="scale-row"><span class="scale-label">H3 · 16 / 1.3 · 700</span><div class="scale-sample-h3">Pass criteria</div></div>
+      <div class="scale-row"><span class="scale-label">Body L · 16 / 1.55 · 400</span><div class="scale-sample-bl">The handler holds the leash with the right hand and remains motionless during the long stay.</div></div>
+      <div class="scale-row"><span class="scale-label">Body · 14 / 1.5 · 400</span><div class="scale-sample-b">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2.</div></div>
+      <div class="scale-row"><span class="scale-label">Body S · 13 / 1.5 · 400</span><div class="scale-sample-bs">Title sheets issued same-day upon qualifying score.</div></div>
+      <div class="scale-row"><span class="scale-label">Eyebrow · 11 / 600 · +2px</span><div class="scale-sample-mc">Member since 2023 · Frisco, TX</div></div>
+    </div>
+    <div class="col-passage">
+      <div class="passage-eyebrow">Sanctioned trial · Level 1–3</div>
+      <h2 class="passage-h2">North Texas Spring Trial</h2>
+      <p class="passage-body">Three-day sanctioned trial offering Obedience Levels 1–3 and Protection Levels 1–2. Title sheets issued same-day upon qualifying score. Dog must hold position while handler continues 10 ft, then return on judge's signal.</p>
+      <p class="passage-body" style="margin-bottom:0"><strong style="color:var(--ink);font-weight:600">May 15–17, 2026</strong> · Frisco, TX · Entry closes Apr 30 · 84 spots remaining</p>
+      <div class="passage-row">
+        <button class="ui-btn">Register Handler</button>
+        <button class="ui-btn ghost">View Premium</button>
+        <span class="ui-pill">OB · L1</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FOOTER NOTE
+     ============================================================ -->
+<div class="footer-note">
+  <strong>Implementation.</strong> Whichever you pick, the swap is one line in <code>colors_and_type.css</code>: replace <code>Inter</code> in the <code>@import</code> URL and in <code>--font-body</code>. IBM Plex Sans stays as the fallback. All UI kit pages, preview cards, and the landing page automatically pick up the new face — no per-component edits needed.
+  <br><br>
+  <strong>My pick.</strong> Geist for the recommended primary, with Public Sans as the institutional alternate if the brand wants to lean rulebook / sanctioning-body. Tell me which direction resonates and I'll wire it into the tokens + update the README.
+</div>
+
+</body>
+</html>

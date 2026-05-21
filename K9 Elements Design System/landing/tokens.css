@@ -1,0 +1,205 @@
+/* ==============================================================
+   K9 ELEMENTS — Foundations
+   Colors and type tokens. Import this once at the top of any page
+   that wants the brand applied.
+   ============================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;500;600;700&family=Be+Vietnam+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* ----------------------------------------------------------
+     BRAND — the slash gradient
+     Three brand colors derived from the K9 Elements logo slash.
+     They appear together as a diagonal gradient (the "brand
+     spine") and individually as discipline tags.
+     ---------------------------------------------------------- */
+  --brand-orange: #E67E22;   /* Obedience, primary action */
+  --brand-blue:   #2D7DB3;   /* Protection */
+  --brand-green:  #27AE60;   /* Tracking, success */
+
+  /* Slash gradient (left → right) and angled (logo orientation) */
+  --brand-spine:        linear-gradient(90deg, var(--brand-orange), var(--brand-blue), var(--brand-green));
+  --brand-spine-angled: linear-gradient(110deg, var(--brand-orange) 0%, var(--brand-blue) 50%, var(--brand-green) 100%);
+
+  /* ----------------------------------------------------------
+     INK — black structural
+     Black is the dominant structural color. Headers, primary
+     buttons, side nav. Use ink-3 for body copy, ink-2 for chrome.
+     ---------------------------------------------------------- */
+  --ink:    #0E1116;
+  --ink-2:  #1C232C;
+  --ink-3:  #2C3540;
+
+  /* ----------------------------------------------------------
+     PAPER — surfaces
+     Cream over pure white. Cream (paper-2) is the canonical
+     page background; white is for cards and panels lifted off.
+     ---------------------------------------------------------- */
+  --paper:    #FAFAF7;       /* warm white */
+  --paper-2:  #F2F2EC;       /* cream — primary page bg */
+  --white:    #FFFFFF;
+
+  /* ----------------------------------------------------------
+     LINES + MUTED — chrome
+     ---------------------------------------------------------- */
+  --line:    #E5E8EC;
+  --line-2:  #D4D9DF;
+  --muted:   #6B7380;
+  --muted-2: #98A0AC;
+
+  /* ----------------------------------------------------------
+     SEMANTIC — feedback states
+     ---------------------------------------------------------- */
+  --success: #1E8E4A;
+  --warning: #C57A0E;
+  --danger:  #B0331E;
+  --info:    var(--brand-blue);
+
+  /* Soft tints for surfaces (cards, callouts) */
+  --tint-orange: #FFF6E5;
+  --tint-blue:   #E8F2F9;
+  --tint-green:  #E5F5EB;
+  --tint-amber:  #FFFBE5;
+  --tint-red:    #FCEBE6;
+
+  /* ----------------------------------------------------------
+     TYPE FAMILIES
+     - Display: Bebas Neue (condensed athletic), fall back Oswald
+       then Impact. Display is ALL-CAPS by default.
+     - Body: Be Vietnam Pro (IBM Plex Sans fallback). Sentence case.
+     - Mono: IBM Plex Mono for code, member IDs, scores.
+     ---------------------------------------------------------- */
+  --font-display: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+  --font-body:    'Be Vietnam Pro', 'IBM Plex Sans', -apple-system, system-ui, sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* ----------------------------------------------------------
+     TYPE SCALE — semantic
+     Every interface element references one of these. The display
+     scale is condensed and tracked-out; the body scale is dense
+     and pragmatic.
+     ---------------------------------------------------------- */
+  --t-display-xl: 700 72px/0.95 var(--font-display);
+  --t-display-l:  700 48px/1.0  var(--font-display);
+  --t-display-m:  700 36px/1.0  var(--font-display);
+  --t-display-s:  700 28px/1.0  var(--font-display);
+
+  --t-h1: 700 32px/1.15 var(--font-body);
+  --t-h2: 700 22px/1.2  var(--font-body);
+  --t-h3: 700 16px/1.3  var(--font-body);
+
+  --t-body:    400 14px/1.5 var(--font-body);
+  --t-body-l:  400 16px/1.55 var(--font-body);
+  --t-body-s:  400 13px/1.5 var(--font-body);
+
+  --t-caption: 500 12px/1.4 var(--font-body);
+  --t-micro:   600 11px/1.3 var(--font-body); /* eyebrows, labels */
+
+  /* Letter-spacing tokens */
+  --tracking-display: 1px;
+  --tracking-eyebrow: 2px;   /* uppercased small caps */
+  --tracking-micro:   1.5px;
+
+  /* ----------------------------------------------------------
+     RADII
+     Conservative. Most components use --r-md (10px). Pills
+     and chips are fully rounded. No giant rounded blobs.
+     ---------------------------------------------------------- */
+  --r-xs: 4px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 12px;
+  --r-xl: 16px;
+  --r-pill: 999px;
+
+  /* ----------------------------------------------------------
+     SHADOW SYSTEM
+     Three-rung elevation. Cards get -1, modals -2, FABs -3.
+     ---------------------------------------------------------- */
+  --shadow-1: 0 2px 8px  rgba(15, 18, 22, 0.04);
+  --shadow-2: 0 4px 24px rgba(15, 18, 22, 0.08);
+  --shadow-3: 0 12px 40px rgba(15, 18, 22, 0.18);
+
+  /* ----------------------------------------------------------
+     SPACING (4-pt baseline scale, named)
+     ---------------------------------------------------------- */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 32px;
+  --s-8: 40px;
+  --s-9: 48px;
+  --s-10: 64px;
+
+  /* ----------------------------------------------------------
+     MOTION
+     Quick, restrained. No bouncing.
+     ---------------------------------------------------------- */
+  --ease: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-normal: 180ms;
+  --dur-slow:   260ms;
+}
+
+/* ==============================================================
+   Base reset + body defaults
+   ============================================================== */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+  font: var(--t-body);
+  color: var(--ink);
+  background: var(--paper-2);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ==============================================================
+   Semantic type classes
+   ============================================================== */
+.k9-display-xl { font: var(--t-display-xl); letter-spacing: var(--tracking-display); text-transform: uppercase; }
+.k9-display-l  { font: var(--t-display-l);  letter-spacing: var(--tracking-display); text-transform: uppercase; }
+.k9-display-m  { font: var(--t-display-m);  letter-spacing: var(--tracking-display); text-transform: uppercase; }
+.k9-display-s  { font: var(--t-display-s);  letter-spacing: var(--tracking-display); text-transform: uppercase; }
+
+.k9-h1 { font: var(--t-h1); }
+.k9-h2 { font: var(--t-h2); }
+.k9-h3 { font: var(--t-h3); }
+
+.k9-body   { font: var(--t-body); color: var(--ink-3); }
+.k9-body-l { font: var(--t-body-l); color: var(--ink-3); }
+.k9-body-s { font: var(--t-body-s); color: var(--ink-3); }
+.k9-mono   { font-family: var(--font-mono); }
+
+/* "Eyebrow" — the small, all-caps, tracked label that appears
+   above titles, on cards, in event banners. A signature K9
+   Elements visual habit. */
+.k9-eyebrow {
+  font: var(--t-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-eyebrow);
+  color: var(--muted);
+}
+.k9-eyebrow.on-orange { color: var(--brand-orange); }
+.k9-eyebrow.on-blue   { color: var(--brand-blue); }
+.k9-eyebrow.on-green  { color: var(--brand-green); }
+
+/* Display headlines often gain a slash-gradient accent on a span */
+.k9-accent {
+  background: var(--brand-spine);
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* The brand spine as a 4px border-image strip — used under
+   the page header. */
+.k9-spine-border-bottom {
+  border-bottom: 4px solid;
+  border-image: var(--brand-spine) 1;
+}

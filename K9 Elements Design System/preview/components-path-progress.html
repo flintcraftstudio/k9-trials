@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.path { padding:20px;background:#fff;border:1px solid var(--mist-200);border-radius:12px;display:flex;align-items:center;gap:20px }
+.ring { --p: 67; width:64px;height:64px;border-radius:50%;
+  background: conic-gradient(var(--event-600) calc(var(--p) * 1%), var(--mist-200) 0);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0
+}
+.ring > div { width:54px;height:54px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;color:var(--mist-950) }
+.path .body { flex:1 }
+.path .eye { font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--event-600,var(--mist-600)) }
+.path h4 { font-family:var(--font-display);font-weight:400;font-size:22px;letter-spacing:-0.01em;color:var(--mist-950);margin-top:2px }
+.path p { font-size:13px;color:var(--mist-700);margin-top:4px }
+</style>
+</head>
+<body>
+<div class="card" style="background:transparent;padding:24px">
+  <div class="path" data-event="tracking">
+    <div class="ring"><div>8/12</div></div>
+    <div class="body">
+      <div class="eye">Tracking · Path 1</div>
+      <h4>Foundations &middot; week 8 of 12</h4>
+      <p>Next: <b style="color:var(--mist-950)">Article indication on natural grass</b> &mdash; 45 min</p>
+    </div>
+  </div>
+</div>
+</body></html>

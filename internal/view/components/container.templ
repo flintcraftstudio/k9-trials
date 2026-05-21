@@ -1,0 +1,9 @@
+package components
+
+// Container wraps content in the marketing-site .container (max-width
+// + responsive horizontal padding). Mirrors the JSX <Container>.
+templ Container(extraClass string) {
+	<div class={ containerClasses(extraClass) }>
+		{ children... }
+	</div>
+}

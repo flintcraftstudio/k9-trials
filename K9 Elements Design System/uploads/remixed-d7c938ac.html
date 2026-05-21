@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>K9 Elements — User Flows</title>
+<style>
+  :root {
+    --brand-orange: #E67E22;
+    --brand-blue: #2D7DB3;
+    --brand-green: #27AE60;
+    --ink: #0E1116;
+    --ink-2: #1C232C;
+    --ink-3: #2C3540;
+    --line: #E5E8EC;
+    --line-2: #D4D9DF;
+    --paper: #FAFAF7;
+    --paper-2: #F2F2EC;
+    --white: #FFFFFF;
+    --muted: #6B7380;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    background: var(--paper-2);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .deck-header {
+    background: var(--ink);
+    color: var(--white);
+    padding: 32px 48px;
+    border-bottom: 4px solid;
+    border-image: linear-gradient(90deg, var(--brand-orange), var(--brand-blue), var(--brand-green)) 1;
+  }
+  .deck-header h1 {
+    font-family: 'Bebas Neue', 'Oswald', Impact, sans-serif;
+    font-size: 42px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+  .deck-header .sub {
+    color: #98A0AC;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .nav-strip {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 48px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .nav-strip button {
+    background: transparent;
+    border: 1px solid transparent;
+    padding: 8px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: 6px;
+    white-space: nowrap;
+    font-family: inherit;
+  }
+  .nav-strip button:hover { background: var(--paper-2); color: var(--ink); }
+  .nav-strip button.active { background: var(--ink); color: var(--white); }
+
+  .flow-wrap {
+    padding: 32px 48px 80px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .flow-section { display: none; }
+  .flow-section.active { display: block; }
+
+  .flow-head {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line-2);
+  }
+  .flow-head h2 {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 32px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .flow-head p { color: var(--muted); font-size: 14px; max-width: 720px; }
+
+  /* ============= FLOW DIAGRAM ELEMENTS ============= */
+  .flow-canvas {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 40px;
+    border: 1px solid var(--line-2);
+    overflow-x: auto;
+    box-shadow: 0 4px 24px rgba(15,18,22,0.06);
+  }
+
+  .flow-track {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+    align-items: stretch;
+    min-height: 100px;
+  }
+  .flow-track:last-child { margin-bottom: 0; }
+
+  .actor {
+    background: var(--ink);
+    color: var(--white);
+    padding: 16px 18px;
+    border-radius: 10px;
+    border-left: 4px solid var(--brand-orange);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .actor.handler { border-left-color: var(--brand-orange); }
+  .actor.decoy { border-left-color: var(--brand-blue); }
+  .actor.judge { border-left-color: var(--brand-green); }
+  .actor.club { border-left-color: #B8860B; }
+  .actor.system { border-left-color: var(--muted); background: var(--ink-3); }
+  .actor.admin { border-left-color: #B0331E; }
+
+  .actor .role-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.6);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .actor .role-name {
+    font-family: 'Bebas Neue', Impact, sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    line-height: 1;
+  }
+  .actor .role-context {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 4px;
+  }
+
+  .steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .step {
+    background: var(--paper-2);
+    border: 1px solid var(--line-2);
+    border-radius: 10px;
+    padding: 12px 14px;
+    min-width: 160px;
+    max-width: 220px;
+    position: relative;
+    flex: 0 0 auto;
+  }
+  .step.action { background: #FFF6E5; border-color: var(--brand-orange); }
+  .step.system-action { background: #E8F2F9; border-color: var(--brand-blue); }
+  .step.decision { background: #FFFBE5; border-color: #B8860B; transform: rotate(-1deg); }
+  .step.success { background: #E5F5EB; border-color: var(--brand-green); }
+  .step.warning { background: #FCEBE6; border-color: #B0331E; }
+
+  .step-num {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    width: 22px;
+    height: 22px;
+    background: var(--ink);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .step.action .step-num { background: var(--brand-orange); }
+  .step.system-action .step-num { background: var(--brand-blue); }
+  .step.decision .step-num { background: #B8860B; }
+  .step.success .step-num { background: var(--brand-green); }
+  .step.warning .step-num { background: #B0331E; }
+
+  .step-label {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .step-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 4px;
+  }
+  .step-desc {
+    font-size: 11px;
+    color: var(--ink-3);
+    line-height: 1.4;
+  }
+  .step-meta {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .arrow {
+    color: var(--ink);
+    font-size: 18px;
+    flex: 0 0 auto;
+    opacity: 0.4;
+    align-self: center;
+  }
+
+  .branch {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 0 0 auto;
+  }
+  .branch-tag {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: -2px;
+    text-align: center;
+    font-weight: 700;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 12px 16px;
+    background: var(--white);
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--ink-3);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+  .legend-dot.action { background: #FFF6E5; border: 1px solid var(--brand-orange); }
+  .legend-dot.system { background: #E8F2F9; border: 1px solid var(--brand-blue); }
+  .legend-dot.decision { background: #FFFBE5; border: 1px solid #B8860B; }
+  .legend-dot.success { background: #E5F5EB; border: 1px solid var(--brand-green); }
+  .legend-dot.warning { background: #FCEBE6; border: 1px solid #B0331E; }
+
+  .flow-notes {
+    margin-top: 16px;
+    padding: 16px 20px;
+    background: #FFFAEC;
+    border-left: 3px solid var(--brand-orange);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--ink-3);
+  }
+  .flow-notes strong { color: var(--brand-orange); }
+  .flow-notes ul { margin-left: 18px; margin-top: 6px; }
+  .flow-notes li { margin-bottom: 3px; }
+
+  @media (max-width: 900px) {
+    .flow-wrap { padding: 16px; }
+    .flow-track { grid-template-columns: 1fr; }
+    .actor { padding: 12px; }
+    .deck-header { padding: 20px 24px; }
+    .nav-strip { padding: 8px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="deck-header">
+  <h1>K9 ELEMENTS — USER FLOW DIAGRAMS</h1>
+  <div class="sub">Critical journey maps for development team · companion to mockup deck</div>
+</header>
+
+<nav class="nav-strip">
+  <button class="active" data-tab="onboard">A · New Member Onboarding</button>
+  <button data-tab="register">B · Trial Registration</button>
+  <button data-tab="decoy-note">C · Decoy Mobile Note</button>
+  <button data-tab="judge-score">D · Judge Trial Day</button>
+  <button data-tab="grievance">E · Grievance Lifecycle</button>
+  <button data-tab="cert">F · Official Certification Path</button>
+</nav>
+
+<div class="flow-wrap">
+
+<!-- ===== FLOW A: NEW MEMBER ONBOARDING ===== -->
+<section class="flow-section active" data-tab-content="onboard">
+  <div class="flow-head">
+    <h2>FLOW A — NEW MEMBER ONBOARDING</h2>
+    <p>From first website visit to first trial registration. The "one-stop-shop" promise lives or dies here. Goal: a newcomer who has never heard of K9 Elements should be able to discover the sport, join, set up a handler profile with their dog, and find a starter event in under 15 minutes.</p>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot action"></div>User action</div>
+    <div class="legend-item"><div class="legend-dot system"></div>System action</div>
+    <div class="legend-item"><div class="legend-dot decision"></div>Decision point</div>
+    <div class="legend-item"><div class="legend-dot success"></div>Goal reached</div>
+    <div class="legend-item"><div class="legend-dot warning"></div>Friction / failure</div>
+  </div>
+
+  <div class="flow-canvas">
+
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">PROSPECTIVE MEMBER</div>
+        <div class="role-context">First-time visitor</div>
+      </div>
+      <div class="steps">
+        <div class="step action">
+          <div class="step-num">1</div>
+          <div class="step-label">Discovery</div>
+          <div class="step-title">Lands on homepage</div>
+          <div class="step-desc">From search, social, or word-of-mouth</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step action">
+          <div class="step-num">2</div>
+          <div class="step-label">Self-routing</div>
+          <div class="step-title">Selects "For Newcomers"</div>
+          <div class="step-desc">Reads sport overview, watches video</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step action">
+          <div class="step-num">3</div>
+          <div class="step-label">Decision</div>
+          <div class="step-title">Clicks "Become a Member"</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">REGISTRATION FLOW</div>
+        <div class="role-context">SportsEngine + custom layer</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action">
+          <div class="step-num">4</div>
+          <div class="step-label">Form</div>
+          <div class="step-title">Account creation</div>
+          <div class="step-desc">Email, password, name, phone</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step system-action">
+          <div class="step-num">5</div>
+          <div class="step-label">Form</div>
+          <div class="step-title">Profile setup</div>
+          <div class="step-desc">Address, club affiliation (optional), photo</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step system-action">
+          <div class="step-num">6</div>
+          <div class="step-label">Form</div>
+          <div class="step-title">Add dog(s)</div>
+          <div class="step-desc">Name, breed, DOB, vaccination upload</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step system-action">
+          <div class="step-num">7</div>
+          <div class="step-label">Payment</div>
+          <div class="step-title">$120 annual dues</div>
+          <div class="step-desc">Stripe / SportsEngine processing</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">POST-SIGNUP</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action">
+          <div class="step-num">8</div>
+          <div class="step-label">Trigger</div>
+          <div class="step-title">Welcome email</div>
+          <div class="step-desc">Member ID, login link, AI coach intro</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step system-action">
+          <div class="step-num">9</div>
+          <div class="step-label">Trigger</div>
+          <div class="step-title">SMS opt-in</div>
+          <div class="step-desc">For event reminders + trial day comms</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step decision">
+          <div class="step-num">10</div>
+          <div class="step-label">Branch</div>
+          <div class="step-title">First-time path</div>
+          <div class="step-desc">Recommends starter resources based on signup answers</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">NEW MEMBER</div>
+        <div class="role-context">Logged in, profile set</div>
+      </div>
+      <div class="steps">
+        <div class="step action">
+          <div class="step-num">11</div>
+          <div class="step-label">Onboarding</div>
+          <div class="step-title">Guided tour of dashboard</div>
+          <div class="step-desc">5-step interactive tooltip walkthrough</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step action">
+          <div class="step-num">12</div>
+          <div class="step-label">Education</div>
+          <div class="step-title">Watches "Your First Trial" series</div>
+          <div class="step-desc">Required-but-friendly video module</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step action">
+          <div class="step-num">13</div>
+          <div class="step-label">Action</div>
+          <div class="step-title">Books live coaching session</div>
+          <div class="step-desc">Or finds local club for in-person training</div>
+        </div>
+        <span class="arrow">→</span>
+        <div class="step success">
+          <div class="step-num">14</div>
+          <div class="step-label">Goal</div>
+          <div class="step-title">Registers for first trial</div>
+          <div class="step-desc">When ready (could be weeks/months later)</div>
+          <div class="step-meta">→ See Flow B</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>SportsEngine handles steps 4–7 natively — minimize custom forms here. The handoff back to K9E custom shell happens at step 8.</li>
+      <li>Step 10 ("First-time path") is the differentiator. Most sports drop newcomers into a generic dashboard; we route them based on their answers (do you have a dog? have you trained? do you compete elsewhere?).</li>
+      <li>Step 13 — the bridge from signup to actual training engagement — is where most platforms lose people. AI coach + live coaching booking + local club referral all need to be one click from the dashboard.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== FLOW B: TRIAL REGISTRATION ===== -->
+<section class="flow-section" data-tab-content="register">
+  <div class="flow-head">
+    <h2>FLOW B — TRIAL REGISTRATION</h2>
+    <p>Member-to-trial-ready in under 3 minutes. Prerequisite checks, schedule conflicts, and waiver/vaccination state should be invisible to the user when everything's in order — and crystal clear when something blocks them.</p>
+  </div>
+
+  <div class="flow-canvas">
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">MEMBER (HANDLER)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">1</div><div class="step-title">Browses event calendar</div><div class="step-desc">Filtered by region, discipline, level</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">2</div><div class="step-title">Opens trial detail page</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">3</div><div class="step-title">Selects entry options</div><div class="step-desc">Discipline + level for each registered dog</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">VALIDATION ENGINE</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">4</div><div class="step-title">Membership check</div><div class="step-desc">Active in good standing?</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">5</div><div class="step-title">Title prerequisite check</div><div class="step-desc">Dog has K9E1 if entering K9E2?</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">6</div><div class="step-title">Schedule conflict check</div><div class="step-desc">One discipline per day rule</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">7</div><div class="step-title">Vaccination status</div><div class="step-desc">DHPP + rabies on file & current?</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">BRANCH POINT</div>
+      </div>
+      <div class="steps">
+        <div class="branch">
+          <div class="branch-tag">All checks pass</div>
+          <div class="step success"><div class="step-num">8a</div><div class="step-title">Proceed to checkout</div><div class="step-desc">Stripe payment</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Missing data</div>
+          <div class="step warning"><div class="step-num">8b</div><div class="step-title">Inline fix prompt</div><div class="step-desc">"Upload 2026 rabies certificate"</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Hard block</div>
+          <div class="step warning"><div class="step-num">8c</div><div class="step-title">Block + explain</div><div class="step-desc">"Need K9E1-OB before L2"</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">POST-PAYMENT</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">9</div><div class="step-title">Confirmation email</div><div class="step-desc">Receipt + event packet PDF</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">10</div><div class="step-title">Calendar invite</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">11</div><div class="step-title">Notify trial host</div><div class="step-desc">Roster auto-updates</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">12</div><div class="step-title">Schedule reminders</div><div class="step-desc">T-7d, T-1d, T-2hr SMS + email</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">DAY-OF</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">13</div><div class="step-title">Running order draw</div><div class="step-desc">T-24hr automated, posted to portal</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">14</div><div class="step-title">Check-in QR</div><div class="step-desc">Handler scans on arrival</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">15</div><div class="step-title">Ready to compete</div><div class="step-meta">→ See Flow D for the trial day itself</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>Steps 4–7 must execute fast and inline. If a member has a stale vaccination record, don't wait until checkout — flag it the moment they pick a dog.</li>
+      <li>Step 8b (missing data) is critical UX: never make the handler abandon their cart. Allow upload-and-proceed without leaving the page.</li>
+      <li>Step 13 — random running order at T-24h — is currently a paper-and-spreadsheet process at most clubs. Auto-draw with publish-to-portal eliminates a major host operations burden.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== FLOW C: DECOY MOBILE NOTE ===== -->
+<section class="flow-section" data-tab-content="decoy-note">
+  <div class="flow-head">
+    <h2>FLOW C — DECOY POST-SESSION NOTE</h2>
+    <p>The signature K9 Elements feature: institutional memory across handler-decoy interactions. Built for the moment immediately after a session ends — outdoor, hand-held, sometimes glove-on. Voice-first, under 60 seconds.</p>
+  </div>
+
+  <div class="flow-canvas">
+    <div class="flow-track">
+      <div class="actor decoy">
+        <div class="role-label">Actor</div>
+        <div class="role-name">DEVELOPMENT DECOY</div>
+        <div class="role-context">On-field, post-session</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">1</div><div class="step-title">Opens K9E mobile app</div><div class="step-desc">Or PWA on phone</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">2</div><div class="step-title">Taps "New Note"</div><div class="step-desc">From dashboard quick action</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">3</div><div class="step-title">Selects handler</div><div class="step-desc">From assigned roster (sorted by recent activity)</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">CONTEXT LOAD</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">4</div><div class="step-title">Authorization check</div><div class="step-desc">Decoy assigned to handler? Active relationship?</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">5</div><div class="step-title">Pre-fill metadata</div><div class="step-desc">Date, last session ref, suggested discipline</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">6</div><div class="step-title">Surface last 3 entries</div><div class="step-desc">Quick context for what's been tracked</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor decoy">
+        <div class="role-label">Actor</div>
+        <div class="role-name">DECOY (cont.)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">7</div><div class="step-title">Holds mic button</div><div class="step-desc">Or types if preferred</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">8</div><div class="step-title">Speaks observations</div><div class="step-desc">~30–60 seconds typical</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">9</div><div class="step-title">Releases mic</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">AI PROCESSING</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">10</div><div class="step-title">Speech-to-text</div><div class="step-desc">Whisper / Deepgram, on-device or API</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">11</div><div class="step-title">Auto-tag suggestion</div><div class="step-desc">LLM extracts topics: #out, #grip, etc.</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">12</div><div class="step-title">Display transcript</div><div class="step-desc">Editable text + confirmable tags</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor decoy">
+        <div class="role-label">Actor</div>
+        <div class="role-name">DECOY (cont.)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">13</div><div class="step-title">Reviews / edits</div><div class="step-desc">5 sec scan, fix typos if any</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">14</div><div class="step-title">Confirms tags</div><div class="step-desc">Adds/removes suggested chips</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">15</div><div class="step-title">Taps "Submit to Log"</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">SAVE + NOTIFY</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">16</div><div class="step-title">Persist to dev log</div><div class="step-desc">With audio file, transcript, tags, metadata</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">17</div><div class="step-title">Notify handler</div><div class="step-desc">Push notif: "New note from M. Torres"</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">18</div><div class="step-title">Visible in handler profile</div><div class="step-desc">Searchable, filterable, persistent</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>The 60-second budget is a hard design constraint. Every step beyond minimum sheds adoption.</li>
+      <li>Speech recognition can run on-device for privacy (Apple/Android native APIs); cloud APIs (Whisper) for higher accuracy. Suggest A/B testing both.</li>
+      <li>The "assigned roster" of step 3 needs explicit data modeling: club affiliation, seminar enrollment, paid coaching relationship — these all create a decoy↔handler edge that grants write access.</li>
+      <li>Audio file is preserved alongside transcript (members opt in). High-trust handlers may prefer to listen back to inflection rather than read.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== FLOW D: JUDGE TRIAL DAY ===== -->
+<section class="flow-section" data-tab-content="judge-score">
+  <div class="flow-head">
+    <h2>FLOW D — JUDGE TRIAL DAY (END-TO-END)</h2>
+    <p>From morning briefing to last title certificate printed. Replaces paper scoresheets, manual tabulation, and post-trial data entry with a single in-field tablet that syncs to the trial secretary in real time.</p>
+  </div>
+
+  <div class="flow-canvas">
+    <div class="flow-track">
+      <div class="actor judge">
+        <div class="role-label">Actor</div>
+        <div class="role-name">JUDGE</div>
+        <div class="role-context">Pre-trial</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">1</div><div class="step-title">Receives assignment</div><div class="step-desc">Email + mobile push, T-7d</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">2</div><div class="step-title">Reviews roster</div><div class="step-desc">Recuses for any conflicts of interest</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">3</div><div class="step-title">Confirms attendance</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor judge">
+        <div class="role-label">Actor</div>
+        <div class="role-name">JUDGE (Day-Of)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">4</div><div class="step-title">Checks in at venue</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">5</div><div class="step-title">Receives tablet</div><div class="step-desc">Issued by trial secretary, pre-paired</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">6</div><div class="step-title">Briefing + walkthrough</div><div class="step-desc">With handlers, decoy, secretary</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor judge">
+        <div class="role-label">Actor</div>
+        <div class="role-name">JUDGE (Per Run)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">7</div><div class="step-title">Calls handler</div><div class="step-desc">Auto-pulled in running order</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">8</div><div class="step-title">Scores phase 1</div><div class="step-desc">+/− buttons per criterion</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">9</div><div class="step-title">Scores phase 2</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">10</div><div class="step-title">Logs deductions</div><div class="step-desc">Tap from rulebook taxonomy</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">11</div><div class="step-title">Phases 3–4</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor judge">
+        <div class="role-label">Actor</div>
+        <div class="role-name">JUDGE (Run Close)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">12</div><div class="step-title">Adds final notes</div><div class="step-desc">Voice or typed</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">13</div><div class="step-title">Verbal critique to handler</div><div class="step-desc">Standard procedure per §5.5</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">14</div><div class="step-title">Submits scoresheet</div><div class="step-desc">Confirmation modal</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">REAL-TIME SYNC</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">15</div><div class="step-title">Score posts to secretary</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">16</div><div class="step-title">Live results page updates</div><div class="step-desc">Public + spectator-facing</div></div>
+        <span class="arrow">→</span>
+        <div class="step decision"><div class="step-num">17</div><div class="step-title">Qualifying score?</div><div class="step-desc">≥70 (L1/L2) or ≥75 (L3)</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">IF QUALIFYING</div>
+      </div>
+      <div class="steps">
+        <div class="step success"><div class="step-num">18</div><div class="step-title">Title applied to dog record</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">19</div><div class="step-title">Title sheet generates</div><div class="step-desc">PDF, printed by secretary</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">20</div><div class="step-title">Handler notified</div><div class="step-desc">Email + push + profile updated</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">21</div><div class="step-title">Physical title sheet issued</div><div class="step-desc">Same-day, signed by judge</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>The tablet UI must work fully offline. Spotty rural venues are common — sync when network returns.</li>
+      <li>Step 16 (live public results) is a recruiting tool. Spectators and family can follow runs in real time without reloading; live streaming integration ties video to scoresheets.</li>
+      <li>Title sheet generation (step 19) honors the stakeholder's "physical document for titles" requirement while everything around it is digital. Auto-generated PDF with judge signature, secretary signature line, dog photo, and trial details.</li>
+      <li>Auto-failure logic must be enforced at the moment a triggering event is logged (e.g. "dog left field") — not at submit. The judge gets a confirmation prompt: "This action triggers a non-qualifying score. Confirm?"</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== FLOW E: GRIEVANCE LIFECYCLE ===== -->
+<section class="flow-section" data-tab-content="grievance">
+  <div class="flow-head">
+    <h2>FLOW E — GRIEVANCE LIFECYCLE</h2>
+    <p>From in-field disagreement through formal review and appeal. Built per rulebook §15 with hard SLA timers (7 days to file, 30 days to decide, 14 days to appeal). Transparent process with full audit trail.</p>
+  </div>
+
+  <div class="flow-canvas">
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">COMPETITOR</div>
+        <div class="role-context">Disputes scoring or conduct</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">1</div><div class="step-title">In-field concern</div><div class="step-desc">Raises with judge or trial host</div></div>
+        <span class="arrow">→</span>
+        <div class="step decision"><div class="step-num">2</div><div class="step-title">Resolved informally?</div></div>
+        <div class="branch">
+          <div class="branch-tag">Yes</div>
+          <div class="step success"><div class="step-num">3a</div><div class="step-title">Closed at trial</div><div class="step-desc">Logged in trial report</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">No</div>
+          <div class="step warning"><div class="step-num">3b</div><div class="step-title">Escalates</div><div class="step-desc">7 days to file formal grievance</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">COMPETITOR (Formal)</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">4</div><div class="step-title">Opens grievance form</div><div class="step-desc">From profile or event detail page</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">5</div><div class="step-title">Selects category</div><div class="step-desc">Judging / Conduct / Operational</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">6</div><div class="step-title">Submits details</div><div class="step-desc">Description, video, requested resolution</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">ROUTING</div>
+      </div>
+      <div class="steps">
+        <div class="step decision"><div class="step-num">7</div><div class="step-title">Categorize</div></div>
+        <div class="branch">
+          <div class="branch-tag">Judging</div>
+          <div class="step system-action"><div class="step-num">8a</div><div class="step-title">→ Director of Judges</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Decoy / conduct</div>
+          <div class="step system-action"><div class="step-num">8b</div><div class="step-title">→ Director of Decoys / President</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Operational</div>
+          <div class="step system-action"><div class="step-num">8c</div><div class="step-title">→ President</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor admin">
+        <div class="role-label">Actor</div>
+        <div class="role-name">REVIEWING DIRECTOR</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">9</div><div class="step-title">Acknowledges receipt</div><div class="step-desc">Auto SLA: within 48hr</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">10</div><div class="step-title">Investigates</div><div class="step-desc">Video review, witness interviews, scoresheet audit</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">11</div><div class="step-title">Documents findings</div><div class="step-desc">Internal case notes</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">12</div><div class="step-title">Issues written decision</div><div class="step-desc">Within 30 days of filing</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">DECISION ROUTING</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">13</div><div class="step-title">Decision sent to all parties</div></div>
+        <span class="arrow">→</span>
+        <div class="step decision"><div class="step-num">14</div><div class="step-title">Appeals filed?</div><div class="step-desc">Within 14 days of decision</div></div>
+        <div class="branch">
+          <div class="branch-tag">No</div>
+          <div class="step success"><div class="step-num">15a</div><div class="step-title">Case closed</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Yes</div>
+          <div class="step warning"><div class="step-num">15b</div><div class="step-title">Board panel review</div><div class="step-desc">3 panelists, 30 days</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor admin">
+        <div class="role-label">Actor</div>
+        <div class="role-name">BOARD PANEL</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">16</div><div class="step-title">Reviews case + decision</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">17</div><div class="step-title">Issues final decision</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">18</div><div class="step-title">Final + closed</div><div class="step-desc">Public summary if disciplinary action taken</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>Every step has an SLA. Build automated reminders to reviewing directors at 50% and 80% of clock to prevent missed deadlines.</li>
+      <li>The grievance form should pull context automatically: trial, run number, judge, score. Reduces user friction and avoids ambiguity.</li>
+      <li>Audit trail is non-negotiable. Every state change logged with timestamp + actor for downstream legal review if needed.</li>
+      <li>Public-facing summary (step 18) only published when disciplinary action lands at moderate or above per rulebook. Privacy by default.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ===== FLOW F: OFFICIAL CERTIFICATION PATH ===== -->
+<section class="flow-section" data-tab-content="cert">
+  <div class="flow-head">
+    <h2>FLOW F — OFFICIAL CERTIFICATION PROGRESSION</h2>
+    <p>Apprentice → Provisional → Certified → Master. Same backbone for Judges, Trial Decoys, and Development Decoys. The platform tracks every shadowed trial, video review, exam result, and mentor evaluation that gates progression.</p>
+  </div>
+
+  <div class="flow-canvas">
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">APPLICANT</div>
+        <div class="role-context">Member ≥2yr, K9E2+ titled</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">1</div><div class="step-title">Reviews handbook</div><div class="step-desc">Self-assessment</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">2</div><div class="step-title">Submits application</div><div class="step-desc">Plus statement of intent + 3 references</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">3</div><div class="step-title">Background screening</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor admin">
+        <div class="role-label">Actor</div>
+        <div class="role-name">DIRECTOR OF JUDGES/DECOYS</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">4</div><div class="step-title">Reviews application</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">5</div><div class="step-title">Conducts interview</div><div class="step-desc">30–60 min with Master</div></div>
+        <span class="arrow">→</span>
+        <div class="step decision"><div class="step-num">6</div><div class="step-title">Recommend?</div></div>
+        <div class="branch">
+          <div class="branch-tag">Approved</div>
+          <div class="step success"><div class="step-num">7a</div><div class="step-title">Mentor assigned</div><div class="step-desc">Onboarding kit sent</div></div>
+        </div>
+        <div class="branch">
+          <div class="branch-tag">Denied</div>
+          <div class="step warning"><div class="step-num">7b</div><div class="step-title">Reapply in 12mo</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">APPRENTICE</div>
+        <div class="role-context">6–12 months, ≥6 trials shadowed</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">8</div><div class="step-title">Shadows mentor at trials</div><div class="step-desc">Logs each event in platform</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">9</div><div class="step-title">Scores in parallel</div><div class="step-desc">Compared with mentor's; variance tracked</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">10</div><div class="step-title">Attends standardization</div><div class="step-desc">College of Judges/Decoys video reviews</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">11</div><div class="step-title">Passes written exam</div><div class="step-desc">≥90%</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">PROGRESSION CHECK</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">12</div><div class="step-title">Trial count met?</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">13</div><div class="step-title">Variance in tolerance?</div><div class="step-desc">Within 5pts on ≥80% of runs</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">14</div><div class="step-title">Mentor evaluation positive?</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">15</div><div class="step-title">→ Promote to Provisional</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor handler">
+        <div class="role-label">Actor</div>
+        <div class="role-name">PROVISIONAL → CERTIFIED</div>
+        <div class="role-context">12–18 months, ≥8 trials</div>
+      </div>
+      <div class="steps">
+        <div class="step action"><div class="step-num">16</div><div class="step-title">Solo-judges Level 1</div><div class="step-desc">Shadowed at L2/L3</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">17</div><div class="step-title">Receives feedback</div><div class="step-desc">From competitors, Director, peers</div></div>
+        <span class="arrow">→</span>
+        <div class="step action"><div class="step-num">18</div><div class="step-title">Passes advanced exam</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">19</div><div class="step-title">→ Certified</div><div class="step-desc">Recertify every 3 years</div></div>
+      </div>
+    </div>
+
+    <div class="flow-track">
+      <div class="actor system">
+        <div class="role-label">System</div>
+        <div class="role-name">ONGOING (Certified+)</div>
+      </div>
+      <div class="steps">
+        <div class="step system-action"><div class="step-num">20</div><div class="step-title">Annual review</div><div class="step-desc">Performance metrics + feedback</div></div>
+        <span class="arrow">→</span>
+        <div class="step system-action"><div class="step-num">21</div><div class="step-title">Tracks min participation</div><div class="step-desc">≥4 trials/yr, ≥2 College mtgs/yr</div></div>
+        <span class="arrow">→</span>
+        <div class="step decision"><div class="step-num">22</div><div class="step-title">Recertification due?</div><div class="step-desc">Every 3 years</div></div>
+        <span class="arrow">→</span>
+        <div class="step success"><div class="step-num">23</div><div class="step-title">→ Master eligible</div><div class="step-desc">After 3yr Certified + 30+ trials + leadership</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-notes">
+    <strong>Build priorities for this flow</strong>
+    <ul>
+      <li>Variance tracking (step 13) is the killer feature — auto-compares apprentice scores vs mentor scores per criterion. Calibration becomes data-driven, not opinion-driven.</li>
+      <li>Step 21 — minimum participation — runs as a continuous background job. Officials get warnings at 75% of period if they're behind on requirements; auto-flags inactive at 100%.</li>
+      <li>Same flow shape applies to Trial Decoys and Development Decoys with different content gates. Build once, parameterize per role.</li>
+      <li>The platform stores video clips submitted for College review, indexed by reviewer + score variance. Over time this becomes the largest training dataset for AI scoring assistance.</li>
+    </ul>
+  </div>
+</section>
+
+</div>
+
+<script>
+  const tabs = document.querySelectorAll('.nav-strip button');
+  const sections = document.querySelectorAll('.flow-section');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    const tab = t.dataset.tab;
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    sections.forEach(s => s.classList.toggle('active', s.dataset.tabContent === tab));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }));
+</script>
+
+</body>
+</html>

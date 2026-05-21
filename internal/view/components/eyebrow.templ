@@ -1,0 +1,8 @@
+package components
+
+// Eyebrow renders the small uppercase label that sits above section
+// headlines. Color picks up var(--event-600) inside a [data-event] scope,
+// var(--mist-700) otherwise — handled entirely by the .eyebrow class.
+templ Eyebrow() {
+	<div class="eyebrow">{ children... }</div>
+}

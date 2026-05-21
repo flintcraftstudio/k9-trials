@@ -1,0 +1,309 @@
+/* =========================================================================
+   K9 Elements — colors_and_type.css
+   The single source of truth for color, typography, spacing, radius, shadow.
+   Import once: <link rel="stylesheet" href="colors_and_type.css">
+   All values are CSS custom properties so they can be overridden at any
+   subtree (e.g. data-event="tracking" rebinds --accent-* to the green scale).
+   ========================================================================= */
+
+/* ----- 1. Fonts (Google Fonts) --------------------------------------------
+   Both display & body come from the Instrument family (Instrument Foundry).
+   Self-host into /fonts later if needed; for now Google CDN.
+   -------------------------------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap");
+
+:root {
+  /* ---------- 2. NEUTRAL SCALE — "mist" -------------------------------- */
+  /* Cool, slightly-greenish desaturated grey. Light & dark surfaces. */
+  --mist-50:  oklch(98.7% 0.002 197.1);
+  --mist-100: oklch(96.3% 0.002 197.1);
+  --mist-200: oklch(92.5% 0.005 214.3);
+  --mist-300: oklch(87.2% 0.007 219.6);
+  --mist-400: oklch(72.3% 0.014 214.4);
+  --mist-500: oklch(56.0% 0.021 213.5);
+  --mist-600: oklch(45.0% 0.017 213.2);
+  --mist-700: oklch(37.8% 0.015 216.0);
+  --mist-800: oklch(27.5% 0.011 216.9);
+  --mist-900: oklch(21.8% 0.008 223.9);
+  --mist-950: oklch(14.8% 0.004 228.8);
+
+  /* ---------- 3. EVENT SCALES ----------------------------------------- */
+  /* Sampled from the K9 Elements logo stripes. 600 is the canonical step. */
+
+  /* OBEDIENCE — Blue (precision, control) */
+  --blue-50:  oklch(97.5% 0.015 235);
+  --blue-100: oklch(94.2% 0.030 232);
+  --blue-200: oklch(88.4% 0.060 230);
+  --blue-300: oklch(80.0% 0.090 228);
+  --blue-400: oklch(68.8% 0.115 226);
+  --blue-500: oklch(58.0% 0.130 226);
+  --blue-600: oklch(49.5% 0.122 227);  /* #066d9e — logo stripe */
+  --blue-700: oklch(41.5% 0.106 228);
+  --blue-800: oklch(33.0% 0.088 230);
+  --blue-900: oklch(25.0% 0.066 232);
+  --blue-950: oklch(17.0% 0.045 234);
+
+  /* TRACKING — Green (outdoors, scent work) */
+  --green-50:  oklch(97.8% 0.020 145);
+  --green-100: oklch(94.5% 0.045 144);
+  --green-200: oklch(88.5% 0.085 144);
+  --green-300: oklch(80.5% 0.130 144);
+  --green-400: oklch(70.0% 0.155 144);
+  --green-500: oklch(62.0% 0.170 144);
+  --green-600: oklch(55.0% 0.165 144);  /* #3aa548 — logo stripe */
+  --green-700: oklch(46.0% 0.142 144);
+  --green-800: oklch(37.5% 0.118 145);
+  --green-900: oklch(28.5% 0.092 146);
+  --green-950: oklch(19.5% 0.065 148);
+
+  /* DETECTION — Orange (alertness, find) */
+  --orange-50:  oklch(98.0% 0.018 60);
+  --orange-100: oklch(95.0% 0.040 58);
+  --orange-200: oklch(89.0% 0.078 56);
+  --orange-300: oklch(81.0% 0.115 53);
+  --orange-400: oklch(72.0% 0.145 50);
+  --orange-500: oklch(63.0% 0.155 48);
+  --orange-600: oklch(56.0% 0.150 48);  /* #bf692e — logo stripe */
+  --orange-700: oklch(46.5% 0.130 48);
+  --orange-800: oklch(37.0% 0.108 48);
+  --orange-900: oklch(28.0% 0.082 49);
+  --orange-950: oklch(19.0% 0.058 50);
+
+  /* PROTECTION — Charcoal (controlled, serious — matches K-letter) */
+  /* Lower chroma than mist; reads as a near-true neutral. */
+  --char-50:  oklch(97.5% 0.000 0);
+  --char-100: oklch(94.5% 0.000 0);
+  --char-200: oklch(88.0% 0.001 0);
+  --char-300: oklch(78.0% 0.001 0);
+  --char-400: oklch(63.0% 0.002 0);
+  --char-500: oklch(48.0% 0.002 0);
+  --char-600: oklch(36.0% 0.002 0);  /* #1a1a1a-ish — protection key */
+  --char-700: oklch(28.0% 0.002 0);
+  --char-800: oklch(22.0% 0.002 0);
+  --char-900: oklch(16.0% 0.002 0);
+  --char-950: oklch(10.0% 0.002 0);
+
+  /* ---------- 4. SEMANTIC COLOURS ------------------------------------- */
+  /* Most of these alias the neutral or event scales — single source. */
+
+  /* Surface */
+  --color-bg:        var(--mist-100);
+  --color-bg-raised: var(--mist-50);     /* cards / popovers on light bg */
+  --color-bg-sunk:   var(--mist-200);    /* inputs, code blocks */
+  --color-overlay:   rgb(0 0 0 / 0.45);  /* modal scrim */
+
+  /* Text */
+  --color-fg:         var(--mist-950);   /* body */
+  --color-fg-muted:   var(--mist-700);   /* secondary body */
+  --color-fg-subtle:  var(--mist-500);   /* meta, captions */
+  --color-fg-faint:   var(--mist-400);   /* placeholder, disabled */
+  --color-fg-on-dark: var(--mist-100);   /* text on dark surface */
+
+  /* Lines */
+  --color-border:        rgb(from var(--mist-950) r g b / 0.10);
+  --color-border-strong: rgb(from var(--mist-950) r g b / 0.20);
+  --color-divider:       rgb(from var(--mist-950) r g b / 0.08);
+
+  /* Accent — defaults to the brand-neutral primary (mist-950 button on light) */
+  --accent:           var(--mist-950);
+  --accent-fg:        var(--mist-50);
+  --accent-hover:     var(--mist-800);
+
+  /* Status — co-opted from event hues where the metaphor fits */
+  --color-success:    var(--green-600);
+  --color-success-bg: var(--green-100);
+  --color-warning:    var(--orange-600);
+  --color-warning-bg: var(--orange-100);
+  --color-danger:        #b3261e;
+  --color-danger-bg:     oklch(94% 0.040 25);
+  --color-danger-border: rgb(from var(--color-danger) r g b / 0.30);
+  --color-info:       var(--blue-600);
+  --color-info-bg:    var(--blue-100);
+
+  /* ---------- 5. TYPOGRAPHY ------------------------------------------- */
+  --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans:    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono:    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semi:    600;
+  --fw-bold:    700;
+
+  /* Type ramp — line-height pairs are designed (matches Tailwind utilities). */
+  --t-xs:   0.75rem;  --lh-xs:   1rem;       /* 12 / 16 — fine print */
+  --t-sm:   0.875rem; --lh-sm:   1.75rem;    /* 14 / 28 — UI, eyebrow */
+  --t-base: 1rem;     --lh-base: 1.75rem;    /* 16 / 28 — body */
+  --t-lg:   1.125rem; --lh-lg:   2rem;       /* 18 / 32 — lede */
+  --t-xl:   1.25rem;  --lh-xl:   2rem;       /* 20 / 32 */
+  --t-2xl:  1.5rem;   --lh-2xl:  2.5rem;     /* 24 / 40 — pricing $ */
+  --t-3xl:  1.875rem; --lh-3xl:  2.5rem;
+  --t-4xl:  2.25rem;  --lh-4xl:  2.75rem;
+  --t-5xl:  3rem;     --lh-5xl:  3.5rem;     /* 48 / 56 — section h2 sm */
+  --t-h2:   3rem;     --lh-h2:   3.5rem;     /* alias */
+  --t-h1:   5rem;     --lh-h1:   5rem;       /* 80 / 80 — hero h1 */
+
+  /* Tracking */
+  --tracking-tight: -0.02em;
+  --tracking-base:  0;
+  --tracking-wide:  0.06em;   /* eyebrow / pill */
+
+  /* ---------- 6. RADII ------------------------------------------------- */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   6px;    /* inputs, small buttons */
+  --radius-lg:   12px;   /* cards */
+  --radius-xl:   16px;
+  --radius-2xl:  24px;   /* hero screenshot frames */
+  --radius-full: 9999px; /* buttons, pills */
+
+  /* ---------- 7. SHADOWS ---------------------------------------------- */
+  /* Restrained on purpose. Use sparingly. */
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.06), 0 2px 4px rgb(0 0 0 / 0.04);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.10), 0 4px 8px rgb(0 0 0 / 0.04);
+  --shadow-inset: inset 0 0 0 1px rgb(0 0 0 / 0.06);
+
+  /* ---------- 8. SPACING ---------------------------------------------- */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Layout */
+  --content-max: 80rem;   /* 1280px — Tailwind 7xl */
+  --gutter:      24px;
+  --gutter-lg:   40px;
+  --nav-height:  5.25rem; /* 84px */
+
+  /* ---------- 9. MOTION ------------------------------------------------ */
+  --ease-out:      cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-in-out:   cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 150ms;
+  --duration-med:  250ms;
+  --duration-slow: 600ms;
+}
+
+/* ----- 10. DARK MODE ------------------------------------------------------
+   Toggle by adding class="dark" or data-theme="dark" to <html>.
+   ------------------------------------------------------------------------- */
+.dark,
+[data-theme="dark"] {
+  --color-bg:        var(--mist-950);
+  --color-bg-raised: var(--mist-900);
+  --color-bg-sunk:   var(--mist-950);
+
+  --color-fg:        #ffffff;
+  --color-fg-muted:  var(--mist-400);
+  --color-fg-subtle: var(--mist-500);
+  --color-fg-faint:  var(--mist-600);
+  --color-fg-on-dark: #ffffff;
+
+  --color-border:        rgb(255 255 255 / 0.10);
+  --color-border-strong: rgb(255 255 255 / 0.20);
+  --color-divider:       rgb(255 255 255 / 0.08);
+
+  --accent:       var(--mist-300);
+  --accent-fg:    var(--mist-950);
+  --accent-hover: var(--mist-200);
+}
+
+/* ----- 11. EVENT-SCOPED ACCENT REBINDING ---------------------------------
+   Drop data-event on any element to retint its subtree. The point is SUBTLE
+   accent on eyebrow + rail + ring — never full-section flooding.
+   ------------------------------------------------------------------------- */
+[data-event="obedience"]  { --event-50: var(--blue-50);   --event-100: var(--blue-100);   --event-600: var(--blue-600);   --event-700: var(--blue-700);  }
+[data-event="protection"] { --event-50: var(--char-50);   --event-100: var(--char-100);   --event-600: var(--char-600);   --event-700: var(--char-700);  }
+[data-event="tracking"]   { --event-50: var(--green-50);  --event-100: var(--green-100);  --event-600: var(--green-600);  --event-700: var(--green-700); }
+[data-event="detection"]  { --event-50: var(--orange-50); --event-100: var(--orange-100); --event-600: var(--orange-600); --event-700: var(--orange-700);}
+
+/* ----- 12. SEMANTIC ELEMENT DEFAULTS -------------------------------------- */
+html, body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: var(--t-base);
+  line-height: var(--lh-base);
+}
+
+h1, .h1 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--tracking-tight);
+  font-size: clamp(2.5rem, 4vw + 1rem, var(--t-h1));
+  line-height: 1;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+h2, .h2 {
+  font-family: var(--font-display);
+  font-weight: var(--fw-regular);
+  letter-spacing: var(--tracking-tight);
+  font-size: clamp(2rem, 2.5vw + 0.8rem, var(--t-h2));
+  line-height: 1.16;
+  color: var(--color-fg);
+  text-wrap: balance;
+}
+
+h3, .h3 {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  font-size: var(--t-base);
+  line-height: var(--lh-lg);
+  color: var(--color-fg);
+}
+
+p, .body {
+  font-size: var(--t-base);
+  line-height: var(--lh-base);
+  color: var(--color-fg-muted);
+  text-wrap: pretty;
+}
+
+.lede {
+  font-size: var(--t-lg);
+  line-height: var(--lh-lg);
+  color: var(--color-fg-muted);
+}
+
+.eyebrow {
+  font-size: var(--t-sm);
+  line-height: var(--lh-sm);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--event-600, var(--color-fg-muted));
+}
+
+small, .fine {
+  font-size: var(--t-sm);
+  color: var(--color-fg-subtle);
+}
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--color-bg-sunk);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--color-border-strong);
+  text-underline-offset: 3px;
+}
+
+::selection { background: rgb(from var(--mist-950) r g b / 0.18); }

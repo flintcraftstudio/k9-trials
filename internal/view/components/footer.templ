@@ -1,0 +1,48 @@
+package components
+
+// Footer renders the bottom-of-page chrome — wordmark + tagline on the
+// left, a small link column on the right, then a fine-print row.
+// Trimmed from the marketing-site Footer to reflect the trial app's
+// surface area (no marketing categories yet).
+templ Footer() {
+	<footer class="footer">
+		<div class="inner">
+			@Container("") {
+				<div class="footer-grid">
+					<div class="flex-col gap-3">
+						@Logo(0)
+						<p class="body max-w-[360px] mt-2">
+							Trials and scoring for the four working-dog events.
+						</p>
+					</div>
+					<div class="footer-cats">
+						@footerCol("Site", []footerLink{
+							{"Home", "/"},
+							{"Contact", "/contact"},
+							{"Log in", "/login"},
+						})
+					</div>
+				</div>
+				<div class="fine">
+					<div>© { footerYear() } K9 Elements</div>
+					<div>Helena, MT · info@k9elements.com</div>
+				</div>
+			}
+		</div>
+	</footer>
+}
+
+type footerLink struct {
+	Label, Href string
+}
+
+templ footerCol(heading string, links []footerLink) {
+	<div>
+		<h4>{ heading }</h4>
+		<ul>
+			for _, l := range links {
+				<li><a href={ templ.SafeURL(l.Href) }>{ l.Label }</a></li>
+			}
+		</ul>
+	</div>
+}

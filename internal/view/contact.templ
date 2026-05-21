@@ -1,83 +1,102 @@
 package view
 
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
 templ ContactPage(errors map[string]string, values map[string]string, success bool) {
-	@Base("Contact", "Get in touch with us.", contactContent(errors, values, success))
+	@Base("Contact", "Get in touch with K9 Elements.", "contact", contactContent(errors, values, success))
 }
 
 templ contactContent(errors map[string]string, values map[string]string, success bool) {
-	<section class="py-24 sm:py-[80px]">
-		<div class="mx-auto max-w-5xl px-6 sm:px-12">
-			@eyebrow("Say hello")
-			<h1 class="mb-10 font-display text-[36px] font-medium tracking-tight text-ff-paper">Contact</h1>
-			<div class="max-w-lg">
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				@components.Eyebrow() {
+					Get in touch
+				}
+				<h1 class="h2">Contact</h1>
+				<p class="lede max-w-[520px]">
+					Trial entry, scoring, judge access, or anything else — we read every message.
+				</p>
 				@ContactForm(errors, values, success)
 			</div>
-		</div>
+		}
 	</section>
 }
 
 templ ContactForm(errors map[string]string, values map[string]string, success bool) {
-	<form hx-post="/contact" hx-swap="outerHTML" class="space-y-5">
+	<form hx-post="/contact" hx-swap="outerHTML" class="flex flex-col gap-5">
 		if success {
-			<div class="rounded border border-ff-dusk-mid bg-ff-panel p-6">
-				<p class="text-[15px] font-normal text-ff-ice">Thanks! We'll be in touch soon.</p>
+			<div class="rounded-md bg-[var(--color-success-bg)] p-4">
+				<p class="text-sm text-[var(--color-success)]">Thanks — we'll be in touch soon.</p>
 			</div>
 		} else {
 			if errors["form"] != "" {
-				<div class="rounded border border-red-500/40 bg-red-500/10 p-4">
-					<p class="text-[13px] text-red-400">{ errors["form"] }</p>
+				<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+					<p class="text-sm text-[var(--color-danger)]">{ errors["form"] }</p>
 				</div>
 			}
-			<div>
-				<label for="name" class="mb-1.5 block text-[13px] font-medium text-ff-cream">Name</label>
-				<input
-					type="text"
-					id="name"
-					name="name"
-					value={ values["name"] }
-					class="w-full rounded-sm border border-ff-border2 bg-ff-panel px-4 py-2.5 text-[15px] font-light text-ff-cream placeholder-ff-stone outline-none transition focus:border-[#5b7ec473]"
-					placeholder="Your name"
-				/>
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "name"}) {
+					Name
+				}
+				@components.Input(components.InputProps{
+					Type:        "text",
+					ID:          "name",
+					Name:        "name",
+					Value:       values["name"],
+					Placeholder: "Your name",
+					Invalid:     errors["name"] != "",
+				})
 				if errors["name"] != "" {
-					<p class="mt-1 text-[11px] text-red-400">{ errors["name"] }</p>
+					@components.ErrorMessage(components.FieldProps{}) {
+						{ errors["name"] }
+					}
 				}
-			</div>
-			<div>
-				<label for="email" class="mb-1.5 block text-[13px] font-medium text-ff-cream">Email</label>
-				<input
-					type="email"
-					id="email"
-					name="email"
-					value={ values["email"] }
-					class="w-full rounded-sm border border-ff-border2 bg-ff-panel px-4 py-2.5 text-[15px] font-light text-ff-cream placeholder-ff-stone outline-none transition focus:border-[#5b7ec473]"
-					placeholder="you@example.com"
-				/>
-				if errors["email"] != "" {
-					<p class="mt-1 text-[11px] text-red-400">{ errors["email"] }</p>
-				}
-			</div>
-			<div>
-				<label for="message" class="mb-1.5 block text-[13px] font-medium text-ff-cream">Message</label>
-				<textarea
-					id="message"
-					name="message"
-					rows="5"
-					class="w-full rounded-sm border border-ff-border2 bg-ff-panel px-4 py-2.5 text-[15px] font-light text-ff-cream placeholder-ff-stone outline-none transition focus:border-[#5b7ec473]"
-					placeholder="Tell us about your project..."
-				>{ values["message"] }</textarea>
-				if errors["message"] != "" {
-					<p class="mt-1 text-[11px] text-red-400">{ errors["message"] }</p>
-				}
-			</div>
-			if TurnstileSiteKey != "" {
-				<div class="cf-turnstile" data-sitekey={ TurnstileSiteKey } data-theme="dark"></div>
 			}
-			<button
-				type="submit"
-				class="rounded-sm bg-ff-dusk px-[26px] py-[13px] text-[12px] font-medium uppercase tracking-[0.12em] text-white transition hover:bg-ff-dusk-hover active:scale-[0.98]"
-			>
-				Send message
-			</button>
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "email"}) {
+					Email
+				}
+				@components.Input(components.InputProps{
+					Type:        "email",
+					ID:          "email",
+					Name:        "email",
+					Value:       values["email"],
+					Placeholder: "you@example.com",
+					Invalid:     errors["email"] != "",
+				})
+				if errors["email"] != "" {
+					@components.ErrorMessage(components.FieldProps{}) {
+						{ errors["email"] }
+					}
+				}
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "message"}) {
+					Message
+				}
+				@components.Textarea(components.TextareaProps{
+					ID:          "message",
+					Name:        "message",
+					Value:       values["message"],
+					Placeholder: "Tell us what you need…",
+					Rows:        5,
+					Invalid:     errors["message"] != "",
+				})
+				if errors["message"] != "" {
+					@components.ErrorMessage(components.FieldProps{}) {
+						{ errors["message"] }
+					}
+				}
+			}
+			if TurnstileSiteKey != "" {
+				<div class="cf-turnstile" data-sitekey={ TurnstileSiteKey }></div>
+			}
+			<div>
+				@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Type: "submit"}) {
+					Send message
+				}
+			</div>
 		}
 	</form>
 }

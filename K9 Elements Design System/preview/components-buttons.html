@@ -1,0 +1,35 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.btn { display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:9999px;font-weight:500;font-size:14px;line-height:1.75;cursor:pointer;border:0;font-family:inherit;text-decoration:none}
+.btn.md { padding: 4px 12px }
+.btn.lg { padding: 8px 16px }
+.btn.primary { background:var(--mist-950); color:#fff }
+.btn.primary:hover { background:var(--mist-800) }
+.btn.soft { background: rgb(from var(--mist-950) r g b / 0.10); color:var(--mist-950) }
+.btn.soft:hover { background: rgb(from var(--mist-950) r g b / 0.15) }
+.btn.plain { background: transparent; color:var(--mist-950); padding-left:8px;padding-right:8px }
+.btn.plain:hover { background: rgb(from var(--mist-950) r g b / 0.08) }
+.btn.event { background: var(--orange-600); color:#fff }
+.btn.event:hover { background: var(--orange-700) }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="col" style="gap:14px">
+    <div style="font-size:15px;font-weight:500">Buttons</div>
+    <div class="row wrap" style="gap:10px">
+      <button class="btn primary lg">Start free trial</button>
+      <button class="btn soft lg">See how it works</button>
+      <button class="btn plain lg">Book a demo <img src="../assets/icons/chevron-right.svg" style="width:5px;height:8px" alt=""></button>
+    </div>
+    <div class="row wrap" style="gap:10px">
+      <button class="btn primary md">Get started</button>
+      <button class="btn soft md">Cancel</button>
+      <button class="btn plain md">Log in</button>
+      <button class="btn event md">Enter trial · Detection</button>
+    </div>
+    <div class="mono" style="color:var(--mist-500)">Primary · Soft · Plain &nbsp;·&nbsp; pill (rounded-full) · sizes md / lg · no transform on press</div>
+  </div>
+</div>
+</body></html>

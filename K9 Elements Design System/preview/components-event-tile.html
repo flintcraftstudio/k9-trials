@@ -1,0 +1,49 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.tile { display:flex;gap:0;border-radius:12px;overflow:hidden;background:rgb(from var(--mist-950) r g b / 0.025);position:relative }
+.tile .rail { width:3px;background:var(--event-600) }
+.tile .body { padding:18px 20px;flex:1;display:flex;flex-direction:column;gap:8px }
+.tile .eye { font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--event-600) }
+.tile h4 { font-family:var(--font-display);font-weight:400;font-size:24px;letter-spacing:-0.01em;line-height:1.1;color:var(--mist-950) }
+.tile p { font-size:13px;line-height:1.55;color:var(--mist-700) }
+</style>
+</head>
+<body>
+<div class="card" style="background:transparent;padding:24px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="tile" data-event="obedience">
+      <div class="rail"></div>
+      <div class="body">
+        <div class="eye">Obedience</div>
+        <h4>Heelwork in motion.</h4>
+        <p>12 weeks · precision drills, recalls, and the long-down.</p>
+      </div>
+    </div>
+    <div class="tile" data-event="tracking">
+      <div class="rail"></div>
+      <div class="body">
+        <div class="eye">Tracking</div>
+        <h4>Read the ground.</h4>
+        <p>Article work, scent discrimination, weather-realistic terrain.</p>
+      </div>
+    </div>
+    <div class="tile" data-event="detection">
+      <div class="rail"></div>
+      <div class="body">
+        <div class="eye">Detection</div>
+        <h4>Find the source.</h4>
+        <p>Single-odor and multi-odor sets across four target areas.</p>
+      </div>
+    </div>
+    <div class="tile" data-event="protection">
+      <div class="rail"></div>
+      <div class="body">
+        <div class="eye">Protection</div>
+        <h4>Controlled aggression.</h4>
+        <p>Bitework progression, handler defense, courage testing.</p>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

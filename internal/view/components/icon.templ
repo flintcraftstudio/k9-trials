@@ -1,0 +1,17 @@
+package components
+
+import "strconv"
+
+// Icon renders one of the SVGs in web/static/img/icons/ at the given
+// pixel size. Defaults to 13px to match the JSX kit. Name is the file
+// stem (e.g. "arrow-right", "calendar", "social-instagram").
+templ Icon(name string, size int) {
+	{{ if size == 0 { size = 13 } }}
+	<img
+		src={ "/static/img/icons/" + name + ".svg" }
+		alt=""
+		aria-hidden="true"
+		width={ strconv.Itoa(size) }
+		height={ strconv.Itoa(size) }
+	/>
+}

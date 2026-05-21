@@ -1,0 +1,44 @@
+/* Shared styles for preview cards. Each card is ~700px wide, varying heights. */
+@import url("../colors_and_type.css");
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--mist-100);
+  color: var(--mist-950);
+  font-family: var(--font-sans);
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+.card {
+  width: 700px;
+  padding: 32px;
+  background: var(--mist-50);
+  color: var(--mist-950);
+}
+
+.card.tight { padding: 24px; }
+.card.dark { background: var(--mist-950); color: #fff; }
+.card.dark p, .card.dark .label { color: var(--mist-400); }
+
+.row { display: flex; align-items: center; gap: 12px; }
+.col { display: flex; flex-direction: column; gap: 12px; }
+.spread { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.wrap { flex-wrap: wrap; }
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mist-600);
+}
+.mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--mist-600);
+}
+.serif {
+  font-family: var(--font-display);
+}

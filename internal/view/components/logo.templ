@@ -1,0 +1,18 @@
+package components
+
+import "strconv"
+
+// Logo renders the K9 Elements wordmark — clickable lockup of the
+// mark + "K9 Elements" text. Used in NavBar and Footer.
+templ Logo(size int) {
+	{{ if size == 0 { size = 32 } }}
+	<a href="/" class="logo">
+		<img
+			src="/static/img/k9-elements-logo.png"
+			alt=""
+			width={ strconv.Itoa(size) }
+			height={ strconv.Itoa(size) }
+		/>
+		<span>K9 Elements</span>
+	</a>
+}

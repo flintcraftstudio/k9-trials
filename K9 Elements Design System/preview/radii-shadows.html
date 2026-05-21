@@ -1,0 +1,25 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="stylesheet" href="../colors_and_type.css"><style>
+body{padding:24px;background:var(--paper-2)}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.tok{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.box{width:90px;height:50px;background:var(--white);border:1px solid var(--line-2)}
+.lbl{font:var(--t-micro);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted)}
+.spec{font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+.shadow-1{box-shadow:var(--shadow-1)}
+.shadow-2{box-shadow:var(--shadow-2)}
+.shadow-3{box-shadow:var(--shadow-3)}
+</style></head><body>
+<div class="row" style="margin-bottom:24px">
+  <div class="tok"><div class="box" style="border-radius:var(--r-xs)"></div><span class="lbl">r-xs</span><span class="spec">4px</span></div>
+  <div class="tok"><div class="box" style="border-radius:var(--r-sm)"></div><span class="lbl">r-sm</span><span class="spec">6px</span></div>
+  <div class="tok"><div class="box" style="border-radius:var(--r-md)"></div><span class="lbl">r-md</span><span class="spec">10px</span></div>
+  <div class="tok"><div class="box" style="border-radius:var(--r-lg)"></div><span class="lbl">r-lg</span><span class="spec">12px</span></div>
+  <div class="tok"><div class="box" style="border-radius:var(--r-xl)"></div><span class="lbl">r-xl</span><span class="spec">16px</span></div>
+  <div class="tok"><div class="box" style="border-radius:var(--r-pill);width:90px"></div><span class="lbl">r-pill</span><span class="spec">999px</span></div>
+</div>
+<div class="row">
+  <div class="tok"><div class="box shadow-1" style="border-radius:var(--r-md);border:none"></div><span class="lbl">shadow-1</span><span class="spec">subtle lift</span></div>
+  <div class="tok"><div class="box shadow-2" style="border-radius:var(--r-md);border:none"></div><span class="lbl">shadow-2</span><span class="spec">card hover</span></div>
+  <div class="tok"><div class="box shadow-3" style="border-radius:var(--r-md);border:none"></div><span class="lbl">shadow-3</span><span class="spec">modal · FAB</span></div>
+</div>
+</body></html>

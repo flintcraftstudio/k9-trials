@@ -1,0 +1,38 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.plan { display:flex;flex-direction:column;gap:24px;padding:24px;background:rgb(from var(--mist-950) r g b / 0.025);border-radius:12px }
+.plan .head { display:flex;align-items:center;justify-content:space-between }
+.plan h3 { font-size:24px;letter-spacing:-0.01em;font-weight:400 }
+.plan .price { display:flex;align-items:baseline;gap:4px;margin-top:4px }
+.plan .price .amt { font-size:16px;color:var(--mist-950) }
+.plan .price .per { font-size:16px;color:var(--mist-500) }
+.plan p.sub { font-size:14px;color:var(--mist-700);line-height:1.55;margin-top:14px }
+.plan ul { list-style:none;margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--mist-700);line-height:1.55 }
+.plan ul li { display:flex;gap:12px;align-items:flex-start }
+.plan ul li img { margin-top:6px;width:13px;height:13px;color:var(--mist-950);flex-shrink:0 }
+.plan .badge { padding:0 8px;background:rgb(from var(--mist-950) r g b / 0.10);border-radius:9999px;font-size:12px;font-weight:500;color:var(--mist-950) }
+.plan .btn { display:inline-flex;align-items:center;justify-content:center;padding:8px 16px;background:var(--mist-950);color:#fff;border-radius:9999px;font-size:14px;font-weight:500;text-decoration:none;align-self:stretch;text-align:center }
+</style>
+</head>
+<body>
+<div class="card" style="background:transparent">
+  <div class="plan">
+    <div>
+      <div class="head">
+        <h3>Pathfinder</h3>
+        <span class="badge">Most popular</span>
+      </div>
+      <div class="price"><span class="amt">$24</span><span class="per">/month</span></div>
+      <p class="sub">Full access to the four guided event paths plus unlimited trial entries through K9 Elements–run venues.</p>
+      <ul>
+        <li><img src="../assets/icons/checkmark.svg" alt="">12-week Obedience, Tracking, Detection, &amp; Protection paths</li>
+        <li><img src="../assets/icons/checkmark.svg" alt="">Unlimited trial entries &amp; waitlist priority</li>
+        <li><img src="../assets/icons/checkmark.svg" alt="">Judge-graded video review (4 / month)</li>
+        <li><img src="../assets/icons/checkmark.svg" alt="">Training library — 200+ drills, all four events</li>
+      </ul>
+    </div>
+    <a href="#" class="btn">Start free trial</a>
+  </div>
+</div>
+</body></html>

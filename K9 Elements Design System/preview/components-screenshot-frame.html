@@ -1,0 +1,29 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.frame {
+  position:relative;height:200px;border-radius:12px;overflow:hidden;
+  background-image: linear-gradient(to bottom, #637c86, #778599);
+}
+.frame::after {
+  content:""; position:absolute; inset:0; opacity:0.30; mix-blend-mode:overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 100 100'><filter id='n'><feTurbulence type='turbulence' baseFrequency='1.4' numOctaves='1' seed='2' stitchTiles='stitch' result='n'/><feComponentTransfer result='g'><feFuncR type='linear' slope='4' intercept='1'/><feFuncG type='linear' slope='4' intercept='1'/><feFuncB type='linear' slope='4' intercept='1'/></feComponentTransfer><feColorMatrix type='saturate' values='0' in='g'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.frame .inset {
+  position:absolute;left:32px;right:0;top:32px;bottom:0;background:rgba(255,255,255,0.75);
+  border-top-left-radius:6px;outline:1px solid rgb(0 0 0 / 0.1);display:flex;align-items:center;justify-content:center;
+  color:var(--mist-600);font-family:var(--font-mono);font-size:12px
+}
+</style>
+</head>
+<body>
+<div class="card" style="padding:24px;background:transparent">
+  <div class="col" style="gap:10px">
+    <div class="label">Screenshot frame · Obedience wallpaper · bottom-right placement</div>
+    <div class="frame">
+      <div class="inset">app screenshot &middot; 1670×1408</div>
+    </div>
+    <div class="mono" style="color:var(--mist-500)">Wallpaper gradient + noise · screenshot inset clipped on three sides · used behind hero / feature demos</div>
+  </div>
+</div>
+</body></html>

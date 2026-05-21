@@ -1,0 +1,19 @@
+package components
+
+// Pill is a status pill — variant is open / wait / closed / info.
+// open/wait/info render with a leading dot; closed renders without.
+templ Pill(variant string) {
+	<span class={ pillClasses(variant) }>
+		if pillHasDot(variant) {
+			<span class="dot"></span>
+		}
+		{ children... }
+	</span>
+}
+
+// EventPill is a pill tinted by event scope — event is one of
+// obedience / protection / tracking / detection. The visible label is
+// derived from the event id (capitalized first letter).
+templ EventPill(event string) {
+	<span class={ eventPillClasses(event) }>{ capitalize(event) }</span>
+}

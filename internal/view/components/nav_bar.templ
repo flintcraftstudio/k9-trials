@@ -1,0 +1,60 @@
+package components
+
+// NavBarLink is one item in the NavBar's center cluster.
+type NavBarLink struct {
+	ID    string // matches NavBar(currentRoute) — drives .active styling
+	Href  string
+	Label string
+}
+
+// NavBarProps configures NavBar. Links is the center cluster (may be nil).
+// CurrentRoute is matched against link.ID to mark the active link.
+// LoggedIn flips the right-side action between "Log in" and "Log out".
+type NavBarProps struct {
+	Links        []NavBarLink
+	CurrentRoute string
+	LoggedIn     bool
+}
+
+// DefaultNavBarLinks is the trial-app primary nav. Mirrors the marketing
+// site's chrome while reflecting what actually exists in this repo today.
+// Replace per-page (e.g. an admin section nav) by passing NavBarProps.Links.
+var DefaultNavBarLinks = []NavBarLink{
+	{ID: "home", Href: "/", Label: "Home"},
+	{ID: "contact", Href: "/contact", Label: "Contact"},
+}
+
+// NavBar renders the sticky page header — Logo on the left, page links
+// in the center, an auth-aware action on the right.
+//
+// Visual chrome (.navbar, .links, .actions) lives in the marketing-site
+// styles.css so this component looks identical to k9elements.com.
+templ NavBar(p NavBarProps) {
+	<header class="navbar">
+		<div class="inner">
+			@Logo(0)
+			<nav class="links flex-1 justify-center">
+				for _, l := range p.Links {
+					if l.ID == p.CurrentRoute {
+						<a href={ templ.SafeURL(l.Href) } class="active">{ l.Label }</a>
+					} else {
+						<a href={ templ.SafeURL(l.Href) }>{ l.Label }</a>
+					}
+				}
+			</nav>
+			<div class="actions">
+				if p.LoggedIn {
+					<form hx-post="/logout" hx-swap="none" class="contents">
+						@Button(ButtonProps{Variant: "plain", Size: "md", Type: "submit"}) {
+							Log out
+						}
+					</form>
+				} else {
+					@Button(ButtonProps{Variant: "primary", Size: "md", Href: "/login"}) {
+						Log in
+					}
+				}
+			</div>
+		</div>
+	</header>
+}

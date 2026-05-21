@@ -1,13 +1,25 @@
 package view
 
-templ Base(title, description string, body templ.Component) {
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/session"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// Base is the page shell. The K9 Elements design-system stylesheet
+// (imported via tailwind/input.css → colors_and_type.css) styles html
+// and body with --color-bg, --color-fg, and --font-sans on its own — no
+// background/font/color classes belong here. currentRoute matches one of
+// the IDs in components.DefaultNavBarLinks so the nav can mark the active
+// link.
+templ Base(title, description, currentRoute string, body templ.Component) {
 	<!DOCTYPE html>
-	<html lang="en" class="bg-ff-dark text-ff-cream">
+	<html lang="en">
 		<head>
 			<meta charset="UTF-8"/>
 			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 			<meta name="description" content={ description }/>
 			<title>{ title } | { SiteName }</title>
+			<link rel="icon" type="image/png" href="/static/img/k9-elements-logo.png"/>
 			if GtagID != "" {
 				<script async src={ "https://www.googletagmanager.com/gtag/js?id=" + GtagID }></script>
 				@gtagInit()
@@ -23,14 +35,16 @@ templ Base(title, description string, body templ.Component) {
 			<script src="/static/js/htmx.min.js" defer></script>
 			<script src="/static/js/alpine.min.js" defer></script>
 		</head>
-		<body class="min-h-screen font-body text-[15px] font-light antialiased">
-			<canvas id="firefly-canvas" class="pointer-events-none fixed inset-0 z-[5] h-full w-full"></canvas>
-			@Nav()
+		<body class="min-h-screen antialiased">
+			@components.NavBar(components.NavBarProps{
+				Links:        components.DefaultNavBarLinks,
+				CurrentRoute: currentRoute,
+				LoggedIn:     session.FromContext(ctx) != nil,
+			})
 			<main>
 				@body
 			</main>
-			@Footer()
-			<script src="/static/js/fireflies.js" defer></script>
+			@components.Footer()
 		</body>
 	</html>
 }

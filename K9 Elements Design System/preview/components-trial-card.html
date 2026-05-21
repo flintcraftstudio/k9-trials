@@ -1,0 +1,41 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.trial { padding:20px;background:#fff;border-radius:12px;border:1px solid var(--mist-200);display:flex;flex-direction:column;gap:14px }
+.trial .top { display:flex;justify-content:space-between;align-items:flex-start;gap:12px }
+.trial .meta { display:flex;flex-direction:column;gap:4px }
+.trial .eye { font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--event-600,var(--mist-700)) }
+.trial h4 { font-family:var(--font-display);font-weight:400;font-size:24px;letter-spacing:-0.01em;line-height:1.15;color:var(--mist-950);max-width:330px }
+.trial .pill { display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:9999px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;background:var(--green-100);color:var(--green-700) }
+.trial .pill .dot { width:6px;height:6px;border-radius:9999px;background:currentColor }
+.trial .row-info { display:flex;gap:24px;font-size:13px;color:var(--mist-700) }
+.trial .row-info > div { display:flex;align-items:center;gap:6px }
+.trial .row-info img { width:13px;height:13px;color:var(--mist-700) }
+.trial .footer { display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--mist-200) }
+.trial .spots { font-size:13px;color:var(--mist-700) }
+.trial .spots b { color:var(--mist-950);font-weight:600 }
+.trial a { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:var(--mist-950);color:#fff;font-size:13px;font-weight:500;border-radius:9999px;text-decoration:none }
+</style>
+</head>
+<body>
+<div class="card" style="background:transparent;padding:24px">
+  <div class="trial" data-event="detection">
+    <div class="top">
+      <div class="meta">
+        <div class="eye">Detection · Trial</div>
+        <h4>Spring Open — Eastern Region</h4>
+      </div>
+      <span class="pill"><span class="dot"></span>Open</span>
+    </div>
+    <div class="row-info">
+      <div><img src="../assets/icons/calendar.svg" alt="">Sat, May 24</div>
+      <div><img src="../assets/icons/clock.svg" alt="">06.30 walkthrough</div>
+      <div><img src="../assets/icons/map-pin.svg" alt="">Reston, VA</div>
+    </div>
+    <div class="footer">
+      <div class="spots"><b>18</b> of 24 spots filled · entries close in 6 days</div>
+      <a href="#">Enter <img src="../assets/icons/arrow-right.svg" alt="" style="width:13px;height:7px;filter:invert(1)"></a>
+    </div>
+  </div>
+</div>
+</body></html>

@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="_card.css">
+<style>
+.wp {
+  position: relative; height: 80px; border-radius: 8px; overflow: hidden;
+  background-image: linear-gradient(to bottom, var(--top), var(--bot));
+}
+.wp::after {
+  content:""; position:absolute; inset:0; opacity:0.30; mix-blend-mode:overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='250' viewBox='0 0 100 100'><filter id='n'><feTurbulence type='turbulence' baseFrequency='1.4' numOctaves='1' seed='2' stitchTiles='stitch' result='n'/><feComponentTransfer result='g'><feFuncR type='linear' slope='4' intercept='1'/><feFuncG type='linear' slope='4' intercept='1'/><feFuncB type='linear' slope='4' intercept='1'/></feComponentTransfer><feColorMatrix type='saturate' values='0' in='g'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.wp .label {
+  position: absolute; bottom: 8px; left: 10px; color: rgba(255,255,255,0.9); font-size: 11px;
+  font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="col" style="gap:14px">
+    <div style="font-size:15px;font-weight:500">Wallpaper blocks</div>
+    <div class="mono">Linear gradient + SVG turbulence noise · backdrop for hero screenshots &amp; event tiles</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:4px">
+      <div class="wp" style="--top:#637c86;--bot:#778599"><span class="label">Obedience · blue</span></div>
+      <div class="wp" style="--top:#3c3c3c;--bot:#2a2a2a"><span class="label">Protection · charcoal</span></div>
+      <div class="wp" style="--top:#9ca88f;--bot:#596352"><span class="label">Tracking · green</span></div>
+      <div class="wp" style="--top:#8d7359;--bot:#765959"><span class="label">Detection · brown-orange</span></div>
+    </div>
+  </div>
+</div>
+</body></html>

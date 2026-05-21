@@ -1,12 +1,12 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap");
+/*
+  K9 Elements design system. Pulls in colors_and_type.css (tokens, dark mode,
+  data-event scoping, semantic element defaults, Instrument Serif/Sans
+  webfont @import) via its own nested @import plus the marketing-site
+  component classes (.btn, .pill, .eyebrow, .navbar, .footer, .trial-card,
+  .event-tile, .photo, etc.).
+*/
+@import "../K9 Elements Design System/ui_kits/marketing-site/styles.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer base {
-  ::selection {
-    background: rgba(91, 126, 196, 0.35);
-    color: #edf0f7;
-  }
-}
