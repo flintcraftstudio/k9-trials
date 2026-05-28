@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>R · Register</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>R · Register</strong> — Registration bridge. Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="reg" id="panel-reg" data-screen-label="R · Register">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">R · Registration bridge <em>— competitor → admin handoff</em></h2>
+      <div class="panel-sub">A focused two-step flow. Carries the global top bar (with "My account" chip) but <strong>no account sub-tabs</strong> — this is a checkout, not a section. Lives under <code>/events/*</code> because it's tied to an event. Creates <code>pending</code> registration rows; admin accepts them in D5.</div>
+    </div>
+  </header>
+
+  <div class="screens">
+
+    <!-- ============ R1a — Step 1 ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">R1 · Step 1</span>
+        <span class="sc-title">Pick a dog</span>
+        <span class="sc-blurb">Radio over the user's roster. If empty, the form is replaced by an "Add a dog first" card that returns here after the dog is saved.</span>
+        <span class="sc-path">/events/cedar-creek-spring/register</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← Cedar Creek Spring</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Register · step 1 of 2</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Pick a dog</div>
+              <div class="muted t11">Cedar Creek Spring Trial · 14–16 Mar 2026</div>
+            </div>
+            <!-- step indicator -->
+            <div class="steps">
+              <span class="step cur"><span class="n">1</span>Dog</span>
+              <span style="color:var(--mist-400);">→</span>
+              <span class="step"><span class="n">2</span>Trials</span>
+              <span style="color:var(--mist-400);">→</span>
+              <span class="step">Submit</span>
+            </div>
+
+            <!-- Dog options as radio list -->
+            <div class="col g6">
+              <div class="card event-rail" data-event="obedience" style="padding:10px 12px 10px 16px; gap:4px; border:2px solid var(--blue-600);">
+                <div class="row g8 between">
+                  <div class="row g8">
+                    <div class="wf-photo" style="width:36px; height:36px; border-radius:999px;">V</div>
+                    <div class="col">
+                      <span class="bold t12">Vex</span>
+                      <span class="muted t10">Czech GSD · M · 4y · K9-3187</span>
+                    </div>
+                  </div>
+                  <span class="t14 bold" style="color:var(--blue-700);">●</span>
+                </div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row g8 between">
+                  <div class="row g8">
+                    <div class="wf-photo" style="width:36px; height:36px; border-radius:999px;">K</div>
+                    <div class="col">
+                      <span class="bold t12">Kestrel</span>
+                      <span class="muted t10">Belgian Malinois · F · 6y · K9-2741</span>
+                    </div>
+                  </div>
+                  <span class="t14 muted" style="border:1px solid var(--mist-400); width:14px; height:14px; border-radius:999px;"></span>
+                </div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row g8 between">
+                  <div class="row g8">
+                    <div class="wf-photo" style="width:36px; height:36px; border-radius:999px;">N</div>
+                    <div class="col">
+                      <span class="bold t12">Nyx</span>
+                      <span class="muted t10">Belgian Malinois · F · 2y · in training</span>
+                    </div>
+                  </div>
+                  <span class="t14 muted" style="border:1px solid var(--mist-400); width:14px; height:14px; border-radius:999px;"></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="t10 muted" style="text-align:center;">+ <a href="#" style="color:var(--mist-950); text-decoration:underline;">Add another dog</a> · returns here after saving</div>
+
+            <div class="row g6" style="margin-top:auto; padding-top:10px;">
+              <button class="btn btn-ghost f1">Cancel</button>
+              <button class="btn btn-primary f1">Next: trials →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ R1b — Step 2 ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">R1 · Step 2</span>
+        <span class="sc-title">Pick trials</span>
+        <span class="sc-blurb">Checkbox list of trials within the event. DB-enforced uniqueness blocks duplicate entry for the same dog in the same trial; UI shows it as a disabled state.</span>
+        <span class="sc-path">/events/cedar-creek-spring/register</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:12px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← Back</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Register · step 2 of 2</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Pick trials for Vex</div>
+              <div class="muted t11">Cedar Creek Spring · 4 trials available</div>
+            </div>
+            <div class="steps">
+              <span class="step"><span class="n">1</span>Vex ✓</span>
+              <span style="color:var(--mist-400);">→</span>
+              <span class="step cur"><span class="n">2</span>Trials</span>
+              <span style="color:var(--mist-400);">→</span>
+              <span class="step">Submit</span>
+            </div>
+
+            <div class="col g6">
+              <div class="card event-rail" data-event="obedience" style="padding:10px 12px 10px 16px; gap:4px; border:2px solid var(--blue-600);">
+                <div class="row between">
+                  <div class="col">
+                    <span class="bold t12">Obedience · Open · L2</span>
+                    <span class="muted t10">Sat 14 Mar · 12 / 24 entries · J. Marsh</span>
+                  </div>
+                  <span class="t14" style="color:var(--blue-700);">☑</span>
+                </div>
+              </div>
+              <div class="card event-rail" data-event="obedience" style="padding:10px 12px 10px 16px; gap:4px;">
+                <div class="row between">
+                  <div class="col">
+                    <span class="bold t12">Obedience · Open · L3</span>
+                    <span class="muted t10">Mon 16 Mar · 12 / 24 entries · H. Vance</span>
+                  </div>
+                  <span class="t14 muted">☐</span>
+                </div>
+              </div>
+              <div class="card event-rail" data-event="tracking" style="padding:10px 12px 10px 16px; gap:4px;">
+                <div class="row between">
+                  <div class="col">
+                    <span class="bold t12">Tracking · L1</span>
+                    <span class="muted t10">Sun 15 Mar · 8 / 16 entries · judge tba</span>
+                  </div>
+                  <span class="t14 muted">☐</span>
+                </div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px; opacity:0.5;">
+                <div class="row between">
+                  <div class="col">
+                    <span class="bold t12">Tracking · L2</span>
+                    <span class="muted t10">Sun 15 Mar · Vex already entered · disabled</span>
+                  </div>
+                  <span class="t14 muted">—</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="field">
+              <label>Notes (optional)</label>
+              <div class="wf-input" style="min-height:60px; align-items:flex-start; padding-top:8px; color:var(--mist-600);">
+                Qualification status, accommodations, etc.
+              </div>
+            </div>
+
+            <!-- Summary + submit -->
+            <div class="banner neutral t11">
+              <div class="col g2">
+                <strong>1 trial selected for Vex</strong>
+                <span class="muted">Submitting creates a <strong>pending</strong> registration. Admin will confirm shortly. You'll be notified.</span>
+              </div>
+            </div>
+            <div class="row g6">
+              <button class="btn btn-ghost f1">Back</button>
+              <button class="btn btn-primary f1">Submit registration</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — can a competitor pick trials for multiple dogs in one go, or always one-dog-at-a-time? Clubs registering on behalf will want bulk.</div>
+    </div>
+
+    <!-- ============ R1c — Registration not open ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">R1 · Edge state</span>
+        <span class="sc-title">Registration not yet open</span>
+        <span class="sc-blurb">Shown when the event has no published trials yet. Keeps the user oriented without showing an empty form.</span>
+        <span class="sc-path">/events/{slug}/register</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="col f1 center" style="padding:24px; gap:14px; text-align:center;">
+            <div class="wf-photo" style="width:80px; height:80px; border-radius:999px;">!</div>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Registration · closed</span>
+              <div class="serif" style="font-size:22px; line-height:1.1;">Not yet open</div>
+            </div>
+            <div class="t11 muted" style="line-height:1.5;">
+              The organizers haven't published trials for <strong>Hopkins Mill Tracking</strong> yet. Registration opens 1 Mar. We'll email you when it does.
+            </div>
+            <div class="row g6">
+              <button class="btn btn-outline">Notify me</button>
+              <button class="btn btn-soft">← Back to event</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

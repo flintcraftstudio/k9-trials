@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>Flow map</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>Flow map</strong> — Flow map — how the surfaces connect. Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="map" id="panel-map" data-screen-label="Flow map">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">Flow map <em>— how the whole thing connects</em></h2>
+      <div class="panel-sub">Five surfaces, four personas. The judge tablet (green) is already built — everything else is in this draft. The orange dashed bridge is the registration path where competitor self-service hands off to admin review; that handoff is the single biggest design risk in the app.</div>
+    </div>
+  </header>
+
+  <div class="flow-map">
+    <div class="flow-legend">
+      <span class="lg-item"><span class="sw pub"></span>Public (anonymous)</span>
+      <span class="lg-item"><span class="sw auth"></span>Auth</span>
+      <span class="lg-item"><span class="sw acct"></span>Competitor account</span>
+      <span class="lg-item"><span class="sw reg"></span>Registration bridge</span>
+      <span class="lg-item"><span class="sw adm"></span>Admin</span>
+      <span class="lg-item"><span class="sw judge"></span>Judge (built)</span>
+    </div>
+
+    <div class="flow-grid">
+
+      <!-- ============ COLUMN 1 — PUBLIC ============ -->
+      <div class="flow-col">
+        <div class="flow-col-title"><span class="role">Anonymous visitor</span>Public</div>
+
+        <a class="flow-node" href="#pub"><span class="fn-code">P1</span><span class="fn-title">Events index</span><span class="fn-path">/events</span></a>
+        <div class="flow-arrow">↓</div>
+        <a class="flow-node" href="#pub"><span class="fn-code">P2</span><span class="fn-title">Event detail</span><span class="fn-path">/events/{slug}</span></a>
+        <div class="flow-arrow">↓</div>
+        <a class="flow-node" href="#pub"><span class="fn-code">P3</span><span class="fn-title">Trial leaderboard</span><span class="fn-path">/events/{slug}/trials/{id}</span></a>
+        <div class="flow-arrow">↓</div>
+        <a class="flow-node" href="#pub"><span class="fn-code">P4</span><span class="fn-title">Public entry detail</span><span class="fn-path">/entries/{id}</span></a>
+
+        <div class="flow-divider">Directory</div>
+        <a class="flow-node" href="#pub"><span class="fn-code">P5</span><span class="fn-title">Competitor search</span><span class="fn-path">/competitors</span></a>
+        <a class="flow-node" href="#pub"><span class="fn-code">P6</span><span class="fn-title">Competitor profile</span><span class="fn-path">/competitors/{handle}</span></a>
+        <a class="flow-node" href="#pub"><span class="fn-code">P7</span><span class="fn-title">Dog profile</span><span class="fn-path">/dogs/{id}</span></a>
+      </div>
+
+      <!-- ============ COLUMN 2 — AUTH ============ -->
+      <div class="flow-col">
+        <div class="flow-col-title"><span class="role">Front door</span>Auth</div>
+
+        <a class="flow-node auth" href="#auth"><span class="fn-code">U1</span><span class="fn-title">Sign up</span><span class="fn-path">/signup</span></a>
+        <div class="flow-arrow">↓</div>
+        <a class="flow-node auth" href="#auth"><span class="fn-code">U2</span><span class="fn-title">Log in</span><span class="fn-path">/login</span></a>
+        <div class="flow-arrow">↓</div>
+        <div class="flow-divider">After session start</div>
+        <div class="t11 muted" style="line-height:1.5;">
+          The "My account" role chip appears in the top bar; lands on <strong style="color:var(--mist-950);">A1 Dashboard</strong>.
+          Admins land on <strong style="color:var(--mist-950);">D1</strong>; judges go straight to the tablet shell (out of scope).
+        </div>
+
+        <div class="flow-divider">Multi-role-ready</div>
+        <div class="t11 muted" style="line-height:1.5;">
+          The chip area is plural under the hood. A competing admin sees two chips, no component changes.
+        </div>
+      </div>
+
+      <!-- ============ COLUMN 3 — ACCOUNT ============ -->
+      <div class="flow-col">
+        <div class="flow-col-title"><span class="role">Competitor</span>My account</div>
+
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A1</span><span class="fn-title">Dashboard</span><span class="fn-path">/account</span></a>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A2</span><span class="fn-title">Profile editor</span><span class="fn-path">/account/profile</span></a>
+        <div class="flow-divider">Dogs</div>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A3</span><span class="fn-title">Dogs list</span><span class="fn-path">/account/dogs</span></a>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A4</span><span class="fn-title">Dog form (add/edit)</span><span class="fn-path">/account/dogs/{id}/edit</span></a>
+
+        <div class="flow-divider">Entries</div>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A5</span><span class="fn-title">Entries list</span><span class="fn-path">/account/entries</span></a>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A6</span><span class="fn-title">Entry detail (own)</span><span class="fn-path">/account/entries/{id}</span></a>
+
+        <div class="flow-divider">Challenges</div>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A7</span><span class="fn-title">Challenges list</span><span class="fn-path">/account/challenges</span></a>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A8</span><span class="fn-title">File a challenge</span><span class="fn-path">/account/challenges/new</span></a>
+      </div>
+
+      <!-- ============ COLUMN 4 — REGISTRATION BRIDGE ============ -->
+      <div class="flow-col">
+        <div class="flow-col-title"><span class="role">Bridge</span>Registration</div>
+
+        <a class="flow-node reg" href="#reg"><span class="fn-code">R1</span><span class="fn-title">Register a dog</span><span class="fn-path">/events/{slug}/register</span></a>
+        <div class="flow-arrow">↓</div>
+        <div class="t11 muted" style="line-height:1.5; padding:0 6px;">
+          Auth-gated. Carries the global top bar but <strong style="color:var(--mist-950);">no account sub-tabs</strong> — focused flow, not a section.
+        </div>
+
+        <div class="flow-divider">Creates</div>
+        <div class="flow-node reg" style="cursor:default;">
+          <span class="fn-code">→ pending registration</span>
+          <span class="fn-title">Awaits admin review</span>
+          <span class="fn-path">status: pending → accepted → entry</span>
+        </div>
+
+        <div class="flow-divider">Reviewed by</div>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D5</span><span class="fn-title">Registration review</span><span class="fn-path">/admin/events/{id}/registrations</span></a>
+
+        <div class="flow-divider">Then visible at</div>
+        <a class="flow-node acct" href="#acct"><span class="fn-code">A6</span><span class="fn-title">Entry detail</span><span class="fn-path">/account/entries/{id}</span></a>
+      </div>
+
+      <!-- ============ COLUMN 5 — ADMIN ============ -->
+      <div class="flow-col">
+        <div class="flow-col-title"><span class="role">Admin</span>Operations</div>
+
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D1</span><span class="fn-title">Dashboard</span><span class="fn-path">/admin</span></a>
+
+        <div class="flow-divider" style="color:var(--mist-400);">All events</div>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D2</span><span class="fn-title">Events list</span><span class="fn-path">/admin/events</span></a>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D3</span><span class="fn-title">Event form</span><span class="fn-path">/admin/events/{id}/edit</span></a>
+
+        <div class="flow-divider" style="color:var(--mist-400);">In an event</div>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D4</span><span class="fn-title">Trials</span><span class="fn-path">/admin/events/{id}/trials</span></a>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D5</span><span class="fn-title">Registrations</span><span class="fn-path">/admin/events/{id}/registrations</span></a>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D6</span><span class="fn-title">Judge assignments</span><span class="fn-path">/admin/events/{id}/assignments</span></a>
+
+        <div class="flow-divider" style="color:var(--mist-400);">Cross-event</div>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D7</span><span class="fn-title">Challenge queue</span><span class="fn-path">/admin/challenges</span></a>
+        <a class="flow-node adm" href="#adm"><span class="fn-code">D8</span><span class="fn-title">Users &amp; roles</span><span class="fn-path">/admin/users</span></a>
+
+        <div class="flow-divider" style="color:var(--mist-400);">Handoff</div>
+        <a class="flow-node judge" href="#adm"><span class="fn-code">B1–B6</span><span class="fn-title">Judge tablet</span><span class="fn-path">already built</span></a>
+      </div>
+    </div>
+
+    <div class="flow-note">
+      <div>
+        <h4>The two main loops</h4>
+        Most user time is spent in two loops: the <strong>competitor</strong> loop (browse public → log in → register → wait → see results → maybe challenge) and the <strong>admin</strong> loop (open event → manage trials → review registrations → assign judges → review challenges). The judge tablet is a sealed third loop.
+      </div>
+      <div>
+        <h4>Empty states are the default</h4>
+        Pre-launch and well past launch, most account/admin lists will be empty. Every list screen in this draft has a real empty-state sketch — not "No data."
+      </div>
+      <div>
+        <h4>Open questions on the map</h4>
+        Withdrawal UX once admin has accepted (A6); concurrent multi-judge trials (D6); admin role on the public site — do they get an "admin" hat or stay invisible? (top bar). Flagged inline with orange chips on the relevant screens.
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

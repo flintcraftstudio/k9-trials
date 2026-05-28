@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>A · Account</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>A · Account</strong> — Competitor account. Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="acct" id="panel-acct" data-screen-label="A · Account">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">A · Competitor account <em>— self-service surface</em></h2>
+      <div class="panel-sub">Five sub-tabs: Dashboard / Profile / Dogs / Entries / Challenges. The global top bar shows "My account" as the active role chip. Sub-tabs overflow-scroll on small screens; on this draft they fit on one phone row.</div>
+    </div>
+  </header>
+
+  <div class="screens">
+
+    <!-- ============ A1 — Dashboard ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A1 · Account</span>
+        <span class="sc-title">Dashboard</span>
+        <span class="sc-blurb">The "what do I need to do?" landing. Up-next entry takes prime real estate; recent results and quick actions sit below.</span>
+        <span class="sc-path">/account</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab cur">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Hi, L. Tanaka</span>
+              <div class="muted t11">Three dogs · 12 finalized entries · 1 open challenge</div>
+            </div>
+
+            <!-- Up next -->
+            <div class="card event-rail" data-event="obedience" style="padding:14px 14px 14px 18px; gap:8px; background:var(--blue-50); border-color:var(--blue-300);">
+              <div class="row between">
+                <span class="wf-eyebrow" style="color:var(--blue-700);">Up next · accepted</span>
+                <span class="muted t10">in 12 days</span>
+              </div>
+              <div class="serif" style="font-size:20px; line-height:1.05;">Cedar Creek Spring Trial</div>
+              <div class="muted t11">Obedience · Open · L2 · Sat 14 Mar · entry #17</div>
+              <div class="row g6" style="margin-top:4px;">
+                <span class="bold t12">Vex</span>
+                <span class="muted t11">· K9-3187</span>
+              </div>
+              <button class="btn btn-soft" style="align-self:flex-start; padding:5px 12px;">View entry →</button>
+            </div>
+
+            <!-- Recent results -->
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Recent results</span>
+            </div>
+            <div class="card" style="padding:0; gap:0;">
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Kestrel · Detection L3</span><span class="meta">Brindle Bay · 8 Feb</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">182</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Vex · Protection L2</span><span class="meta">Hopkins Mill · 12 Jan</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="pill nq">NQ</span></div>
+              </div>
+            </div>
+
+            <!-- Open challenges -->
+            <div class="banner warn t11" style="align-items:center;">
+              <span class="bold">1 challenge open</span><span>· filed against Vex/Hopkins Mill</span><span style="margin-left:auto;">View →</span>
+            </div>
+
+            <!-- Quick actions -->
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Quick actions</span>
+              <div class="row g6 wrap">
+                <button class="btn btn-soft" style="padding:6px 12px;">Register for an event</button>
+                <button class="btn btn-soft" style="padding:6px 12px;">Add a dog</button>
+                <button class="btn btn-soft" style="padding:6px 12px;">View public profile</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — should "Up next" show running order if it's assigned, or stay vague until check-in?</div>
+    </div>
+
+    <!-- ============ A2 — Profile ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A2 · Account</span>
+        <span class="sc-title">Profile editor</span>
+        <span class="sc-blurb">Display name, handle, bio. The public URL preview makes the consequence of a handle change concrete.</span>
+        <span class="sc-path">/account/profile</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab cur">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Profile</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Edit your public page</div>
+            </div>
+            <div class="banner info t11">
+              Your public page is <strong>k9elements.com/competitors/ltanaka</strong>
+              <span style="margin-left:auto;">View ↗</span>
+            </div>
+            <div class="field">
+              <label>Display name</label>
+              <div class="wf-input">L. Tanaka</div>
+            </div>
+            <div class="field">
+              <label>Handle</label>
+              <div class="row g4">
+                <span class="t14 muted" style="padding-top:4px;">@</span>
+                <div class="wf-input f1">ltanaka</div>
+              </div>
+              <span class="help">Changing this updates the public URL. Old links keep working for 30 days.</span>
+            </div>
+            <div class="field">
+              <label>Bio</label>
+              <div class="wf-input" style="min-height:80px; align-items:flex-start; padding-top:8px; line-height:1.5;">
+                Working IPO since 2014. Mali &amp; Czech-line GSDs. Trial reports linked from my profile — happy to chat about training.
+              </div>
+              <span class="help">Plain text. Shows on your public page.</span>
+            </div>
+            <div class="row g6">
+              <button class="btn btn-primary" style="padding:8px 18px;">Save</button>
+              <button class="btn btn-ghost" style="padding:8px 12px;">Cancel</button>
+              <span class="muted t10" style="margin-left:auto; align-self:center;">Last saved 2 days ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ A3 — Dogs list ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A3 · Account</span>
+        <span class="sc-title">Dogs list</span>
+        <span class="sc-blurb">One card per dog. Prominent "Add a dog" CTA at the top — it's the gate for registration.</span>
+        <span class="sc-path">/account/dogs</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab cur">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:12px;">
+            <div class="row between">
+              <div class="col g2">
+                <span class="wf-eyebrow" style="color:var(--mist-600);">Dogs · 3</span>
+                <div class="serif" style="font-size:22px; line-height:1.05;">Your roster</div>
+              </div>
+              <button class="btn btn-primary" style="padding:7px 14px;">+ Add a dog</button>
+            </div>
+
+            <div class="card" style="padding:10px 12px; gap:6px;">
+              <div class="row between">
+                <span class="bold t14">Vex</span>
+                <span class="muted t10 tabular">K9-3187</span>
+              </div>
+              <div class="muted t11">Czech GSD · M · 4y · last ran 2 days ago</div>
+              <div class="row g4" style="margin-top:2px;">
+                <button class="btn btn-soft" style="padding:4px 10px; font-size:11px;">Edit</button>
+                <button class="btn btn-ghost" style="padding:4px 10px; font-size:11px;">Public page ↗</button>
+              </div>
+            </div>
+            <div class="card" style="padding:10px 12px; gap:6px;">
+              <div class="row between">
+                <span class="bold t14">Kestrel</span>
+                <span class="muted t10 tabular">K9-2741</span>
+              </div>
+              <div class="muted t11">Belgian Malinois · F · 6y · last ran 3 weeks ago</div>
+              <div class="row g4" style="margin-top:2px;">
+                <button class="btn btn-soft" style="padding:4px 10px; font-size:11px;">Edit</button>
+                <button class="btn btn-ghost" style="padding:4px 10px; font-size:11px;">Public page ↗</button>
+              </div>
+            </div>
+            <div class="card" style="padding:10px 12px; gap:6px;">
+              <div class="row between">
+                <span class="bold t14">Nyx</span>
+                <span class="muted t10 tabular">K9-3902</span>
+              </div>
+              <div class="muted t11">Belgian Malinois · F · 2y · in training · no entries yet</div>
+              <div class="row g4" style="margin-top:2px;">
+                <button class="btn btn-soft" style="padding:4px 10px; font-size:11px;">Edit</button>
+                <button class="btn btn-ghost" style="padding:4px 10px; font-size:11px;">Public page ↗</button>
+              </div>
+            </div>
+
+            <!-- Empty state mini -->
+            <div class="wf-box t11" style="border-style:dashed; text-align:center; padding:14px;">
+              <strong style="color:var(--mist-950);">Empty state →</strong> if 0 dogs, replace the whole list with a hero "Add your first dog" card.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ A4 — Dog form ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A4 · Account</span>
+        <span class="sc-title">Dog form (add / edit)</span>
+        <span class="sc-blurb">Single form, two URLs. Only call name required — everything else nullable so a dog can exist in the registry before competing.</span>
+        <span class="sc-path">/account/dogs/new · /account/dogs/{id}/edit</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab cur">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← All dogs</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Edit dog</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Vex</div>
+              <div class="muted t10"><a href="#" style="color:var(--blue-700);">View public profile</a></div>
+            </div>
+            <div class="field">
+              <label>Call name <span style="color:var(--color-danger);">*</span></label>
+              <div class="wf-input">Vex</div>
+            </div>
+            <div class="field">
+              <label>Registered name</label>
+              <div class="wf-input">Forge Vom Schwarzwald</div>
+              <span class="help">Optional — used on certificates.</span>
+            </div>
+            <div class="field">
+              <label>Breed</label>
+              <div class="wf-input">Czech German Shepherd ▾</div>
+              <span class="help">Autocomplete from FCI / AKC registry.</span>
+            </div>
+            <div class="row g6">
+              <div class="field f1">
+                <label>DOB</label>
+                <div class="wf-input">2022-04-12</div>
+              </div>
+              <div class="field f1">
+                <label>Sex</label>
+                <div class="wf-input">M ▾</div>
+              </div>
+            </div>
+            <div class="field">
+              <label>Registration number</label>
+              <div class="wf-input tabular">K9-3187</div>
+              <span class="help">Optional. Lets buyers and clubs verify.</span>
+            </div>
+            <div class="row g6" style="margin-top:6px;">
+              <button class="btn btn-primary" style="padding:8px 18px;">Save</button>
+              <button class="btn btn-ghost" style="padding:8px 12px;">Cancel</button>
+              <button class="btn btn-ghost" style="padding:8px 12px; color:var(--color-danger); margin-left:auto;">Delete…</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ A5 — Entries list ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A5 · Account</span>
+        <span class="sc-title">Entries list</span>
+        <span class="sc-blurb">Every entry across every event. Filter chips by status. Each row links into the entry detail (A6).</span>
+        <span class="sc-path">/account/entries</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab cur">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col" style="padding:14px 14px 8px;">
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Entries · 14</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Your runs</div>
+            </div>
+          </div>
+          <div class="row g6 wrap" style="padding:0 14px 10px;">
+            <span class="pill" style="background:var(--mist-950);color:white;">All · 14</span>
+            <span class="pill pending">Upcoming · 2</span>
+            <span class="pill inprog">In progress · 1</span>
+            <span class="pill synced">Finalized · 11</span>
+          </div>
+          <div class="col f1 scroll-y" style="background:white;">
+            <div class="data-row event-rail" data-event="obedience" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Cedar Creek · Obedience Open L2</span>
+                <span class="meta">Vex · entry #17 · Sat 14 Mar</span>
+              </div>
+              <span class="pill" style="background:var(--blue-100);color:var(--blue-800);">accepted</span>
+            </div>
+            <div class="data-row event-rail" data-event="tracking" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Hopkins Mill · Tracking L1</span>
+                <span class="meta">Nyx · pending review · 4 Apr</span>
+              </div>
+              <span class="pill unsynced">pending</span>
+            </div>
+            <div class="data-row event-rail" data-event="detection" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Brindle Bay · Detection L3</span>
+                <span class="meta">Kestrel · this weekend</span>
+              </div>
+              <span class="pill inprog"><span class="dot"></span>scoring</span>
+            </div>
+            <div class="data-row event-rail" data-event="detection" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Brindle Bay · Detection L3</span>
+                <span class="meta">Kestrel · 8 Feb · scored 182</span>
+              </div>
+              <span class="pill synced">finalized · Q</span>
+            </div>
+            <div class="data-row event-rail" data-event="protection" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Hopkins Mill · Protection L2</span>
+                <span class="meta">Vex · 12 Jan · challenged</span>
+              </div>
+              <span class="pill nq">finalized · NQ</span>
+            </div>
+            <div class="data-row event-rail" data-event="obedience" style="grid-template-columns: 1fr auto; padding:10px 12px 10px 16px;">
+              <div class="col">
+                <span class="primary t12">Cedar Creek · Obedience Novice L1</span>
+                <span class="meta">Vex · 4 Oct '25 · scored 187</span>
+              </div>
+              <span class="pill synced">finalized · Q</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ A6 — Entry detail (own) ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A6 · Account</span>
+        <span class="sc-title">Entry detail (own)</span>
+        <span class="sc-blurb">Three states depending on entry status. This shows finalized + challenge-eligible. In-progress shows no partial scores. Pending shows withdraw + queue-position info when running order is assigned.</span>
+        <span class="sc-path">/account/entries/{id}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab cur">Entries</span>
+            <span class="stab">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:12px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← All entries</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open · L2 · Entry 14</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Cedar Creek Spring Trial</div>
+              <div class="muted t11">Vex · K9-3187 · handled by L. Tanaka · 14 Mar 2026</div>
+            </div>
+            <!-- Score card -->
+            <div class="row g8 center" style="padding:12px; background:var(--green-50); border:1px solid var(--green-300); border-radius:10px;">
+              <div class="col f1">
+                <span class="wf-eyebrow" style="color:var(--green-700);">Final</span>
+                <div class="serif t28 tabular" style="line-height:1;">193 / 200</div>
+                <div class="t10" style="color:var(--green-800);">qualifying · threshold 170</div>
+              </div>
+              <span class="pill synced">Finalized</span>
+            </div>
+            <!-- Score breakdown -->
+            <div class="card" style="padding:0; gap:0;">
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <span>1 · Heel on lead</span><span class="tabular bold">37 / 40</span>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <span>2 · Stand for examination</span><span class="tabular bold">28 / 30</span>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <span>3 · Heel free</span><span class="tabular bold">39 / 40</span>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <span>4 · Recall</span><span class="tabular bold">29 / 30</span>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <span>5 · Long sit · Long down</span><span class="tabular bold">60 / 60</span>
+              </div>
+            </div>
+            <!-- Challenge CTA -->
+            <div class="banner warn t11" style="flex-direction:column; align-items:stretch; gap:8px;">
+              <div><strong>Something look wrong?</strong> If you believe this score is incorrect, file a challenge within 7 days. The judge will be asked to re-score; the audit chain stays intact.</div>
+              <button class="btn btn-outline" style="align-self:flex-start; padding:5px 12px;">Challenge this score →</button>
+            </div>
+            <div class="muted t10">Judged by H. Vance · finalized 14 Mar 2026 · 🔒 Locked</div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — withdraw window after admin "accepts" the entry. Self-service, or admin-mediated?</div>
+    </div>
+
+    <!-- ============ A7 — Challenges list ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A7 · Account</span>
+        <span class="sc-title">Challenges list</span>
+        <span class="sc-blurb">Every dispute the user has filed. Same shape as entries list, status-keyed. Empty state explains the concept since most users will never file one.</span>
+        <span class="sc-path">/account/challenges</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab cur">Challenges</span>
+          </div>
+          <div class="col" style="padding:14px 14px 8px;">
+            <span class="wf-eyebrow" style="color:var(--mist-600);">Challenges · 2</span>
+            <div class="serif" style="font-size:22px; line-height:1.05;">Score disputes</div>
+            <div class="muted t11">Last update 1 hour ago.</div>
+          </div>
+          <div class="row g6" style="padding:0 14px 10px;">
+            <span class="pill" style="background:var(--mist-950);color:white;">All</span>
+            <span class="pill unsynced">Open · 1</span>
+            <span class="pill inprog">Under review · 1</span>
+            <span class="pill synced">Resolved</span>
+            <span class="pill scratch">Dismissed</span>
+          </div>
+          <div class="col f1 scroll-y" style="background:white;">
+            <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px;">
+              <div class="col g2">
+                <span class="primary t12">Hopkins Mill · Protection L2</span>
+                <span class="meta">Vex · entry #08 · 12 Jan · scored NQ</span>
+                <span class="t10 muted" style="margin-top:2px;">Filed 5 days ago · admin started review yesterday</span>
+              </div>
+              <span class="pill inprog"><span class="dot"></span>under review</span>
+            </div>
+            <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px;">
+              <div class="col g2">
+                <span class="primary t12">Brindle Bay · Detection L1</span>
+                <span class="meta">Kestrel · entry #03 · 8 Aug '25 · scored 174</span>
+                <span class="t10 muted" style="margin-top:2px;">Filed 1 hour ago · waiting on admin</span>
+              </div>
+              <span class="pill unsynced">open</span>
+            </div>
+            <!-- Empty state placeholder -->
+            <div class="wf-box t11" style="margin:14px; border-style:dashed; text-align:center; padding:14px;">
+              <strong style="color:var(--mist-950);">Empty state →</strong> "You haven't filed any challenges. From a finalized entry, you can dispute a score if something looks wrong." + link to A5.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ A8 — File a challenge ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">A8 · Account</span>
+        <span class="sc-title">File a challenge</span>
+        <span class="sc-blurb">Entered from a finalized entry. Shows the disputed scoresheet up top so the user has the data in front of them while writing.</span>
+        <span class="sc-path">/account/challenges/new?entry={id}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <span class="role-chip"><span class="av">LT</span>My account</span>
+          </div>
+          <div class="acct-subtabs">
+            <span class="stab">Dashboard</span>
+            <span class="stab">Profile</span>
+            <span class="stab">Dogs</span>
+            <span class="stab">Entries</span>
+            <span class="stab cur">Challenges</span>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:12px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← Entry detail</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">New challenge</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">File a dispute</div>
+            </div>
+            <!-- The entry being challenged -->
+            <div class="card event-rail" data-event="protection" style="padding:10px 12px 10px 16px; gap:6px; background:var(--mist-100);">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Disputing</span>
+              <div class="bold t12">Hopkins Mill · Protection L2 · Entry 08</div>
+              <div class="muted t10">Vex · 12 Jan · judged by H. Vance · result NQ</div>
+              <div class="t10 muted" style="margin-top:4px;">NQ reason recorded — "ring departure during courage test."</div>
+              <button class="btn btn-ghost" style="font-size:10px; padding:2px 4px; align-self:flex-start;">View full scoresheet →</button>
+            </div>
+            <!-- Reason -->
+            <div class="field">
+              <label>Your reason <span style="color:var(--color-danger);">*</span></label>
+              <div class="wf-input" style="min-height:120px; align-items:flex-start; padding-top:8px; line-height:1.5; color:var(--mist-600);">
+                Be specific. Which phase or exercise? What do you believe the score should have been? Any context that wasn't visible from the judge's position?
+              </div>
+              <span class="help">Plain text. The admin and the judge will both read this.</span>
+            </div>
+            <!-- What happens next -->
+            <div class="banner info t11">
+              <div class="col g2">
+                <strong>What happens next</strong>
+                <span>An admin reviews your dispute, then either dismisses it or asks the judge to re-score the entry. You'll see status updates here and on the entries list.</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg">Submit challenge</button>
+            <button class="btn btn-ghost btn-block">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

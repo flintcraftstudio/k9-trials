@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>D · Admin</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>D · Admin</strong> — Admin operations. Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="adm" id="panel-adm" data-screen-label="D · Admin">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">D · Admin surface <em>— desktop, sidebar-driven</em></h2>
+      <div class="panel-sub">Fixed left rail, no breadcrumbs. The lower "This event" group appears only inside an event context. Admin work is operational: triage registrations, assign judges, review challenges. Hi-fi pass keeps the data-density up — admin users are doing trial logistics, not browsing.</div>
+    </div>
+  </header>
+
+  <div class="screens">
+
+    <!-- ================================================================= -->
+    <!-- D1 · Dashboard                                                     -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D1 · Admin</span>
+        <span class="sc-title">Dashboard</span>
+        <span class="sc-blurb">The "what needs attention" board. Pending review counts link straight to the queues. Drafts that haven't been published yet are surfaced — they're easy to forget.</span>
+        <span class="sc-path">/admin</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links">
+                <a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a>
+              </div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#" class="cur">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <span class="wf-eyebrow" style="color:var(--mist-600);">Today · Sat 14 Mar</span>
+                  <h1>Dashboard</h1>
+                  <div class="sub">Signed in as H. Vance · 4 events open · 3 finishing this week.</div>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-soft">View all events</button>
+                  <button class="btn btn-primary">+ New event</button>
+                </div>
+              </div>
+              <div class="adm-body" style="display:grid; grid-template-columns: 1.4fr 1fr; gap:18px; padding:18px 28px;">
+                <!-- LEFT -->
+                <div class="col g16">
+                  <!-- Today -->
+                  <div class="card" style="padding:14px; gap:10px;">
+                    <div class="row between">
+                      <span class="wf-eyebrow" style="color:var(--mist-600);">Today · Live</span>
+                      <span class="muted t10">3 events</span>
+                    </div>
+                    <div class="card event-rail" data-event="obedience" style="padding:10px 14px 10px 18px; gap:4px; border:1px solid var(--blue-300); background:var(--blue-50);">
+                      <div class="row between">
+                        <div class="col">
+                          <span class="bold t14" style="color:var(--mist-950);">Cedar Creek Spring Trial</span>
+                          <span class="muted t11">Obedience · Open · L2 · 24 entries · 8 finalized · 1 scoring</span>
+                        </div>
+                        <div class="row g4">
+                          <span class="pill inprog"><span class="dot"></span>running</span>
+                          <button class="btn btn-soft" style="padding:5px 10px; font-size:11px;">Open →</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card event-rail" data-event="detection" style="padding:10px 14px 10px 18px; gap:4px;">
+                      <div class="row between">
+                        <div class="col">
+                          <span class="bold t14" style="color:var(--mist-950);">Brindle Bay Spring</span>
+                          <span class="muted t11">Detection · 3 trials · 32 entries · 28 finalized</span>
+                        </div>
+                        <span class="pill inprog"><span class="dot"></span>running</span>
+                      </div>
+                    </div>
+                    <div class="card event-rail" data-event="tracking" style="padding:10px 14px 10px 18px; gap:4px;">
+                      <div class="row between">
+                        <div class="col">
+                          <span class="bold t14" style="color:var(--mist-950);">Hopkins Mill Tracking</span>
+                          <span class="muted t11">Tracking · starts tomorrow · 14 entries accepted</span>
+                        </div>
+                        <span class="pill pending">opens 06.00</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Recently created drafts -->
+                  <div class="card" style="padding:14px; gap:8px;">
+                    <div class="row between">
+                      <span class="wf-eyebrow" style="color:var(--mist-600);">Drafts · not yet published</span>
+                      <span class="muted t10">2</span>
+                    </div>
+                    <div class="data-row" style="grid-template-columns: 1fr auto auto;">
+                      <div class="col"><span class="primary">Autumn Series · Round 1</span><span class="meta">Created 3 days ago · 0 trials · slug: autumn-1</span></div>
+                      <span class="pill scratch">draft</span>
+                      <button class="btn btn-ghost t11">Edit →</button>
+                    </div>
+                    <div class="data-row" style="grid-template-columns: 1fr auto auto;">
+                      <div class="col"><span class="primary">Cedar Creek Summer</span><span class="meta">Created 1 week ago · 2 trials · slug: cedar-creek-summer</span></div>
+                      <span class="pill scratch">draft</span>
+                      <button class="btn btn-ghost t11">Edit →</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT -->
+                <div class="col g16">
+                  <!-- Needs review -->
+                  <div class="card" style="padding:14px; gap:10px;">
+                    <span class="wf-eyebrow" style="color:var(--orange-700);">Needs review</span>
+                    <a href="#" style="text-decoration:none; color:inherit;">
+                      <div class="row g8 between" style="padding:10px 12px; background:var(--orange-50); border:1px dashed var(--orange-300); border-radius:8px;">
+                        <div class="col">
+                          <span class="bold t14" style="color:var(--mist-950);">Pending registrations</span>
+                          <span class="muted t11">Across 4 events · oldest 3 days</span>
+                        </div>
+                        <span class="serif t28 tabular" style="color:var(--orange-800);">12</span>
+                      </div>
+                    </a>
+                    <a href="#" style="text-decoration:none; color:inherit;">
+                      <div class="row g8 between" style="padding:10px 12px; background:var(--orange-50); border:1px dashed var(--orange-300); border-radius:8px;">
+                        <div class="col">
+                          <span class="bold t14" style="color:var(--mist-950);">Open challenges</span>
+                          <span class="muted t11">2 open · 2 under review</span>
+                        </div>
+                        <span class="serif t28 tabular" style="color:var(--orange-800);">4</span>
+                      </div>
+                    </a>
+                  </div>
+
+                  <!-- Quick actions -->
+                  <div class="card" style="padding:14px; gap:8px;">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Quick actions</span>
+                    <div class="col g6">
+                      <button class="btn btn-soft btn-block" style="justify-content:flex-start; padding:8px 12px;">+ Create event</button>
+                      <button class="btn btn-soft btn-block" style="justify-content:flex-start; padding:8px 12px;">↗ Review challenges</button>
+                      <button class="btn btn-soft btn-block" style="justify-content:flex-start; padding:8px 12px;">↗ Manage users</button>
+                    </div>
+                  </div>
+
+                  <!-- Recent activity -->
+                  <div class="card" style="padding:14px; gap:6px;">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Recent activity</span>
+                    <div class="t11 muted" style="line-height:1.6;">
+                      <strong style="color:var(--mist-950);">11.42</strong> · J. Marsh finalized entry #14 (Echo) · Cedar Creek<br/>
+                      <strong style="color:var(--mist-950);">10.50</strong> · 2 registrations accepted · Hopkins Mill<br/>
+                      <strong style="color:var(--mist-950);">09.18</strong> · L. Tanaka filed a challenge on entry #08 (Vex)<br/>
+                      <strong style="color:var(--mist-950);">yesterday</strong> · H. Vance published Cedar Creek Spring
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D2 · Events list                                                   -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D2 · Admin</span>
+        <span class="sc-title">Events list</span>
+        <span class="sc-blurb">Every event, drafts included. Default sort is most-recent. Status filter chips up top; row click opens the event (settings page).</span>
+        <span class="sc-path">/admin/events</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/events</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links">
+                <a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a>
+              </div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#" class="cur">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <h1>Events</h1>
+                  <div class="sub">14 total · 4 published · 3 closed · 2 drafts · 5 archived</div>
+                </div>
+                <button class="btn btn-primary">+ New event</button>
+              </div>
+              <div class="adm-body">
+                <div class="row g6 wrap">
+                  <span class="pill" style="background:var(--mist-950);color:white;">All · 14</span>
+                  <span class="pill pending">Draft · 2</span>
+                  <span class="pill inprog">Published · 4</span>
+                  <span class="pill synced">Closed · 3</span>
+                  <span class="pill scratch">Archived · 5</span>
+                  <div class="f1"></div>
+                  <div class="wf-input" style="min-width:200px; font-size:11px;">🔍 Search by name or slug</div>
+                </div>
+                <div class="card" style="padding:0; gap:0;">
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto; background:var(--mist-100); padding:8px 14px; font-weight:600; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--mist-600);">
+                    <span>Event</span><span>Location</span><span>Dates</span><span>Trials</span><span>Status</span><span></span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Cedar Creek Spring Trial</span><span class="meta">/events/cedar-creek-spring</span></div>
+                    <span class="t11">Cedar Creek, OR</span>
+                    <span class="t11 tabular">14–16 Mar 26</span>
+                    <span class="t11 tabular">4</span>
+                    <span class="pill inprog">published</span>
+                    <button class="btn btn-ghost t11">Open →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Hopkins Mill Tracking</span><span class="meta">/events/hopkins-mill-tracking</span></div>
+                    <span class="t11">Hopkins Mill, WA</span>
+                    <span class="t11 tabular">4 Apr 26</span>
+                    <span class="t11 tabular">2</span>
+                    <span class="pill inprog">published</span>
+                    <button class="btn btn-ghost t11">Open →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Brindle Bay Spring</span><span class="meta">/events/brindle-bay-spring</span></div>
+                    <span class="t11">Brindle Bay, CA</span>
+                    <span class="t11 tabular">15–17 Mar 26</span>
+                    <span class="t11 tabular">3</span>
+                    <span class="pill inprog">published</span>
+                    <button class="btn btn-ghost t11">Open →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Autumn Series · Round 1</span><span class="meta">/events/autumn-1</span></div>
+                    <span class="t11">tbd</span>
+                    <span class="t11 tabular muted">—</span>
+                    <span class="t11 tabular">0</span>
+                    <span class="pill pending">draft</span>
+                    <button class="btn btn-ghost t11">Edit →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Cedar Creek Summer</span><span class="meta">/events/cedar-creek-summer</span></div>
+                    <span class="t11">Cedar Creek, OR</span>
+                    <span class="t11 tabular">11–13 Jul 26</span>
+                    <span class="t11 tabular">2</span>
+                    <span class="pill pending">draft</span>
+                    <button class="btn btn-ghost t11">Edit →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Winter Detection Invitational</span><span class="meta">/events/winter-detection-2025</span></div>
+                    <span class="t11">Truckee, CA</span>
+                    <span class="t11 tabular">12–14 Dec 25</span>
+                    <span class="t11 tabular">3</span>
+                    <span class="pill synced">closed</span>
+                    <button class="btn btn-ghost t11">Open →</button>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 2fr 1.5fr 1.2fr 80px 70px auto;">
+                    <div class="col"><span class="primary">Autumn Trials Finale</span><span class="meta">/events/autumn-finale-2025</span></div>
+                    <span class="t11">Cedar Creek, OR</span>
+                    <span class="t11 tabular">8–10 Nov 25</span>
+                    <span class="t11 tabular">5</span>
+                    <span class="pill synced">closed</span>
+                    <button class="btn btn-ghost t11">Open →</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D3 · Event form                                                    -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D3 · Admin</span>
+        <span class="sc-title">Event form (edit)</span>
+        <span class="sc-blurb">Metadata only. Trials, registrations, and judge assignments live on their own pages within "This event." Slug uniqueness checked live.</span>
+        <span class="sc-path">/admin/events/{id}/edit</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/events/cedar-creek-spring/edit</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links">
+                <a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a>
+              </div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+              <div class="grp">
+                <span class="grp-label">This event</span>
+                <a href="#" class="cur">Settings</a>
+                <a href="#">Trials</a>
+                <a href="#">Registrations <span class="badge">3</span></a>
+                <a href="#">Judges</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <span class="wf-eyebrow" style="color:var(--mist-600);">Editing event</span>
+                  <h1>Cedar Creek Spring Trial</h1>
+                  <div class="sub">Published · 4 trials · 38 / 96 spots taken</div>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-soft">View public page ↗</button>
+                  <button class="btn btn-primary">Save changes</button>
+                </div>
+              </div>
+              <div class="adm-body" style="display:grid; grid-template-columns: 1.4fr 1fr; gap:24px;">
+                <div class="col g12">
+                  <div class="field">
+                    <label>Name</label>
+                    <div class="wf-input">Cedar Creek Spring Trial</div>
+                  </div>
+                  <div class="field">
+                    <label>Slug</label>
+                    <div class="row g6">
+                      <span class="muted t11" style="padding-top:6px;">/events/</span>
+                      <div class="wf-input f1 tabular">cedar-creek-spring</div>
+                      <span class="pill synced" style="align-self:center;">available</span>
+                    </div>
+                    <span class="help">Auto-derived from the name; manually editable. Must be unique.</span>
+                  </div>
+                  <div class="field">
+                    <label>Location</label>
+                    <div class="wf-input">Cedar Creek, OR</div>
+                  </div>
+                  <div class="row g8">
+                    <div class="field f1">
+                      <label>Start date</label>
+                      <div class="wf-input tabular">2026-03-14</div>
+                    </div>
+                    <div class="field f1">
+                      <label>End date</label>
+                      <div class="wf-input tabular">2026-03-16</div>
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label>Status</label>
+                    <div class="row g6">
+                      <span class="pill pending">draft</span>
+                      <span class="pill inprog" style="outline:2px solid var(--blue-600); outline-offset:1px;">published</span>
+                      <span class="pill synced">closed</span>
+                      <span class="pill scratch">archived</span>
+                    </div>
+                    <span class="help">Published opens registration. Closed locks scoring.</span>
+                  </div>
+                  <div class="field">
+                    <label>Description (public)</label>
+                    <div class="wf-input" style="min-height:120px; align-items:flex-start; padding-top:8px; line-height:1.5;">
+                      Sixty-fourth running of the Spring Trial at Cedar Creek. Obedience and tracking across three days. Pre-trial briefing 13 Mar at 18.00.
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col g12">
+                  <div class="card" style="padding:14px; gap:6px; background:var(--mist-100);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">At-a-glance</span>
+                    <div class="t11 muted" style="line-height:1.7;">
+                      <strong style="color:var(--mist-950);">4 trials</strong> across 3 days · <a href="#" style="color:var(--blue-700);">manage trials →</a><br/>
+                      <strong style="color:var(--mist-950);">3 pending registrations</strong> · <a href="#" style="color:var(--blue-700);">review →</a><br/>
+                      <strong style="color:var(--mist-950);">3 / 4 trials</strong> have a judge assigned · <a href="#" style="color:var(--blue-700);">assignments →</a><br/>
+                      <strong style="color:var(--mist-950);">38 entries</strong> across all trials
+                    </div>
+                  </div>
+                  <div class="card" style="padding:14px; gap:6px;">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Audit</span>
+                    <div class="t10 muted" style="line-height:1.6;">
+                      Created 4 Jan by H. Vance<br/>
+                      Published 2 Feb by H. Vance<br/>
+                      Last edited yesterday
+                    </div>
+                  </div>
+                  <button class="btn btn-ghost" style="color:var(--color-danger); justify-content:flex-start; padding:8px 12px;">Archive this event…</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D4 · Trials in event                                               -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D4 · Admin</span>
+        <span class="sc-title">Trials in event</span>
+        <span class="sc-blurb">Grouped by date. Each row shows discipline, level, template version, entry count, judge. "New trial" CTA at the top.</span>
+        <span class="sc-path">/admin/events/{id}/trials</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/events/cedar-creek-spring/trials</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links"><a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a></div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+              <div class="grp">
+                <span class="grp-label">This event</span>
+                <a href="#">Settings</a>
+                <a href="#" class="cur">Trials</a>
+                <a href="#">Registrations <span class="badge">3</span></a>
+                <a href="#">Judges</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <span class="wf-eyebrow" style="color:var(--mist-600);">Cedar Creek Spring · published</span>
+                  <h1>Trials</h1>
+                  <div class="sub">4 trials across 3 days · 38 entries · 1 trial without a judge</div>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-soft">View public page ↗</button>
+                  <button class="btn btn-primary">+ New trial</button>
+                </div>
+              </div>
+              <div class="adm-body">
+
+                <!-- DAY 1 -->
+                <div class="col g6">
+                  <div class="row between" style="padding-bottom:6px; border-bottom:1px solid var(--color-divider);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Saturday · 14 March</span>
+                    <span class="muted t10">1 trial</span>
+                  </div>
+                  <div class="card event-rail" data-event="obedience" style="padding:12px 14px 12px 18px;">
+                    <div class="row between">
+                      <div class="col g2">
+                        <span class="bold t14" style="color:var(--mist-950);">Obedience · Open · L2</span>
+                        <span class="muted t10">Template v2026.1 · 12 / 24 entries · accepting</span>
+                      </div>
+                      <div class="row g6">
+                        <span class="pill" style="background:var(--mist-100);color:var(--mist-700);">J. Marsh judging</span>
+                        <button class="btn btn-soft" style="padding:5px 12px; font-size:11px;">Manage entries →</button>
+                        <button class="btn btn-ghost" style="padding:5px 8px; font-size:11px;">⋯</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DAY 2 -->
+                <div class="col g6">
+                  <div class="row between" style="padding-bottom:6px; border-bottom:1px solid var(--color-divider);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Sunday · 15 March</span>
+                    <span class="muted t10">2 trials</span>
+                  </div>
+                  <div class="card event-rail" data-event="tracking" style="padding:12px 14px 12px 18px;">
+                    <div class="row between">
+                      <div class="col g2">
+                        <span class="bold t14" style="color:var(--mist-950);">Tracking · L1</span>
+                        <span class="muted t10">Template v2026.1 · 8 / 16 entries · accepting</span>
+                      </div>
+                      <div class="row g6">
+                        <span class="pill unsynced">no judge</span>
+                        <button class="btn btn-soft" style="padding:5px 12px; font-size:11px;">Manage entries →</button>
+                        <button class="btn btn-ghost" style="padding:5px 8px; font-size:11px;">⋯</button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card event-rail" data-event="tracking" style="padding:12px 14px 12px 18px;">
+                    <div class="row between">
+                      <div class="col g2">
+                        <span class="bold t14" style="color:var(--mist-950);">Tracking · L2</span>
+                        <span class="muted t10">Template v2026.1 · 6 / 16 entries · accepting</span>
+                      </div>
+                      <div class="row g6">
+                        <span class="pill" style="background:var(--mist-100);color:var(--mist-700);">M. Pereira judging</span>
+                        <button class="btn btn-soft" style="padding:5px 12px; font-size:11px;">Manage entries →</button>
+                        <button class="btn btn-ghost" style="padding:5px 8px; font-size:11px;">⋯</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- DAY 3 -->
+                <div class="col g6">
+                  <div class="row between" style="padding-bottom:6px; border-bottom:1px solid var(--color-divider);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Monday · 16 March</span>
+                    <span class="muted t10">1 trial</span>
+                  </div>
+                  <div class="card event-rail" data-event="obedience" style="padding:12px 14px 12px 18px;">
+                    <div class="row between">
+                      <div class="col g2">
+                        <span class="bold t14" style="color:var(--mist-950);">Obedience · Open · L3</span>
+                        <span class="muted t10">Template v2026.1 · 12 / 24 entries · accepting</span>
+                      </div>
+                      <div class="row g6">
+                        <span class="pill" style="background:var(--mist-100);color:var(--mist-700);">H. Vance judging</span>
+                        <button class="btn btn-soft" style="padding:5px 12px; font-size:11px;">Manage entries →</button>
+                        <button class="btn btn-ghost" style="padding:5px 8px; font-size:11px;">⋯</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D5 · Registration review  ← THE BRIDGE                             -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D5 · Admin</span>
+        <span class="sc-title">Registration review <em style="font-style:italic; color:var(--orange-700); font-size:14px;">— the bridge handoff</em></span>
+        <span class="sc-blurb">Where competitor self-service hands off. Accept assigns the next entry number + creates the entry row. Reject/waitlist take an optional note. Group-by-trial accordion; this view shows one trial expanded.</span>
+        <span class="sc-path">/admin/events/{id}/registrations</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/events/cedar-creek-spring/registrations</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links"><a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a></div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+              <div class="grp">
+                <span class="grp-label">This event</span>
+                <a href="#">Settings</a>
+                <a href="#">Trials</a>
+                <a href="#" class="cur">Registrations <span class="badge">3</span></a>
+                <a href="#">Judges</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <span class="wf-eyebrow" style="color:var(--mist-600);">Cedar Creek Spring</span>
+                  <h1>Registrations</h1>
+                  <div class="sub">38 total · 3 pending · 32 accepted · 2 waitlisted · 1 withdrawn</div>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-soft">Export CSV</button>
+                  <button class="btn btn-primary">+ Add manual entry</button>
+                </div>
+              </div>
+              <div class="adm-body">
+
+                <div class="row g6 wrap">
+                  <span class="pill" style="background:var(--mist-950);color:white;">All trials</span>
+                  <span class="pill pending">Obedience Open L2 · 1</span>
+                  <span class="pill pending">Obedience Open L3 · 0</span>
+                  <span class="pill pending">Tracking L1 · 2</span>
+                  <span class="pill pending">Tracking L2 · 0</span>
+                  <div class="f1"></div>
+                  <span class="pill unsynced">Pending · 3</span>
+                  <span class="pill synced">Accepted · 32</span>
+                  <span class="pill scratch">Waitlisted · 2</span>
+                </div>
+
+                <!-- expanded trial -->
+                <div class="card" style="padding:0; gap:0;">
+                  <div class="row between" style="padding:12px 14px; background:var(--mist-100); border-bottom:1px solid var(--color-divider);">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open · L2 · Sat 14 Mar</span>
+                      <span class="bold t12" style="color:var(--mist-950);">12 / 24 spots taken · 1 pending</span>
+                    </div>
+                    <span class="t10 muted">▼ collapse</span>
+                  </div>
+                  <!-- pending row with actions -->
+                  <div class="data-row" style="grid-template-columns: 36px 1.6fr 1.2fr 1fr auto; padding:12px 14px; background:var(--orange-50);">
+                    <div class="wf-photo" style="width:32px; height:32px; border-radius:999px;">N</div>
+                    <div class="col">
+                      <span class="primary">Nyx <span class="muted" style="font-weight:400;">· K9-3902 · Belgian Malinois</span></span>
+                      <span class="meta">owner @ltanaka · handler L. Tanaka</span>
+                    </div>
+                    <div class="col">
+                      <span class="t11">Submitted by @ltanaka</span>
+                      <span class="meta">3 hours ago</span>
+                    </div>
+                    <span class="pill unsynced">pending</span>
+                    <div class="row g6">
+                      <button class="btn btn-primary" style="padding:5px 12px; font-size:11px;">Accept</button>
+                      <button class="btn btn-soft" style="padding:5px 12px; font-size:11px;">Waitlist</button>
+                      <button class="btn btn-ghost" style="padding:5px 12px; font-size:11px; color:var(--color-danger);">Reject…</button>
+                    </div>
+                  </div>
+                  <!-- accepted rows -->
+                  <div class="data-row" style="grid-template-columns: 36px 1.6fr 1.2fr 1fr auto; padding:10px 14px;">
+                    <div class="wf-photo" style="width:32px; height:32px; border-radius:999px;">V</div>
+                    <div class="col">
+                      <span class="primary">Vex <span class="muted" style="font-weight:400;">· K9-3187 · Czech GSD</span></span>
+                      <span class="meta">owner @ltanaka · handler L. Tanaka</span>
+                    </div>
+                    <div class="col">
+                      <span class="t11">Submitted by @ltanaka</span>
+                      <span class="meta">2 days ago · entry #17</span>
+                    </div>
+                    <span class="pill synced">accepted</span>
+                    <div class="row g6">
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">View entry →</button>
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">Withdraw</button>
+                    </div>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 36px 1.6fr 1.2fr 1fr auto; padding:10px 14px;">
+                    <div class="wf-photo" style="width:32px; height:32px; border-radius:999px;">E</div>
+                    <div class="col">
+                      <span class="primary">Echo <span class="muted" style="font-weight:400;">· K9-2419 · German Shepherd</span></span>
+                      <span class="meta">owner @jmarsh · handler J. Marsh</span>
+                    </div>
+                    <div class="col">
+                      <span class="t11">Submitted by <strong>@cccsec</strong></span>
+                      <span class="meta">4 days ago · entry #14 · club registered</span>
+                    </div>
+                    <span class="pill synced">accepted</span>
+                    <div class="row g6">
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">View entry →</button>
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">Withdraw</button>
+                    </div>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 36px 1.6fr 1.2fr 1fr auto; padding:10px 14px;">
+                    <div class="wf-photo" style="width:32px; height:32px; border-radius:999px;">A</div>
+                    <div class="col">
+                      <span class="primary">Atlas <span class="muted" style="font-weight:400;">· K9-3041 · Belgian Malinois</span></span>
+                      <span class="meta">owner @rokafor · handler R. Okafor</span>
+                    </div>
+                    <div class="col">
+                      <span class="t11">Submitted by @rokafor</span>
+                      <span class="meta">5 days ago · entry #15</span>
+                    </div>
+                    <span class="pill synced">accepted</span>
+                    <div class="row g6">
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">View entry →</button>
+                      <button class="btn btn-ghost t11" style="padding:5px 8px;">Withdraw</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- collapsed trial -->
+                <div class="card" style="padding:0; gap:0;">
+                  <div class="row between" style="padding:12px 14px;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--green-700);">Tracking · L1 · Sun 15 Mar</span>
+                      <span class="bold t12" style="color:var(--mist-950);">8 / 16 spots taken · 2 pending</span>
+                    </div>
+                    <span class="t10 muted">▶ expand</span>
+                  </div>
+                </div>
+                <div class="card" style="padding:0; gap:0;">
+                  <div class="row between" style="padding:12px 14px;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--green-700);">Tracking · L2 · Sun 15 Mar</span>
+                      <span class="bold t12" style="color:var(--mist-950);">6 / 16 spots taken</span>
+                    </div>
+                    <span class="t10 muted">▶ expand</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — "Submitted by ≠ handler" needs a clearer label when club secretaries are registering on behalf. Currently in muted meta text.</div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D6 · Judge assignments                                             -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D6 · Admin</span>
+        <span class="sc-title">Judge assignments</span>
+        <span class="sc-blurb">One section per trial. Picking a judge bulk-updates all entries for that trial. Trials without a judge get a warning chip — they can't be scored.</span>
+        <span class="sc-path">/admin/events/{id}/assignments</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/events/cedar-creek-spring/assignments</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links"><a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a></div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+              <div class="grp">
+                <span class="grp-label">This event</span>
+                <a href="#">Settings</a>
+                <a href="#">Trials</a>
+                <a href="#">Registrations <span class="badge">3</span></a>
+                <a href="#" class="cur">Judges</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <span class="wf-eyebrow" style="color:var(--mist-600);">Cedar Creek Spring</span>
+                  <h1>Judge assignments</h1>
+                  <div class="sub">3 / 4 trials assigned · 1 trial blocking — assign before scoring opens</div>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-soft">Notify judges</button>
+                  <button class="btn btn-primary">Save changes</button>
+                </div>
+              </div>
+              <div class="adm-body">
+
+                <div class="banner warn t11" style="align-items:center;">
+                  <strong>Tracking · L1</strong> doesn't have a judge yet. Scoring can't open until you assign one.
+                </div>
+
+                <!-- assigned -->
+                <div class="card event-rail" data-event="obedience" style="padding:14px 14px 14px 18px;">
+                  <div class="row between" style="align-items:center;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open · L2 · Sat 14 Mar</span>
+                      <span class="bold t14" style="color:var(--mist-950);">12 entries · ready</span>
+                    </div>
+                    <div class="row g8">
+                      <div class="wf-input" style="min-width:200px; font-size:12px;">J. Marsh ▾</div>
+                      <span class="muted t10" style="align-self:center;">last judged Cedar Creek 3 months ago</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- unassigned -->
+                <div class="card event-rail" data-event="tracking" style="padding:14px 14px 14px 18px; border:1px dashed var(--orange-400); background:var(--orange-50);">
+                  <div class="row between" style="align-items:center;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--orange-700);">Tracking · L1 · Sun 15 Mar</span>
+                      <span class="bold t14" style="color:var(--mist-950);">8 entries · blocked</span>
+                    </div>
+                    <div class="row g8">
+                      <div class="wf-input" style="min-width:200px; font-size:12px; color:var(--mist-500);">Pick a judge… ▾</div>
+                      <span class="pill unsynced" style="align-self:center;">no judge</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- assigned -->
+                <div class="card event-rail" data-event="tracking" style="padding:14px 14px 14px 18px;">
+                  <div class="row between" style="align-items:center;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--green-700);">Tracking · L2 · Sun 15 Mar</span>
+                      <span class="bold t14" style="color:var(--mist-950);">6 entries · ready</span>
+                    </div>
+                    <div class="row g8">
+                      <div class="wf-input" style="min-width:200px; font-size:12px;">M. Pereira ▾</div>
+                      <span class="muted t10" style="align-self:center;">judging 2 trials this weekend</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- assigned -->
+                <div class="card event-rail" data-event="obedience" style="padding:14px 14px 14px 18px;">
+                  <div class="row between" style="align-items:center;">
+                    <div class="col g2">
+                      <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open · L3 · Mon 16 Mar</span>
+                      <span class="bold t14" style="color:var(--mist-950);">12 entries · ready</span>
+                    </div>
+                    <div class="row g8">
+                      <div class="wf-input" style="min-width:200px; font-size:12px;">H. Vance ▾</div>
+                      <span class="muted t10" style="align-self:center;">primary admin · judging self</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — multi-judge trials (panel judging). Dropdown becomes a chip list? Deferred per brief, but flagging for v1.5.</div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D7 · Challenge queue + detail (split view)                         -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D7 · Admin</span>
+        <span class="sc-title">Challenge review</span>
+        <span class="sc-blurb">Cross-event queue on the left; selected dispute opens on the right. Three actions: Start review · Resolve · Dismiss. <strong>No scoresheet editing here</strong> — resolution reopens the entry through the judge flow.</span>
+        <span class="sc-path">/admin/challenges</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/challenges</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links"><a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a></div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#" class="cur">Challenges <span class="badge">4</span></a>
+                <a href="#">Users</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <h1>Challenges</h1>
+                  <div class="sub">4 active · 2 open · 2 under review · oldest 6 days</div>
+                </div>
+                <div class="row g6">
+                  <span class="pill unsynced">Open · 2</span>
+                  <span class="pill inprog">Under review · 2</span>
+                  <span class="pill synced">Resolved</span>
+                  <span class="pill scratch">Dismissed</span>
+                </div>
+              </div>
+              <div class="adm-body" style="display:grid; grid-template-columns: 320px 1fr; gap:0; padding:0; overflow:hidden;">
+
+                <!-- queue -->
+                <div class="col" style="border-right:1px solid var(--color-divider); overflow-y:auto; background:white;">
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px; background:var(--mist-100);">
+                    <div class="col">
+                      <span class="primary t12">Vex · Protection L2 NQ</span>
+                      <span class="meta">Hopkins Mill · @ltanaka · 5 days ago</span>
+                    </div>
+                    <span class="pill inprog">under review</span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px;">
+                    <div class="col">
+                      <span class="primary t12">Kestrel · Detection L1 174</span>
+                      <span class="meta">Brindle Bay · @ltanaka · 1h ago</span>
+                    </div>
+                    <span class="pill unsynced">open</span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px;">
+                    <div class="col">
+                      <span class="primary t12">Pax · Obedience L2 NQ</span>
+                      <span class="meta">Cedar Creek · @baslan · 2 days ago</span>
+                    </div>
+                    <span class="pill inprog">under review</span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px;">
+                    <div class="col">
+                      <span class="primary t12">Birch · Tracking L1 168</span>
+                      <span class="meta">Hopkins Mill · @mpereira · 6 days ago</span>
+                    </div>
+                    <span class="pill unsynced">open</span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px; opacity:0.55;">
+                    <div class="col">
+                      <span class="primary t12">Junebug · Obedience L1 178</span>
+                      <span class="meta">Cedar Creek · @droyo · 3 weeks ago</span>
+                    </div>
+                    <span class="pill synced">resolved</span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1fr auto; padding:12px 14px; opacity:0.55;">
+                    <div class="col">
+                      <span class="primary t12">Lumen · Obedience L2 NQ</span>
+                      <span class="meta">Cedar Creek · @syi · 1 month ago</span>
+                    </div>
+                    <span class="pill scratch">dismissed</span>
+                  </div>
+                </div>
+
+                <!-- detail -->
+                <div class="col scroll-y" style="padding:20px 28px; gap:14px;">
+                  <div class="col g2">
+                    <span class="wf-eyebrow" style="color:var(--orange-700);">Challenge · #C-0042 · under review</span>
+                    <div class="serif" style="font-size:22px; line-height:1.05;">Vex · Protection L2 · Hopkins Mill</div>
+                    <div class="muted t11">Filed by @ltanaka · 5 days ago · review started yesterday by H. Vance</div>
+                  </div>
+
+                  <!-- entry summary -->
+                  <div class="card event-rail" data-event="protection" style="padding:12px 14px 12px 18px; gap:6px;">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Entry being disputed</span>
+                    <div class="row between">
+                      <div class="col g2">
+                        <span class="bold t14" style="color:var(--mist-950);">Hopkins Mill · Protection L2 · Entry 08 · 12 Jan</span>
+                        <span class="muted t10">Judged by H. Vance · finalized · result NQ</span>
+                      </div>
+                      <a href="#" class="t11" style="color:var(--blue-700); align-self:center;">View full scoresheet →</a>
+                    </div>
+                    <div class="row g8" style="font-size:11px;">
+                      <span class="muted">NQ reason —</span>
+                      <span>"Ring departure during courage test, 1.4s outside the working line."</span>
+                    </div>
+                  </div>
+
+                  <!-- competitor reason -->
+                  <div class="card" style="padding:12px 14px; gap:6px; background:var(--mist-100);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Competitor's reason</span>
+                    <div class="t11" style="line-height:1.6; color:var(--mist-900);">
+                      Dog was recalled before the line and re-engaged within 2 seconds — should be a deduction (-3), not NQ. Video from
+                      the ring exterior camera at 14.42 shows the line position. Asking for re-score under §4.3.2.
+                    </div>
+                  </div>
+
+                  <!-- workflow actions -->
+                  <div class="card" style="padding:14px; gap:10px; border:1px solid var(--color-border);">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Workflow</span>
+                    <div class="row g6">
+                      <button class="btn btn-soft" style="padding:6px 14px;">⏵ Started review · 1d ago</button>
+                      <button class="btn btn-primary" style="padding:6px 14px;">Resolve…</button>
+                      <button class="btn btn-outline" style="padding:6px 14px;">Dismiss…</button>
+                    </div>
+                    <div class="t10 muted" style="line-height:1.6;">
+                      Resolving here only closes the dispute. To actually change the score, reopen the entry through the judge flow —
+                      a fresh <code>score_inputs</code> row enters the audit chain naturally.
+                    </div>
+                  </div>
+
+                  <!-- audit log -->
+                  <div class="col g4">
+                    <span class="wf-eyebrow" style="color:var(--mist-600);">Audit</span>
+                    <div class="t11 muted" style="line-height:1.7;">
+                      <strong style="color:var(--mist-950);">12 Jan</strong> · entry finalized by H. Vance, result NQ<br/>
+                      <strong style="color:var(--mist-950);">5 days ago</strong> · challenge filed by @ltanaka<br/>
+                      <strong style="color:var(--mist-950);">yesterday 14.20</strong> · review started by H. Vance<br/>
+                      <em>pending</em> — resolve or dismiss
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- D8 · Users + roles                                                 -->
+    <!-- ================================================================= -->
+    <div class="screen desktop-w">
+      <div class="screen-caption">
+        <span class="sc-code">D8 · Admin</span>
+        <span class="sc-title">Users &amp; roles</span>
+        <span class="sc-blurb">Inline role change via htmx dropdown. Competitor rows link out to their public profile. "Create user" is v1.5 — judges are seeded for now.</span>
+        <span class="sc-path">/admin/users</span>
+      </div>
+      <div class="desktop">
+        <div class="desktop-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">k9elements.com/admin/users</div>
+        </div>
+        <div class="desktop-body">
+          <div class="topbar">
+            <div class="row g16">
+              <div class="logo">K9 Elements</div>
+              <div class="nav-links"><a href="#">Home</a><a href="#">Events</a><a href="#">Competitors</a><a href="#">Contact</a></div>
+            </div>
+            <div class="right-cluster">
+              <span class="role-chip" style="background:var(--mist-950);"><span class="av">HV</span>Admin</span>
+              <button class="btn btn-ghost t11">Log out</button>
+            </div>
+          </div>
+          <div class="adm-shell">
+            <aside class="adm-side">
+              <div class="grp">
+                <span class="grp-label">Operations</span>
+                <a href="#">Dashboard</a>
+                <a href="#">Events</a>
+                <a href="#">Challenges <span class="badge">4</span></a>
+                <a href="#" class="cur">Users</a>
+              </div>
+            </aside>
+            <div class="adm-main">
+              <div class="adm-pagehead">
+                <div>
+                  <h1>Users</h1>
+                  <div class="sub">142 total · 138 competitors · 3 judges · 1 admin</div>
+                </div>
+                <button class="btn btn-soft" style="opacity:0.5;">+ Create user · v1.5</button>
+              </div>
+              <div class="adm-body">
+
+                <div class="row g6 wrap">
+                  <span class="pill" style="background:var(--mist-950);color:white;">All · 142</span>
+                  <span class="pill pending">Competitors · 138</span>
+                  <span class="pill inprog">Judges · 3</span>
+                  <span class="pill nq">Admin · 1</span>
+                  <div class="f1"></div>
+                  <div class="wf-input" style="min-width:240px; font-size:11px;">🔍 Email, display name, @handle</div>
+                </div>
+
+                <div class="card" style="padding:0; gap:0;">
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto; background:var(--mist-100); padding:8px 14px; font-weight:600; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--mist-600);">
+                    <span>Display name / @handle</span><span>Email</span><span>Created</span><span>Role</span><span></span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">H. Vance</span><span class="meta">@hvance · primary admin</span></div>
+                    <span class="t11">hv@k9elements.com</span>
+                    <span class="t11 tabular">2024-09-12</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">admin ▾</div>
+                    <span></span>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">J. Marsh</span><span class="meta">@jmarsh · also competitor</span></div>
+                    <span class="t11">jmarsh@chrk9.org</span>
+                    <span class="t11 tabular">2024-11-04</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">judge ▾</div>
+                    <a href="#" class="t11" style="color:var(--blue-700);">↗ public</a>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">M. Pereira</span><span class="meta">@mpereira</span></div>
+                    <span class="t11">mp@trackerk9.net</span>
+                    <span class="t11 tabular">2025-01-22</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">judge ▾</div>
+                    <a href="#" class="t11" style="color:var(--blue-700);">↗ public</a>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">L. Tanaka</span><span class="meta">@ltanaka · 3 dogs</span></div>
+                    <span class="t11">l.tanaka@gmail.com</span>
+                    <span class="t11 tabular">2025-03-08</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">competitor ▾</div>
+                    <a href="#" class="t11" style="color:var(--blue-700);">↗ public</a>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">R. Okafor</span><span class="meta">@rokafor · 2 dogs</span></div>
+                    <span class="t11">r@okafor.io</span>
+                    <span class="t11 tabular">2025-04-19</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">competitor ▾</div>
+                    <a href="#" class="t11" style="color:var(--blue-700);">↗ public</a>
+                  </div>
+                  <div class="data-row" style="grid-template-columns: 1.6fr 1fr 1fr 130px auto;">
+                    <div class="col"><span class="primary">K. Hessel</span><span class="meta">@khessel · 4 dogs</span></div>
+                    <span class="t11">khessel@k9mail.io</span>
+                    <span class="t11 tabular">2025-06-02</span>
+                    <div class="wf-input" style="font-size:11px; min-height:24px; padding:2px 8px;">competitor ▾</div>
+                    <a href="#" class="t11" style="color:var(--blue-700);">↗ public</a>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — changing role mid-trial is risky. Confirm modal when demoting a judge with active assignments?</div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

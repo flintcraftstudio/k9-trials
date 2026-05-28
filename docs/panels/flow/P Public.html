@@ -1,0 +1,459 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>P · Public</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>P · Public</strong> — Public surface (anonymous, phone-first). Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="pub" id="panel-pub" data-screen-label="P · Public">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">P · Public surface <em>— anonymous, phone-first</em></h2>
+      <div class="panel-sub">No auth required. Sells the sport, lets visitors browse events, look up handlers and dogs, and read finalized results. The trust-signal screens (P6 / P7) double as "is this dog real?" verification for buyers and clubs — they need to feel intentional even with zero history.</div>
+    </div>
+  </header>
+
+  <div class="screens">
+
+    <!-- ============ P1 — Events index ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P1 · Public</span>
+        <span class="sc-title">Events index</span>
+        <span class="sc-blurb">The front door once you're past the marketing hero. Filter by discipline + status; one event per card.</span>
+        <span class="sc-path">/events</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Events</span>
+              <div class="serif" style="font-size:24px; line-height:1.05;">Find a trial</div>
+              <div class="muted t11">14 published events — Spring through Autumn 2026.</div>
+            </div>
+            <div class="row g6 wrap">
+              <span class="pill" style="background:var(--mist-950);color:white;">All</span>
+              <span class="pill pending">Obedience</span>
+              <span class="pill pending">Protection</span>
+              <span class="pill pending">Tracking</span>
+              <span class="pill pending">Detection</span>
+            </div>
+            <div class="col g10">
+              <div class="card" style="padding:12px; gap:6px;">
+                <div class="row between">
+                  <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open</span>
+                  <span class="pill synced">Registration open</span>
+                </div>
+                <div class="serif t18" style="line-height:1.1;">Cedar Creek Spring Trial</div>
+                <div class="muted t10">Cedar Creek, OR · Mar 14–16 · 4 trials</div>
+                <div class="wf-photo" style="width:100%; height:60px;">Hero photo</div>
+              </div>
+              <div class="card" style="padding:12px; gap:6px;">
+                <div class="row between">
+                  <span class="wf-eyebrow" style="color:var(--green-700);">Tracking · L1–L3</span>
+                  <span class="pill pending">Opens Mar 1</span>
+                </div>
+                <div class="serif t18" style="line-height:1.1;">Hopkins Mill Tracking</div>
+                <div class="muted t10">Hopkins Mill, WA · Apr 4 · 2 trials</div>
+                <div class="wf-photo" style="width:100%; height:60px;">Hero photo</div>
+              </div>
+              <div class="card" style="padding:12px; gap:6px;">
+                <div class="row between">
+                  <span class="wf-eyebrow" style="color:var(--orange-700);">Detection · All levels</span>
+                  <span class="pill nq">Closed · running</span>
+                </div>
+                <div class="serif t18" style="line-height:1.1;">Brindle Bay Spring</div>
+                <div class="muted t10">Brindle Bay, CA · this weekend · 3 trials</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P2 — Event detail ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P2 · Public</span>
+        <span class="sc-title">Event detail</span>
+        <span class="sc-blurb">The page someone lands on from a shared link. Hero, dates, trial list, and (when open) a Register CTA that lifts the visitor toward auth.</span>
+        <span class="sc-path">/events/{slug}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:0; gap:0;">
+            <div class="wf-photo" style="width:100%; height:140px; border-radius:0; border-left:0; border-right:0;">Hero image · 16:9</div>
+            <div class="col g10" style="padding:14px;">
+              <div class="row g6">
+                <span class="pill" style="background:var(--blue-100);color:var(--blue-800);">Obedience</span>
+                <span class="pill" style="background:var(--green-100);color:var(--green-800);">Tracking</span>
+              </div>
+              <div class="serif" style="font-size:24px; line-height:1.05;">Cedar Creek Spring Trial</div>
+              <div class="muted t11">Cedar Creek, OR · Mar 14–16, 2026</div>
+              <div class="banner success t11">Registration open · 4 trials · 38 / 96 spots taken</div>
+              <button class="btn btn-primary btn-block btn-lg">Register a dog →</button>
+              <div class="t11 muted" style="text-align:center;">Log in or sign up to register.</div>
+
+              <div class="col g4" style="margin-top:8px;">
+                <span class="wf-eyebrow" style="color:var(--mist-600);">Trials at this event</span>
+              </div>
+              <div class="card event-rail" data-event="obedience" style="padding:10px 12px 10px 16px; gap:2px;">
+                <div class="row between"><span class="bold t12">Obedience · Open · L2</span><span class="muted t10">Sat Mar 14</span></div>
+                <div class="muted t10">12 / 24 entries · J. Marsh judging</div>
+              </div>
+              <div class="card event-rail" data-event="tracking" style="padding:10px 12px 10px 16px; gap:2px;">
+                <div class="row between"><span class="bold t12">Tracking · L1</span><span class="muted t10">Sun Mar 15</span></div>
+                <div class="muted t10">8 / 16 entries · judge tba</div>
+              </div>
+              <div class="card event-rail" data-event="tracking" style="padding:10px 12px 10px 16px; gap:2px;">
+                <div class="row between"><span class="bold t12">Tracking · L2</span><span class="muted t10">Sun Mar 15</span></div>
+                <div class="muted t10">6 / 16 entries · M. Pereira</div>
+              </div>
+              <div class="card event-rail" data-event="obedience" style="padding:10px 12px 10px 16px; gap:2px;">
+                <div class="row between"><span class="bold t12">Obedience · Open · L3</span><span class="muted t10">Mon Mar 16</span></div>
+                <div class="muted t10">12 / 24 entries · H. Vance</div>
+              </div>
+
+              <div class="wf-box t11" style="margin-top:8px;">About this venue · venue notes, parking, on-site amenities. Owned by the club, edited via admin.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P3 — Trial leaderboard ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P3 · Public</span>
+        <span class="sc-title">Trial leaderboard</span>
+        <span class="sc-blurb">Where you check whether your friend qualified. In-progress entries appear without partial scores — just a "scoring" pill.</span>
+        <span class="sc-path">/events/{slug}/trials/{id}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col" style="padding:14px 14px 8px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← Cedar Creek Spring</button>
+            <span class="wf-eyebrow" style="color:var(--blue-700); margin-top:6px;">Obedience · Open · L2</span>
+            <div class="serif" style="font-size:22px; line-height:1.05;">Saturday leaderboard</div>
+            <div class="muted t10">24 entries · 8 finalized · 1 scoring · 15 upcoming</div>
+          </div>
+          <div class="row g6" style="padding:0 14px 10px;">
+            <span class="pill" style="background:var(--mist-950);color:white;">Leaderboard</span>
+            <span class="pill pending">Running order</span>
+          </div>
+          <div class="col f1 scroll-y" style="background:white;">
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">1</span>
+              <div class="col"><span class="primary t12">Echo</span><span class="meta">J. Marsh · K9-2419</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="bold tabular t14">196</span><span class="t10" style="color:var(--green-700);">qualifying</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">2</span>
+              <div class="col"><span class="primary t12">Vex</span><span class="meta">L. Tanaka · K9-3187</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="bold tabular t14">193</span><span class="t10" style="color:var(--green-700);">qualifying</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto; background:var(--blue-50);">
+              <span class="serif t14 tabular muted">—</span>
+              <div class="col"><span class="primary t12">Atlas <span class="muted t10" style="font-weight:400;">in the ring</span></span><span class="meta">R. Okafor · K9-3041</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="pill inprog"><span class="dot"></span>scoring</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">3</span>
+              <div class="col"><span class="primary t12">Saber</span><span class="meta">K. Hessel · K9-2877</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="bold tabular t14">189</span><span class="t10" style="color:var(--green-700);">qualifying</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">—</span>
+              <div class="col"><span class="primary t12">Pax</span><span class="meta">B. Aslan · K9-2102</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="pill nq">NQ</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">4</span>
+              <div class="col"><span class="primary t12">Onyx</span><span class="meta">P. Akin · K9-2455</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="bold tabular t14">176</span><span class="t10" style="color:var(--green-700);">qualifying</span></div>
+            </div>
+            <div class="data-row" style="grid-template-columns: 22px 1fr auto;">
+              <span class="serif t14 tabular muted">5</span>
+              <div class="col"><span class="primary t12">Birch</span><span class="meta">M. Pereira · K9-1944</span></div>
+              <div class="col" style="align-items:flex-end;"><span class="bold tabular t14">172</span><span class="t10" style="color:var(--green-700);">qualifying</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — do we publish ranking on the leaderboard, or only pass/fail + score? Some sports avoid ranking.</div>
+    </div>
+
+    <!-- ============ P4 — Public entry detail ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P4 · Public</span>
+        <span class="sc-title">Entry detail (public, read-only)</span>
+        <span class="sc-blurb">The shareable per-run page. Linkable from leaderboards and dog profiles. Mirrors the judge's B6 read-only view at a public-trust level of detail.</span>
+        <span class="sc-path">/entries/{id}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:12px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← Saturday leaderboard</button>
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--blue-700);">Obedience · Open · L2 · Entry 14</span>
+              <div class="serif" style="font-size:24px; line-height:1.05;">Echo</div>
+              <div class="muted t11">German Shepherd · K9-2419 · handled by J. Marsh</div>
+            </div>
+            <div class="row g8 center" style="padding:14px; background:var(--green-50); border:1px solid var(--green-300); border-radius:10px;">
+              <div class="col f1">
+                <span class="wf-eyebrow" style="color:var(--green-700);">Final</span>
+                <div class="serif t28 tabular" style="line-height:1;">196 / 200</div>
+                <div class="t10" style="color:var(--green-800);">qualifying · threshold 170</div>
+              </div>
+              <span class="pill synced">Finalized</span>
+            </div>
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Score breakdown</span>
+              <div class="card" style="padding:0; gap:0;">
+                <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                  <span>1 · Heel on lead</span><span class="tabular bold">38 / 40</span>
+                </div>
+                <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                  <span>2 · Stand for examination</span><span class="tabular bold">29 / 30</span>
+                </div>
+                <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                  <span>3 · Heel free</span><span class="tabular bold">39 / 40</span>
+                </div>
+                <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                  <span>4 · Recall</span><span class="tabular bold">30 / 30</span>
+                </div>
+                <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                  <span>5 · Long sit · Long down</span><span class="tabular bold">60 / 60</span>
+                </div>
+              </div>
+            </div>
+            <div class="wf-box t11">Judge narrative — short summary if recorded. Owned by judge; appears here after submit.</div>
+            <div class="muted t10 row between">
+              <span>Judged by H. Vance · 14 Mar 2026</span>
+              <span class="t10">🔒 Locked</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P5 — Competitor search ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P5 · Public</span>
+        <span class="sc-title">Competitor directory</span>
+        <span class="sc-blurb">One search box over handlers and dogs. Recently-active cluster gives the search a destination even when you have nothing in mind.</span>
+        <span class="sc-path">/competitors</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Competitors</span>
+              <div class="serif" style="font-size:22px; line-height:1.05;">Find a handler or a dog</div>
+            </div>
+            <div class="wf-input lg" style="font-size:14px; min-height:40px; font-family:var(--font-sans);">
+              <span class="muted">🔍</span><span style="margin-left:8px;">Name, @handle, or K9-####</span>
+            </div>
+            <div class="t10 muted">Searches handler display names &amp; handles, dog call names, registered names, and registration numbers.</div>
+
+            <div class="col g4" style="margin-top:6px;">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Recently active</span>
+            </div>
+            <div class="col g8">
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row between"><span class="bold t12">L. Tanaka <span class="muted" style="font-weight:400;">@ltanaka</span></span><span class="muted t10">3 dogs</span></div>
+                <div class="muted t10">12 finalized entries · last ran 2 days ago</div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row between"><span class="bold t12">R. Okafor <span class="muted" style="font-weight:400;">@rokafor</span></span><span class="muted t10">2 dogs</span></div>
+                <div class="muted t10">8 finalized entries · last ran 2 days ago</div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row between"><span class="bold t12">J. Marsh <span class="muted" style="font-weight:400;">@jmarsh</span></span><span class="muted t10">1 dog</span></div>
+                <div class="muted t10">19 finalized entries · last ran 2 days ago</div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:4px;">
+                <div class="row between"><span class="bold t12">K. Hessel <span class="muted" style="font-weight:400;">@khessel</span></span><span class="muted t10">4 dogs</span></div>
+                <div class="muted t10">22 finalized entries · last ran 5 days ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ P6 — Competitor profile ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P6 · Public</span>
+        <span class="sc-title">Competitor profile</span>
+        <span class="sc-blurb">A handler's public page. Reads as intentional even with zero finalized entries — empty event-history slot still shows the dog roster and bio.</span>
+        <span class="sc-path">/competitors/{handle}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <div class="col g4">
+              <div class="row g10">
+                <div class="wf-photo" style="width:56px; height:56px; border-radius:999px;">Av</div>
+                <div class="col">
+                  <div class="serif" style="font-size:22px; line-height:1.1;">L. Tanaka</div>
+                  <div class="muted t11">@ltanaka · Portland, OR</div>
+                </div>
+              </div>
+              <div class="t11" style="line-height:1.5; margin-top:4px;">
+                Working IPO since 2014. Mali &amp; Czech-line GSDs. Trial reports linked from my profile — happy to chat about training.
+              </div>
+            </div>
+
+            <div class="col g4">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Dogs · 3</span>
+            </div>
+            <div class="col g8">
+              <div class="card" style="padding:10px 12px; gap:2px;">
+                <div class="row between"><span class="bold t12">Vex</span><span class="muted t10">K9-3187</span></div>
+                <div class="muted t10">Czech GSD · M · 4y</div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:2px;">
+                <div class="row between"><span class="bold t12">Kestrel</span><span class="muted t10">K9-2741</span></div>
+                <div class="muted t10">Belgian Malinois · F · 6y</div>
+              </div>
+              <div class="card" style="padding:10px 12px; gap:2px;">
+                <div class="row between"><span class="bold t12">Nyx</span><span class="muted t10">K9-3902</span></div>
+                <div class="muted t10">Belgian Malinois · F · 2y · in training</div>
+              </div>
+            </div>
+
+            <div class="row between" style="margin-top:6px;">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Event history · 12</span>
+              <span class="muted t10">filter ▾</span>
+            </div>
+            <div class="card" style="padding:0; gap:0;">
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Vex · Obedience Open L2</span><span class="meta">Cedar Creek · 14 Mar</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">193</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Kestrel · Detection L3</span><span class="meta">Brindle Bay · 8 Feb</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">182</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Vex · Protection L2</span><span class="meta">Hopkins Mill · 12 Jan</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="pill nq">NQ</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — bio is optional; what's the empty state for a handler who never adds one? Show display name only, or coach in?</div>
+    </div>
+
+    <!-- ============ P7 — Dog profile ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">P7 · Public</span>
+        <span class="sc-title">Dog profile</span>
+        <span class="sc-blurb">Same shape as the handler profile, owner-keyed. Trial history shows the handler-of-record per row (not always the owner).</span>
+        <span class="sc-path">/dogs/{id}</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:14px; gap:14px;">
+            <button class="btn btn-ghost t11" style="align-self:flex-start; padding:2px 6px;">← L. Tanaka</button>
+            <div class="col g8">
+              <div class="wf-photo" style="width:100%; aspect-ratio:4/5; max-height:220px;">Dog photo · 4:5</div>
+              <div class="col g2">
+                <div class="serif" style="font-size:28px; line-height:1.05;">Vex</div>
+                <div class="muted t11">Forge Vom Schwarzwald</div>
+              </div>
+              <div class="row g6 wrap">
+                <span class="pill pending">Czech GSD</span>
+                <span class="pill pending">M · 4y</span>
+                <span class="pill pending tabular">K9-3187</span>
+              </div>
+              <div class="muted t11">Owner · <a href="#" style="color:var(--blue-700);">@ltanaka</a></div>
+            </div>
+
+            <div class="col g4" style="margin-top:6px;">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Trial history · 7</span>
+            </div>
+            <div class="card" style="padding:0; gap:0;">
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Obedience Open L2</span><span class="meta">Cedar Creek · L. Tanaka · 14 Mar</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">193</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Protection L2</span><span class="meta">Hopkins Mill · L. Tanaka · 12 Jan</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="pill nq">NQ</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Obedience Novice L1</span><span class="meta">Cedar Creek · M. Stoll · 4 Oct '25</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">187</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+              <div class="data-row" style="grid-template-columns: 1fr auto; padding:9px 12px;">
+                <div class="col"><span class="primary t12">Detection L1</span><span class="meta">Brindle Bay · L. Tanaka · 8 Aug '25</span></div>
+                <div class="col" style="align-items:flex-end;"><span class="bold tabular t12">178</span><span class="t10" style="color:var(--green-700);">Q</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>

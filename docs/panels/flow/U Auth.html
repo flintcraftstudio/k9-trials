@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1600" />
+<title>U · Auth</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../wireframes.css" />
+<link rel="stylesheet" href="../wireframes-flow.css" />
+<style>
+  /* Standalone viewing: show the panel and give it breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1800px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head code { background: var(--mist-200); padding: 1px 5px; border-radius: 3px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="standalone-head">
+  <strong>U · Auth</strong> — Auth — sign up / log in. Extracted from <code>K9 Trial Flow Wireframes.html</code> for handoff. Styling: <code>colors_and_type.css</code> + <code>wireframes.css</code> + <code>wireframes-flow.css</code>.
+</div>
+<section class="tab-panel" data-tab="auth" id="panel-auth" data-screen-label="U · Auth">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">U · Auth <em>— the only self-service path</em></h2>
+      <div class="panel-sub">Only competitors self-signup. Admins and judges are seeded server-side. Inline validation on email + handle uniqueness; handle becomes the public URL.</div>
+    </div>
+  </header>
+
+  <div class="screens">
+
+    <!-- ============ U1 — Sign up ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">U1 · Auth</span>
+        <span class="sc-title">Sign up</span>
+        <span class="sc-blurb">Four fields. Handle availability checked live via htmx; the public URL preview tells the user exactly what they're committing to.</span>
+        <span class="sc-path">/signup</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 scroll-y" style="padding:18px 18px 24px; gap:14px;">
+            <div class="col g2">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Create account</span>
+              <div class="serif" style="font-size:24px; line-height:1.05;">Join K9 Elements</div>
+              <div class="muted t11" style="line-height:1.5;">For handlers and owners. Judges and admins are added by the trial organizers — you don't need to sign up for those.</div>
+            </div>
+            <div class="field">
+              <label>Email</label>
+              <div class="wf-input">you@kennel.com</div>
+            </div>
+            <div class="field">
+              <label>Password</label>
+              <div class="wf-input">••••••••</div>
+              <span class="help">8 characters or more.</span>
+            </div>
+            <div class="field">
+              <label>Display name</label>
+              <div class="wf-input">L. Tanaka</div>
+            </div>
+            <div class="field">
+              <label>Handle</label>
+              <div class="row g4">
+                <span class="t14 muted" style="padding-top:4px;">@</span>
+                <div class="wf-input f1">ltanaka</div>
+                <span class="pill synced" style="align-self:center;">available</span>
+              </div>
+              <span class="help">Your public URL will be <code style="background:var(--mist-100); padding:1px 5px; border-radius:3px;">k9elements.com/competitors/ltanaka</code>. Lowercase letters, digits, and hyphens.</span>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg" style="margin-top:6px;">Create account</button>
+            <div class="t11 muted" style="text-align:center;">Already registered? <a href="#" style="color:var(--mist-950);">Log in</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ U2 — Log in ============ -->
+    <div class="screen phone-w">
+      <div class="screen-caption">
+        <span class="sc-code">U2 · Auth</span>
+        <span class="sc-title">Log in</span>
+        <span class="sc-blurb">Bare and fast. Email + password. After auth, lands on /account (competitor), /admin (admin), or the tablet shell (judge).</span>
+        <span class="sc-path">/login</span>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="statusbar row between"><span>9.41</span><span>● ●</span></div>
+          <div class="phone-topbar">
+            <div class="logo">K9 Elements</div>
+            <button class="menu">☰</button>
+          </div>
+          <div class="col f1 center" style="padding:24px; gap:14px;">
+            <div class="col g2" style="width:100%;">
+              <span class="wf-eyebrow" style="color:var(--mist-600);">Welcome back</span>
+              <div class="serif" style="font-size:24px; line-height:1.05;">Log in</div>
+            </div>
+            <div class="field" style="width:100%;">
+              <label>Email</label>
+              <div class="wf-input">you@kennel.com</div>
+            </div>
+            <div class="field" style="width:100%;">
+              <label>Password</label>
+              <div class="wf-input">••••••••</div>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg">Log in</button>
+            <div class="t11 muted" style="text-align:center; margin-top:8px;">
+              New to K9 Elements? <a href="#" style="color:var(--mist-950); font-weight:500;">Create an account</a>
+            </div>
+            <div class="t10 muted" style="text-align:center;">
+              Forgot password — handled by an emailed reset link (out of scope for v1 wireframes).
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="open-q">Open Q — judges + admins log in here too. Show a "use SSO" affordance for them, or treat password-everywhere as v1?</div>
+    </div>
+
+  </div>
+</section>
+
+</body>
+</html>
