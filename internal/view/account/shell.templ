@@ -1,0 +1,27 @@
+package account
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// accountTabs is the fixed sub-nav for the competitor account area.
+// IDs match the currentTab values passed by each page.
+var accountTabs = []components.NavBarLink{
+	{ID: "dashboard", Href: "/account", Label: "Dashboard"},
+	{ID: "profile", Href: "/account/profile", Label: "Profile"},
+	{ID: "dogs", Href: "/account/dogs", Label: "Dogs"},
+	{ID: "entries", Href: "/account/entries", Label: "Entries"},
+	{ID: "challenges", Href: "/account/challenges", Label: "Challenges"},
+}
+
+// shell wraps view.Base with the account sub-tabs. currentTab matches
+// one of accountTabs[].ID to highlight the active tab.
+templ shell(title, description, currentTab string, body templ.Component) {
+	@view.Base(title, description, "account", shellBody(currentTab, body))
+}
+
+templ shellBody(currentTab string, body templ.Component) {
+	@components.SectionTabs(components.SectionTabsProps{Items: accountTabs, CurrentID: currentTab})
+	@body
+}

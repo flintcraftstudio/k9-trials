@@ -1,0 +1,17 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// ChallengesListPage lists every challenge the logged-in competitor has
+// filed: open, under_review, resolved, dismissed.
+templ ChallengesListPage() {
+	@shell("My challenges", "Your filed score disputes.", "challenges", challengesListBody())
+}
+
+templ challengesListBody() {
+	@components.StubPage(
+		"My challenges",
+		"Challenges you've filed.",
+		"Disputes on your finalized scores. Filter by status: open, under review, resolved, dismissed.",
+	)
+}

@@ -1,0 +1,21 @@
+package account
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// RegisterPage is the competitor flow for entering a dog in trials at an
+// event. Lives under the /events/{slug}/register URL but requires auth,
+// so the view sits alongside the rest of /account/*.
+templ RegisterPage(slug string) {
+	@view.Base("Register", "Register a dog for this event.", "events", registerBody(slug))
+}
+
+templ registerBody(slug string) {
+	@components.StubPage(
+		"Register",
+		"Register for " + slug,
+		"Pick a dog, pick which trials in this event to enter. Submission creates a 'pending' registration for admin review.",
+	)
+}

@@ -1,0 +1,28 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// DashboardPage is the admin landing page.
+templ DashboardPage() {
+	@shell("Admin", "Organize events, trials, registrations.", "dashboard", "", dashboardBody())
+}
+
+templ dashboardBody() {
+	@components.StubPage(
+		"Admin",
+		"Operate the trials.",
+		"Manage events, trials, registrations, judge assignments, and challenges.",
+	) {
+		<div class="mt-4 flex gap-3 flex-wrap">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events"}) {
+				Events
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/challenges"}) {
+				Challenges
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/users"}) {
+				Users
+			}
+		</div>
+	}
+}

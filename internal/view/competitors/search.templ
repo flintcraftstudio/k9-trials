@@ -1,0 +1,19 @@
+package competitors
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// SearchPage is the public competitor directory + search.
+templ SearchPage() {
+	@view.Base("Competitors", "Search handlers and dogs by name.", "competitors", searchBody())
+}
+
+templ searchBody() {
+	@components.StubPage(
+		"Competitors",
+		"Find a handler or a dog.",
+		"Search by handler name or dog name. Results link to public profiles with event history.",
+	)
+}

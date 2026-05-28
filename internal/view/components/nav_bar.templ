@@ -1,19 +1,35 @@
 package components
 
-// NavBarLink is one item in the NavBar's center cluster.
+// NavBarLink is one item in a navigation surface — the NavBar's center
+// cluster, a SectionTabs strip, a SectionSidebar group, or the NavBar's
+// SectionAnchors chips.
+//
+// Initials is consumed only by SectionAnchors (rendered into the .av
+// avatar bubble inside a .role-chip). Two uppercase letters look best.
+//
+// Badge is consumed only by SectionSidebar (rendered as a small count
+// pill on the right side of the link — e.g. "Challenges 4"). Empty for
+// links without a count.
 type NavBarLink struct {
-	ID    string // matches NavBar(currentRoute) — drives .active styling
-	Href  string
-	Label string
+	ID       string // matches the current route/tab/item ID — drives active styling
+	Href     string
+	Label    string
+	Initials string
+	Badge    string
 }
 
 // NavBarProps configures NavBar. Links is the center cluster (may be nil).
 // CurrentRoute is matched against link.ID to mark the active link.
 // LoggedIn flips the right-side action between "Log in" and "Log out".
+// SectionAnchors are role-aware shortcuts shown to the right of the
+// center cluster — e.g. an "Admin" chip for admins, "My account" for
+// competitors. Empty for anonymous visitors. Multiple anchors render
+// when the user has access to more than one section.
 type NavBarProps struct {
-	Links        []NavBarLink
-	CurrentRoute string
-	LoggedIn     bool
+	Links          []NavBarLink
+	CurrentRoute   string
+	LoggedIn       bool
+	SectionAnchors []NavBarLink
 }
 
 // DefaultNavBarLinks is the trial-app primary nav. Mirrors the marketing
@@ -21,6 +37,8 @@ type NavBarProps struct {
 // Replace per-page (e.g. an admin section nav) by passing NavBarProps.Links.
 var DefaultNavBarLinks = []NavBarLink{
 	{ID: "home", Href: "/", Label: "Home"},
+	{ID: "events", Href: "/events", Label: "Events"},
+	{ID: "competitors", Href: "/competitors", Label: "Competitors"},
 	{ID: "contact", Href: "/contact", Label: "Contact"},
 }
 
@@ -43,6 +61,19 @@ templ NavBar(p NavBarProps) {
 				}
 			</nav>
 			<div class="actions">
+				for _, a := range p.SectionAnchors {
+					if a.ID == p.CurrentRoute {
+						<a href={ templ.SafeURL(a.Href) } class="role-chip active" aria-current="page">
+							<span class="av">{ a.Initials }</span>
+							{ a.Label }
+						</a>
+					} else {
+						<a href={ templ.SafeURL(a.Href) } class="role-chip">
+							<span class="av">{ a.Initials }</span>
+							{ a.Label }
+						</a>
+					}
+				}
 				if p.LoggedIn {
 					<form hx-post="/logout" hx-swap="none" class="contents">
 						@Button(ButtonProps{Variant: "plain", Size: "md", Type: "submit"}) {
@@ -50,6 +81,9 @@ templ NavBar(p NavBarProps) {
 						}
 					</form>
 				} else {
+					@Button(ButtonProps{Variant: "plain", Size: "md", Href: "/signup"}) {
+						Sign up
+					}
 					@Button(ButtonProps{Variant: "primary", Size: "md", Href: "/login"}) {
 						Log in
 					}

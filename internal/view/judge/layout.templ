@@ -3,13 +3,16 @@ package judge
 import (
 	"fmt"
 
+	"github.com/flintcraftstudio/k9-trials/internal/session"
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 )
 
 // shell is the judge-app page wrapper. Deliberately no marketing nav/footer —
 // judges aren't browsing the marketing site mid-trial. The .judge-shell main
 // carries the data-event attribute so the event-scoped accent tokens flow
-// to everything inside.
+// to everything inside. The drawer is the only off-ramp from focus mode
+// and is triggered by the hamburger in the per-page appbar (currently
+// only the queue surfaces one).
 templ shell(title, eventKey string, body templ.Component) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -23,14 +26,56 @@ templ shell(title, eventKey string, body templ.Component) {
 			<script src="/static/js/htmx.min.js" defer></script>
 			<script src="/static/js/alpine.min.js" defer></script>
 		</head>
-		<body class="min-h-screen antialiased">
+		<body class="min-h-screen antialiased" x-data="{ drawer: false }">
 			<main class="judge-shell" data-event={ eventKey }>
 				<div class="judge-frame">
 					@body
 				</div>
 			</main>
+			@judgeDrawer(session.FromContext(ctx))
 		</body>
 	</html>
+}
+
+// judgeDrawer renders the slide-in drawer triggered by the hamburger.
+// Intentionally minimal: an escape hatch, not a full nav. Items adapt to
+// the viewer's role so admins can pop into /admin and competitors who
+// happen to also judge can reach their account from here.
+templ judgeDrawer(u *session.User) {
+	<div
+		x-show="drawer"
+		x-transition.opacity
+		x-cloak
+		@click="drawer = false"
+		@keydown.escape.window="drawer = false"
+		style="position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:50;"
+	></div>
+	<aside
+		x-show="drawer"
+		x-transition:enter="transition transform ease-out duration-200"
+		x-transition:enter-start="-translate-x-full"
+		x-transition:enter-end="translate-x-0"
+		x-transition:leave="transition transform ease-in duration-150"
+		x-transition:leave-start="translate-x-0"
+		x-transition:leave-end="-translate-x-full"
+		x-cloak
+		class="col"
+		style="position:fixed; top:0; left:0; bottom:0; width:280px; background:var(--color-bg); border-right:1px solid var(--color-divider); padding:24px 16px; gap:8px; z-index:51;"
+	>
+		<div class="row items-center" style="justify-content:space-between; margin-bottom:8px;">
+			<div class="eyebrow">Judge</div>
+			<button class="btn btn-ghost" @click="drawer = false" aria-label="Close" style="padding:4px 8px;">✕</button>
+		</div>
+		<a href="/judge" class="pill" style="text-decoration:none; justify-content:flex-start;">Switch trial</a>
+		if u != nil && u.Role == "admin" {
+			<a href="/admin" class="pill" style="text-decoration:none; justify-content:flex-start;">Admin</a>
+		}
+		<a href="/account" class="pill" style="text-decoration:none; justify-content:flex-start;">My account</a>
+		<div style="flex:1;"></div>
+		<form hx-post="/logout" hx-swap="none">
+			<button type="submit" class="pill" style="width:100%; justify-content:flex-start; background:transparent;">Log out</button>
+		</form>
+	</aside>
 }
 
 func itoa(n int) string {

@@ -1,0 +1,22 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// DogsListPage lists every dog owned by the logged-in competitor.
+templ DogsListPage() {
+	@shell("My dogs", "Manage your dogs.", "dogs", dogsListBody())
+}
+
+templ dogsListBody() {
+	@components.StubPage(
+		"My dogs",
+		"Dogs you own.",
+		"List of your dogs. Add new, edit details, retire.",
+	) {
+		<div class="mt-4 flex gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs/new"}) {
+				Add a dog
+			}
+		</div>
+	}
+}

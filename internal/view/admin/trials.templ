@@ -1,0 +1,35 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// TrialsListPage lists trials within an event with admin status.
+templ TrialsListPage(eventID string) {
+	@shell("Trials", "Manage trials in this event.", "event-trials", eventID, trialsListBody(eventID))
+}
+
+templ trialsListBody(eventID string) {
+	@components.StubPage(
+		"Admin · Trials",
+		"Trials in event #" + eventID,
+		"Discipline + level + date + template version. Add new, edit, change status.",
+	) {
+		<div class="mt-4 flex gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/" + eventID + "/trials/new"}) {
+				New trial
+			}
+		</div>
+	}
+}
+
+// TrialsFormPage is the create-trial form for a given event.
+templ TrialsFormPage(eventID string) {
+	@shell("New trial", "Add a trial to this event.", "event-trials", eventID, trialsFormBody(eventID))
+}
+
+templ trialsFormBody(eventID string) {
+	@components.StubPage(
+		"Admin · New trial",
+		"Add a trial to event #" + eventID,
+		"Form: discipline (OB/PR/TR/DT), level (1/2/3), date, template version.",
+	)
+}

@@ -1,0 +1,22 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// EventsListPage lists every event with admin status, including drafts.
+templ EventsListPage() {
+	@shell("Events", "Manage events.", "events", "", eventsListBody())
+}
+
+templ eventsListBody() {
+	@components.StubPage(
+		"Admin · Events",
+		"All events.",
+		"Draft, published, and closed events. Bulk edit status, create new.",
+	) {
+		<div class="mt-4 flex gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/new"}) {
+				New event
+			}
+		</div>
+	}
+}

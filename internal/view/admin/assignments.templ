@@ -1,0 +1,16 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// AssignmentsPage manages judge-to-trial assignments for an event.
+templ AssignmentsPage(eventID string) {
+	@shell("Judge assignments", "Assign judges to trials.", "event-assignments", eventID, assignmentsBody(eventID))
+}
+
+templ assignmentsBody(eventID string) {
+	@components.StubPage(
+		"Admin · Assignments",
+		"Judges for event #" + eventID,
+		"Assign a judge to each trial. Drives /judge queue visibility per user.",
+	)
+}

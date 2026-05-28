@@ -1,0 +1,20 @@
+package competitors
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// ProfilePage is the public competitor profile: display name, bio,
+// dogs they own, and their full event history.
+templ ProfilePage(handle string) {
+	@view.Base("Competitor", "Handler profile and event history.", "competitors", profileBody(handle))
+}
+
+templ profileBody(handle string) {
+	@components.StubPage(
+		"Competitor",
+		"@" + handle,
+		"Public handler profile with dogs and event history.",
+	)
+}

@@ -1,0 +1,19 @@
+package events
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// ListPage is the public events index. Filter to upcoming / live / past.
+templ ListPage() {
+	@view.Base("Events", "Upcoming, live, and past K9 trial events.", "events", listBody())
+}
+
+templ listBody() {
+	@components.StubPage(
+		"Events",
+		"All trials in one place.",
+		"List of upcoming, currently running, and past events. Filter and search go here.",
+	)
+}

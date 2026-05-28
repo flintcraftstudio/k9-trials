@@ -1,0 +1,16 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// ProfilePage edits the logged-in competitor's display name, handle, bio.
+templ ProfilePage() {
+	@shell("Profile", "Edit your public profile.", "profile", profileBody())
+}
+
+templ profileBody() {
+	@components.StubPage(
+		"Profile",
+		"Your public profile.",
+		"Edit display name, handle (URL slug), and bio. Shown on your public competitor page.",
+	)
+}

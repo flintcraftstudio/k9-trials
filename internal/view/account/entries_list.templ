@@ -1,0 +1,17 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// EntriesListPage lists every entry across all events for the logged-in
+// competitor: upcoming, in-progress, finalized.
+templ EntriesListPage() {
+	@shell("My entries", "Past and upcoming entries.", "entries", entriesListBody())
+}
+
+templ entriesListBody() {
+	@components.StubPage(
+		"My entries",
+		"All your entries.",
+		"Upcoming, in-progress, and finalized entries across every event. Click through for the full scoresheet.",
+	)
+}

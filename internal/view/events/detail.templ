@@ -1,0 +1,26 @@
+package events
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DetailPage is the public per-event page: schedule, trials, leaderboard
+// per trial, registration link when status='published'.
+templ DetailPage(slug string) {
+	@view.Base("Event", "Event detail, trials, and live results.", "events", detailBody(slug))
+}
+
+templ detailBody(slug string) {
+	@components.StubPage(
+		"Event",
+		"Event: " + slug,
+		"Schedule, trials, registration status, and live results for this event.",
+	) {
+		<div class="mt-4 flex gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/events/" + slug + "/register"}) {
+				Register a dog
+			}
+		</div>
+	}
+}

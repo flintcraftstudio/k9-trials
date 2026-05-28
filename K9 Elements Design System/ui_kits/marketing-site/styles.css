@@ -344,3 +344,122 @@ img { max-width: 100%; display: block; }
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
 }
+
+/* ---------- Role chip (navbar right-cluster) ----------
+   A pill-shaped link with an avatar bubble and a label. Sits in the
+   .navbar .actions area for authenticated users. Marks the user's primary
+   section ("My account", "Admin", "Judge"). The .active variant is filled
+   with the brand-dark accent — used when the user is already in that
+   section. Plural by design: a multi-role user gets multiple chips, no
+   component change. */
+.role-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  height: 32px;
+  padding: 0 14px 0 4px;
+  border-radius: 9999px;
+  font-size: 13px; font-weight: 500; line-height: 1;
+  background: rgb(from var(--mist-950) r g b / 0.06);
+  color: var(--mist-950);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+.role-chip:hover { background: rgb(from var(--mist-950) r g b / 0.12); }
+.role-chip.active { background: var(--mist-950); color: #fff; }
+.role-chip.active:hover { background: var(--mist-800); }
+.role-chip .av {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border-radius: 9999px;
+  background: #fff; color: var(--mist-950);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.role-chip.active .av { background: rgb(255 255 255 / 0.18); color: #fff; }
+
+/* ---------- Section sub-tabs (account area) ----------
+   Horizontal pill row immediately below the global top bar, in a thin
+   tinted band so it reads as a sub-section header. Used by /account/*.
+   Overflow-scrolls horizontally on phone widths instead of wrapping. */
+.section-tabs {
+  background: var(--mist-50);
+  border-bottom: 1px solid var(--color-divider);
+}
+.section-tabs .inner {
+  display: flex; align-items: center; gap: 6px;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 10px 24px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.section-tabs .inner::-webkit-scrollbar { display: none; }
+@media (min-width: 1024px) { .section-tabs .inner { padding: 10px 40px; } }
+.section-tabs .stab {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 9999px;
+  font-size: 13px; font-weight: 500; line-height: 1.2;
+  color: var(--mist-700);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.section-tabs .stab:hover { background: rgb(from var(--mist-950) r g b / 0.05); color: var(--mist-950); }
+.section-tabs .stab.cur,
+.section-tabs .stab[aria-current="page"] {
+  background: var(--mist-950); color: #fff;
+}
+
+/* ---------- Admin shell (sidebar + main) ----------
+   Two-column shell beneath the global top bar. The sidebar is a fixed
+   240px left rail; the main column flexes. The sidebar carries a top
+   "Operations" group always, and an optional "This event" group when
+   the URL is scoped to one event. */
+.adm-shell {
+  display: flex; align-items: stretch;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  min-height: calc(100vh - 84px);
+}
+.adm-side {
+  width: 240px; flex: none;
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 24px 16px;
+  border-right: 1px solid var(--color-divider);
+  background: var(--mist-50);
+}
+.adm-side .grp { display: flex; flex-direction: column; gap: 2px; }
+.adm-side .grp + .grp { margin-top: 20px; }
+.adm-side .grp-label {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--mist-600);
+  padding: 0 10px 6px;
+}
+.adm-side a {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 13px; font-weight: 500; line-height: 1.4;
+  color: var(--mist-700);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out);
+}
+.adm-side a:hover { background: rgb(from var(--mist-950) r g b / 0.05); color: var(--mist-950); }
+.adm-side a.cur,
+.adm-side a[aria-current="page"] {
+  background: rgb(from var(--mist-950) r g b / 0.08);
+  color: var(--mist-950);
+  font-weight: 600;
+}
+.adm-side a .badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 18px; padding: 0 6px;
+  margin-left: auto;
+  border-radius: 9999px;
+  background: var(--orange-100); color: var(--orange-800);
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+}
+.adm-main {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+}

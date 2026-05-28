@@ -1,0 +1,16 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// ChallengesPage is the admin review queue for score challenges.
+templ ChallengesPage() {
+	@shell("Challenges", "Review filed challenges.", "challenges", "", challengesBody())
+}
+
+templ challengesBody() {
+	@components.StubPage(
+		"Admin · Challenges",
+		"Review queue.",
+		"Open and under-review challenges across all events. Resolve (re-score via judge flow) or dismiss with notes.",
+	)
+}

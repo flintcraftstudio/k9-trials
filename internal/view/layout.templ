@@ -37,9 +37,10 @@ templ Base(title, description, currentRoute string, body templ.Component) {
 		</head>
 		<body class="min-h-screen antialiased">
 			@components.NavBar(components.NavBarProps{
-				Links:        components.DefaultNavBarLinks,
-				CurrentRoute: currentRoute,
-				LoggedIn:     session.FromContext(ctx) != nil,
+				Links:          components.DefaultNavBarLinks,
+				CurrentRoute:   currentRoute,
+				LoggedIn:       session.FromContext(ctx) != nil,
+				SectionAnchors: sectionAnchorsFor(session.FromContext(ctx)),
 			})
 			<main>
 				@body

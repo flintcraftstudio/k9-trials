@@ -1,0 +1,24 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// DogsFormPage is the add/edit dog form. dogID is empty for "new".
+templ DogsFormPage(dogID string) {
+	@shell("Dog", "Add or edit a dog.", "dogs", dogsFormBody(dogID))
+}
+
+templ dogsFormBody(dogID string) {
+	if dogID == "" {
+		@components.StubPage(
+			"New dog",
+			"Add a dog.",
+			"Form: call name, registered name, breed, date of birth, registration number.",
+		)
+	} else {
+		@components.StubPage(
+			"Edit dog",
+			"Edit dog #" + dogID,
+			"Form: call name, registered name, breed, date of birth, registration number.",
+		)
+	}
+}

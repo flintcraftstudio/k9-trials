@@ -1,0 +1,17 @@
+package view
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// SignupPage is the competitor self-signup form. Creates a user
+// (role=competitor) and the matching competitors row in one step.
+templ SignupPage() {
+	@Base("Sign up", "Create a competitor account.", "signup", signupBody())
+}
+
+templ signupBody() {
+	@components.StubPage(
+		"Sign up",
+		"Create your account.",
+		"Sign up as a competitor to register dogs and review scores. Form goes here: email, password, display name, handle.",
+	)
+}

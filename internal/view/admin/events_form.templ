@@ -1,0 +1,28 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// EventsFormPage is the create/edit event form. eventID is empty for "new".
+templ EventsFormPage(eventID string) {
+	if eventID == "" {
+		@shell("New event", "Create an event.", "events", "", eventsFormBody(eventID))
+	} else {
+		@shell("Edit event", "Edit an event.", "event-edit", eventID, eventsFormBody(eventID))
+	}
+}
+
+templ eventsFormBody(eventID string) {
+	if eventID == "" {
+		@components.StubPage(
+			"Admin · New event",
+			"Create an event.",
+			"Form: name, slug, location, start/end dates, status.",
+		)
+	} else {
+		@components.StubPage(
+			"Admin · Edit event",
+			"Edit event #" + eventID,
+			"Form: name, slug, location, dates, status. Manage trials, registrations, judge assignments from here.",
+		)
+	}
+}

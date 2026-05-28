@@ -112,6 +112,35 @@ func main() {
 	mux.Handle("GET /login", handler.LoginPage())
 	mux.Handle("POST /login", handler.LoginSubmit(st))
 	mux.Handle("POST /logout", handler.Logout(st))
+	mux.Handle("GET /signup", handler.SignupPage())
+	mux.Handle("POST /signup", handler.SignupSubmit())
+
+	// Public — events, competitors, dogs
+	mux.Handle("GET /events", handler.EventsList())
+	mux.Handle("GET /events/{slug}", handler.EventDetail())
+	mux.Handle("GET /events/{slug}/trials/{id}", handler.TrialDetail())
+	mux.Handle("GET /competitors", handler.CompetitorSearch())
+	mux.Handle("GET /competitors/{handle}", handler.CompetitorProfile())
+	mux.Handle("GET /dogs/{id}", handler.DogProfile())
+
+	// Competitor account — requires competitor or admin role
+	competitor := func(h http.Handler) http.Handler {
+		return session.RequireRole(h, "competitor", "admin")
+	}
+	mux.Handle("GET /account", competitor(handler.AccountDashboard()))
+	mux.Handle("GET /account/profile", competitor(handler.AccountProfile()))
+	mux.Handle("GET /account/dogs", competitor(handler.AccountDogs()))
+	mux.Handle("GET /account/dogs/new", competitor(handler.AccountDogsNew()))
+	mux.Handle("GET /account/dogs/{id}/edit", competitor(handler.AccountDogsEdit()))
+	mux.Handle("GET /account/entries", competitor(handler.AccountEntries()))
+	mux.Handle("GET /account/entries/{id}", competitor(handler.AccountEntryDetail()))
+	mux.Handle("GET /account/challenges", competitor(handler.AccountChallenges()))
+	mux.Handle("GET /account/challenges/new", competitor(handler.AccountChallengeNew()))
+	mux.Handle("POST /account/challenges", competitor(handler.AccountChallengeSubmit()))
+
+	// Event registration (competitor-side) — lives under /events/{slug}/register
+	mux.Handle("GET /events/{slug}/register", competitor(handler.RegisterPage()))
+	mux.Handle("POST /events/{slug}/register", competitor(handler.RegisterSubmit()))
 
 	// Judge-side scoring UI (B1–B6 panels). All routes load real entries
 	// from store + run the scoring engine; access requires the judge or
@@ -122,6 +151,18 @@ func main() {
 	mux.Handle("GET /judge/entry/{id}/review", session.RequireJudge(handler.JudgeReview(st)))
 	mux.Handle("GET /judge/entry/{id}/submit", session.RequireJudge(handler.JudgeSubmit(st)))
 	mux.Handle("GET /judge/entry/{id}/locked", session.RequireJudge(handler.JudgeLocked(st)))
+
+	// Admin — events, trials, registrations, challenges, users
+	mux.Handle("GET /admin", session.RequireAdmin(handler.AdminDashboard()))
+	mux.Handle("GET /admin/events", session.RequireAdmin(handler.AdminEvents()))
+	mux.Handle("GET /admin/events/new", session.RequireAdmin(handler.AdminEventsNew()))
+	mux.Handle("GET /admin/events/{id}/edit", session.RequireAdmin(handler.AdminEventsEdit()))
+	mux.Handle("GET /admin/events/{id}/trials", session.RequireAdmin(handler.AdminTrials()))
+	mux.Handle("GET /admin/events/{id}/trials/new", session.RequireAdmin(handler.AdminTrialsNew()))
+	mux.Handle("GET /admin/events/{id}/registrations", session.RequireAdmin(handler.AdminRegistrations()))
+	mux.Handle("GET /admin/events/{id}/assignments", session.RequireAdmin(handler.AdminAssignments()))
+	mux.Handle("GET /admin/challenges", session.RequireAdmin(handler.AdminChallenges()))
+	mux.Handle("GET /admin/users", session.RequireAdmin(handler.AdminUsers()))
 
 	// Session + logging middleware
 	srv := session.Middleware(st)(mux)

@@ -1,0 +1,19 @@
+package components
+
+// StubPage renders a placeholder section for routes that are wired up
+// but not yet implemented. eyebrow is the short uppercase tag, title is
+// the page heading, note describes what the page will eventually show.
+templ StubPage(eyebrow, title, note string) {
+	<section class="section-lg">
+		@Container("") {
+			<div class="flex-col items-start gap-6 fade-up max-w-[920px]">
+				@Eyebrow() {
+					{ eyebrow }
+				}
+				<h1 class="hero-h1">{ title }</h1>
+				<p class="lede max-w-[620px]">{ note }</p>
+				{ children... }
+			</div>
+		}
+	</section>
+}

@@ -1,0 +1,27 @@
+package components
+
+// SectionTabsProps configures SectionTabs. Items is the tab strip in
+// display order. CurrentID picks the active tab by matching item.ID.
+type SectionTabsProps struct {
+	Items     []NavBarLink
+	CurrentID string
+}
+
+// SectionTabs renders a horizontal tab strip sitting under the global
+// top bar. Used by sections with a small fixed set of pages — currently
+// /account/*. The strip has its own thin background band so it reads as
+// a sub-section header, not as part of the page body. On narrow screens
+// the strip overflow-scrolls horizontally instead of wrapping.
+templ SectionTabs(p SectionTabsProps) {
+	<div class="section-tabs">
+		<nav class="inner" aria-label="Section">
+			for _, it := range p.Items {
+				if it.ID == p.CurrentID {
+					<a href={ templ.SafeURL(it.Href) } class="stab cur" aria-current="page">{ it.Label }</a>
+				} else {
+					<a href={ templ.SafeURL(it.Href) } class="stab">{ it.Label }</a>
+				}
+			}
+		</nav>
+	</div>
+}

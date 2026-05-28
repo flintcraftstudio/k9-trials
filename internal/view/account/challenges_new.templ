@@ -1,0 +1,17 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// ChallengesNewPage is the file-a-challenge form, prefilled with an
+// entry_id from the query string (?entry={id}).
+templ ChallengesNewPage(entryID string) {
+	@shell("File a challenge", "Dispute a finalized score.", "challenges", challengesNewBody(entryID))
+}
+
+templ challengesNewBody(entryID string) {
+	@components.StubPage(
+		"File a challenge",
+		"Dispute a score.",
+		"Form: reason text. Filed against entry #" + entryID + ". Admin reviews and either resolves (via re-scoring) or dismisses.",
+	)
+}

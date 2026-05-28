@@ -1,0 +1,21 @@
+package events
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// TrialDetailPage is the public per-trial leaderboard within an event:
+// running order, finalized entries with totals, in-progress entries shown
+// as "scoring" without partial totals.
+templ TrialDetailPage(slug, trialID string) {
+	@view.Base("Trial", "Running order and results for this trial.", "events", trialDetailBody(slug, trialID))
+}
+
+templ trialDetailBody(slug, trialID string) {
+	@components.StubPage(
+		"Trial",
+		"Trial #" + trialID,
+		"Running order and results. Finalized scores show full breakdown; in-progress entries show as 'scoring'.",
+	)
+}

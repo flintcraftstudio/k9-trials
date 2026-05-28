@@ -1,0 +1,16 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// UsersPage manages user accounts and roles.
+templ UsersPage() {
+	@shell("Users", "Manage accounts and roles.", "users", "", usersBody())
+}
+
+templ usersBody() {
+	@components.StubPage(
+		"Admin · Users",
+		"All accounts.",
+		"List users; change role (admin / judge / competitor); link to competitor identity.",
+	)
+}

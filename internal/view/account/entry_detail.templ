@@ -1,0 +1,24 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// EntryDetailPage is the read-only scoresheet view a competitor sees for
+// one of their own entries. Once status='finalized', a "Challenge this
+// score" button links to /account/challenges/new?entry={id}.
+templ EntryDetailPage(entryID string) {
+	@shell("Entry", "Your scoresheet for this entry.", "entries", entryDetailBody(entryID))
+}
+
+templ entryDetailBody(entryID string) {
+	@components.StubPage(
+		"Entry",
+		"Entry #" + entryID,
+		"Read-only scoresheet. Once finalized, you can file a challenge if you believe something is incorrect.",
+	) {
+		<div class="mt-4 flex gap-3">
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/challenges/new?entry=" + entryID}) {
+				Challenge this score
+			}
+		</div>
+	}
+}

@@ -1,0 +1,20 @@
+package dogs
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// ProfilePage is the public dog profile: call name, registered name,
+// breed, owner, and every event entry across all events.
+templ ProfilePage(dogID string) {
+	@view.Base("Dog", "Dog profile and trial history.", "competitors", profileBody(dogID))
+}
+
+templ profileBody(dogID string) {
+	@components.StubPage(
+		"Dog",
+		"Dog #" + dogID,
+		"Public dog profile with breed, owner link, and full trial history.",
+	)
+}

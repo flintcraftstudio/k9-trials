@@ -14,7 +14,7 @@ import (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Fprintf(os.Stderr, "Usage: seed <email> <password> [role]\n  role: admin (default) or judge\n")
+		fmt.Fprintf(os.Stderr, "Usage: seed <email> <password> [role]\n  role: admin (default), judge, or competitor\n")
 		os.Exit(1)
 	}
 
@@ -24,8 +24,8 @@ func main() {
 	if len(os.Args) >= 4 {
 		role = os.Args[3]
 	}
-	if role != "admin" && role != "judge" {
-		fmt.Fprintf(os.Stderr, "Invalid role %q: must be 'admin' or 'judge'\n", role)
+	if role != "admin" && role != "judge" && role != "competitor" {
+		fmt.Fprintf(os.Stderr, "Invalid role %q: must be 'admin', 'judge', or 'competitor'\n", role)
 		os.Exit(1)
 	}
 

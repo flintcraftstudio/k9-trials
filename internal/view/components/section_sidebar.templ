@@ -1,0 +1,50 @@
+package components
+
+// SidebarGroup is a labeled cluster of links in a SectionSidebar. Label
+// may be empty for the top-level group (renders no header).
+type SidebarGroup struct {
+	Label string
+	Items []NavBarLink
+}
+
+// SectionSidebarProps configures SectionSidebar. Groups render in order;
+// CurrentID highlights the matching item across all groups.
+type SectionSidebarProps struct {
+	Groups    []SidebarGroup
+	CurrentID string
+}
+
+// SectionSidebar renders a fixed-width left rail of grouped links.
+// Used by sections with drill-down navigation that doesn't fit horizontal
+// tabs — currently /admin/*. Each group separates a top-level area
+// (Events, Users) from contextual children (within-event pages). Group
+// items may carry a Badge string (e.g. "4" for pending challenges)
+// which renders as a small count pill on the right side of the link.
+templ SectionSidebar(p SectionSidebarProps) {
+	<aside class="adm-side" aria-label="Section navigation">
+		for _, g := range p.Groups {
+			<div class="grp">
+				if g.Label != "" {
+					<div class="grp-label">{ g.Label }</div>
+				}
+				for _, it := range g.Items {
+					if it.ID == p.CurrentID {
+						<a href={ templ.SafeURL(it.Href) } class="cur" aria-current="page">
+							<span>{ it.Label }</span>
+							if it.Badge != "" {
+								<span class="badge">{ it.Badge }</span>
+							}
+						</a>
+					} else {
+						<a href={ templ.SafeURL(it.Href) }>
+							<span>{ it.Label }</span>
+							if it.Badge != "" {
+								<span class="badge">{ it.Badge }</span>
+							}
+						</a>
+					}
+				}
+			</div>
+		}
+	</aside>
+}

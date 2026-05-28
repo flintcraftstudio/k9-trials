@@ -1,0 +1,17 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// RegistrationsPage lists all registrations for an event so admins can
+// accept (creating an entries row + entry number), waitlist, or reject.
+templ RegistrationsPage(eventID string) {
+	@shell("Registrations", "Review event registrations.", "event-registrations", eventID, registrationsBody(eventID))
+}
+
+templ registrationsBody(eventID string) {
+	@components.StubPage(
+		"Admin · Registrations",
+		"Registrations for event #" + eventID,
+		"Pending, accepted, waitlisted, withdrawn, rejected. Accept assigns the next entry number and creates the entries row.",
+	)
+}

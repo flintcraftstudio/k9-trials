@@ -1,0 +1,53 @@
+package admin
+
+import (
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// sidebarGroups returns the admin sidebar contents. When eventID is set,
+// the within-event group renders below the global group so contextual
+// drill-down stays visible alongside the top-level areas.
+func sidebarGroups(eventID string) []components.SidebarGroup {
+	groups := []components.SidebarGroup{
+		{
+			Items: []components.NavBarLink{
+				{ID: "dashboard", Href: "/admin", Label: "Dashboard"},
+				{ID: "events", Href: "/admin/events", Label: "Events"},
+				{ID: "challenges", Href: "/admin/challenges", Label: "Challenges"},
+				{ID: "users", Href: "/admin/users", Label: "Users"},
+			},
+		},
+	}
+	if eventID != "" {
+		groups = append(groups, components.SidebarGroup{
+			Label: "This event",
+			Items: []components.NavBarLink{
+				{ID: "event-edit", Href: "/admin/events/" + eventID + "/edit", Label: "Settings"},
+				{ID: "event-trials", Href: "/admin/events/" + eventID + "/trials", Label: "Trials"},
+				{ID: "event-registrations", Href: "/admin/events/" + eventID + "/registrations", Label: "Registrations"},
+				{ID: "event-assignments", Href: "/admin/events/" + eventID + "/assignments", Label: "Judges"},
+			},
+		})
+	}
+	return groups
+}
+
+// shell wraps view.Base with the admin sidebar. currentItem matches one
+// of the sidebar items' IDs. eventID, when non-empty, adds the within-
+// event group to the sidebar.
+templ shell(title, description, currentItem, eventID string, body templ.Component) {
+	@view.Base(title, description, "admin", shellBody(currentItem, eventID, body))
+}
+
+templ shellBody(currentItem, eventID string, body templ.Component) {
+	<div class="adm-shell">
+		@components.SectionSidebar(components.SectionSidebarProps{
+			Groups:    sidebarGroups(eventID),
+			CurrentID: currentItem,
+		})
+		<div class="adm-main">
+			@body
+		</div>
+	</div>
+}
