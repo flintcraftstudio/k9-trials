@@ -70,6 +70,20 @@
   min-height: calc(100vh - 48px);
 }
 
+/* Drop the iPad-mimicking frame on desktop. On tablet/phone the bordered card
+   reads fine because it fills the viewport; on a wide desktop screen the
+   floating rounded panel just looks like a fake tablet, so flatten it. */
+@media (min-width: 1280px) {
+  .judge-shell { background: white; }
+  .judge-frame { padding: 0; gap: 0; }
+  .judge-screen {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    min-height: 100vh;
+  }
+}
+
 /* ---------- Appbar (top chrome inside the judge-screen) ---------- */
 .appbar {
   display: flex;
