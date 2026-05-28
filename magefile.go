@@ -83,6 +83,13 @@ func Seed(email, password string) error {
 	return sh.Run("go", "run", "./cmd/seed", email, password)
 }
 
+// SeedTrial seeds the demo event/trial/entries (admin@example.com,
+// judge@example.com, Cedar Creek Spring Trial, 9 entries with sample
+// scores on the finalized ones). Idempotent — safe to re-run.
+func SeedTrial() error {
+	return sh.Run("go", "run", "./cmd/seed-trial")
+}
+
 func dbPath() string {
 	if p := os.Getenv("DB_PATH"); p != "" {
 		return p

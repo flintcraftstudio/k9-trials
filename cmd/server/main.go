@@ -113,14 +113,15 @@ func main() {
 	mux.Handle("POST /login", handler.LoginSubmit(st))
 	mux.Handle("POST /logout", handler.Logout(st))
 
-	// Judge-side scoring UI (B1–B6 panels, currently rendered against
-	// hardcoded fixtures in internal/view/judge — no persistence yet).
-	mux.Handle("GET /judge", handler.JudgeQueue())
-	mux.Handle("GET /judge/entry/{id}/gate", handler.JudgeGate())
-	mux.Handle("GET /judge/entry/{id}/score", handler.JudgeScore())
-	mux.Handle("GET /judge/entry/{id}/review", handler.JudgeReview())
-	mux.Handle("GET /judge/entry/{id}/submit", handler.JudgeSubmit())
-	mux.Handle("GET /judge/entry/{id}/locked", handler.JudgeLocked())
+	// Judge-side scoring UI (B1–B6 panels). All routes load real entries
+	// from store + run the scoring engine; access requires the judge or
+	// admin role.
+	mux.Handle("GET /judge", session.RequireJudge(handler.JudgeQueue(st)))
+	mux.Handle("GET /judge/entry/{id}/gate", session.RequireJudge(handler.JudgeGate(st)))
+	mux.Handle("GET /judge/entry/{id}/score", session.RequireJudge(handler.JudgeScore(st)))
+	mux.Handle("GET /judge/entry/{id}/review", session.RequireJudge(handler.JudgeReview(st)))
+	mux.Handle("GET /judge/entry/{id}/submit", session.RequireJudge(handler.JudgeSubmit(st)))
+	mux.Handle("GET /judge/entry/{id}/locked", session.RequireJudge(handler.JudgeLocked(st)))
 
 	// Session + logging middleware
 	srv := session.Middleware(st)(mux)
