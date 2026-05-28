@@ -116,12 +116,13 @@ func main() {
 	mux.Handle("POST /signup", handler.SignupSubmit())
 
 	// Public — events, competitors, dogs
-	mux.Handle("GET /events", handler.EventsList())
-	mux.Handle("GET /events/{slug}", handler.EventDetail())
-	mux.Handle("GET /events/{slug}/trials/{id}", handler.TrialDetail())
-	mux.Handle("GET /competitors", handler.CompetitorSearch())
-	mux.Handle("GET /competitors/{handle}", handler.CompetitorProfile())
-	mux.Handle("GET /dogs/{id}", handler.DogProfile())
+	mux.Handle("GET /events", handler.EventsList(st))
+	mux.Handle("GET /events/{slug}", handler.EventDetail(st))
+	mux.Handle("GET /events/{slug}/trials/{id}", handler.TrialDetail(st))
+	mux.Handle("GET /entries/{id}", handler.EntryDetail(st))
+	mux.Handle("GET /competitors", handler.CompetitorSearch(st))
+	mux.Handle("GET /competitors/{handle}", handler.CompetitorProfile(st))
+	mux.Handle("GET /dogs/{id}", handler.DogProfile(st))
 
 	// Competitor account — requires competitor or admin role
 	competitor := func(h http.Handler) http.Handler {

@@ -1,21 +1,115 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// TrialDetailPage is the public per-trial leaderboard within an event:
-// running order, finalized entries with totals, in-progress entries shown
-// as "scoring" without partial totals.
-templ TrialDetailPage(slug, trialID string) {
-	@view.Base("Trial", "Running order and results for this trial.", "events", trialDetailBody(slug, trialID))
+// TrialDetailPage is the public per-trial leaderboard (P3). Qualifying
+// finalized entries are listed first in placing order, then the remaining
+// entries (NQ, scoring, upcoming) in roster order. In-progress entries
+// show a "scoring" pill with no partial points.
+templ TrialDetailPage(d TrialDetailViewData) {
+	@view.Base(d.EventName, "Running order and results for this trial.", "events", trialDetailBody(d))
 }
 
-templ trialDetailBody(slug, trialID string) {
-	@components.StubPage(
-		"Trial",
-		"Trial #" + trialID,
-		"Running order and results. Finalized scores show full breakdown; in-progress entries show as 'scoring'.",
-	)
+templ trialDetailBody(d TrialDetailViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-3xl">
+				<a href={ templ.SafeURL("/events/" + d.EventSlug) } class="body-sm" style="text-decoration:none;">← { d.EventName }</a>
+				<div class="flex-col gap-2">
+					@components.Eyebrow() {
+						{ d.DisciplineLvl }
+					}
+					<h1 class="h2">{ d.Date } leaderboard</h1>
+					<div class="body-sm" style="margin:0;">{ leaderboardCounts(d) }</div>
+				</div>
+				if len(d.Rows) == 0 {
+					<div class="card flex-col items-start gap-2" style="padding:24px;">
+						<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No entries yet</div>
+						<p class="body-sm" style="margin:0;">Entries appear here once registrations are accepted.</p>
+					</div>
+				} else {
+					<div class="card" style="padding:0;overflow:hidden;">
+						for _, row := range d.Rows {
+							@leaderRow(row)
+						}
+					</div>
+				}
+			</div>
+		}
+	</section>
+}
+
+// leaderRow is one entry line on the leaderboard. Layout: placing · dog +
+// handler · score/status. Clicking opens the public entry detail (P4).
+templ leaderRow(row LeaderRow) {
+	<a
+		href={ templ.SafeURL(fmt.Sprintf("/entries/%d", row.EntryID)) }
+		class="flex items-center gap-3"
+		style="padding:12px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;"
+	>
+		<span class="serif" style="width:24px;text-align:right;color:var(--mist-500);font-variant-numeric:tabular-nums;">
+			if row.Rank > 0 {
+				{ fmt.Sprintf("%d", row.Rank) }
+			} else {
+				—
+			}
+		</span>
+		<div class="flex-col" style="flex:1;min-width:0;">
+			<span style="font-weight:600;color:var(--mist-950);">{ row.DogName }</span>
+			<span class="body-sm" style="margin:0;">{ leaderMeta(row) }</span>
+		</div>
+		@leaderScore(row)
+	</a>
+}
+
+// leaderScore renders the right-hand score/status cell: points + a
+// qualifying/NQ label for finalized rows, a "scoring" pill for in-progress
+// rows, and an "upcoming" hint otherwise.
+templ leaderScore(row LeaderRow) {
+	<div class="flex-col items-end" style="text-align:right;">
+		if row.Finalized && !row.NQ {
+			<span class="serif" style="font-size:18px;color:var(--mist-950);font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+			<span class="body-sm" style="margin:0;color:var(--green-700);">qualifying</span>
+		} else if row.Finalized && row.NQ {
+			<span class="pill pill-closed">NQ</span>
+		} else if row.Scoring {
+			<span class="pill pill-scoring"><span class="dot"></span>scoring</span>
+		} else {
+			<span class="body-sm" style="margin:0;">upcoming</span>
+		}
+	</div>
+}
+
+// leaderboardCounts renders the "N entries · N finalized · N scoring · N
+// upcoming" summary line, omitting zero buckets for brevity.
+func leaderboardCounts(d TrialDetailViewData) string {
+	parts := []string{fmt.Sprintf("%d entries", d.TotalEntries)}
+	if d.FinalizedCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d finalized", d.FinalizedCount))
+	}
+	if d.ScoringCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d scoring", d.ScoringCount))
+	}
+	if d.UpcomingCount > 0 {
+		parts = append(parts, fmt.Sprintf("%d upcoming", d.UpcomingCount))
+	}
+	out := parts[0]
+	for _, p := range parts[1:] {
+		out += " · " + p
+	}
+	return out
+}
+
+// leaderMeta renders the "Handler · K9-ID" sub-line, dropping the id when
+// it isn't recorded.
+func leaderMeta(row LeaderRow) string {
+	if row.K9ID == "" {
+		return row.Handler
+	}
+	return row.Handler + " · " + row.K9ID
 }

@@ -1,69 +1,37 @@
 package handler
 
 import (
-	"log/slog"
 	"net/http"
 
+	"github.com/flintcraftstudio/k9-trials/internal/store"
 	"github.com/flintcraftstudio/k9-trials/internal/view/competitors"
 	"github.com/flintcraftstudio/k9-trials/internal/view/dogs"
-	"github.com/flintcraftstudio/k9-trials/internal/view/events"
 )
 
-// EventsList renders the public events index.
-func EventsList() http.HandlerFunc {
+// Public read-only handlers for the events surface (P1–P4) live in
+// public_events.go. The competitor directory + profile and dog profile
+// (P5–P7) are stubbed here pending their sqlc queries; they take the
+// store now so wiring is stable when the bodies land.
+
+// CompetitorSearch renders the public competitor directory + search (P5).
+func CompetitorSearch(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if err := events.ListPage().Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
+		renderPublic(w, r, competitors.SearchPage())
 	}
 }
 
-// EventDetail renders the public per-event page.
-func EventDetail() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		slug := r.PathValue("slug")
-		if err := events.DetailPage(slug).Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
-	}
-}
-
-// TrialDetail renders the public per-trial leaderboard.
-func TrialDetail() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		slug := r.PathValue("slug")
-		trialID := r.PathValue("id")
-		if err := events.TrialDetailPage(slug, trialID).Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
-	}
-}
-
-// CompetitorSearch renders the public competitor directory + search.
-func CompetitorSearch() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := competitors.SearchPage().Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
-	}
-}
-
-// CompetitorProfile renders a public competitor profile by handle.
-func CompetitorProfile() http.HandlerFunc {
+// CompetitorProfile renders a public competitor profile by handle (P6).
+func CompetitorProfile(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handle := r.PathValue("handle")
-		if err := competitors.ProfilePage(handle).Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
+		renderPublic(w, r, competitors.ProfilePage(handle))
 	}
 }
 
-// DogProfile renders a public dog profile by id.
-func DogProfile() http.HandlerFunc {
+// DogProfile renders a public dog profile by id (P7).
+func DogProfile(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.PathValue("id")
-		if err := dogs.ProfilePage(id).Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
+		renderPublic(w, r, dogs.ProfilePage(id))
 	}
 }

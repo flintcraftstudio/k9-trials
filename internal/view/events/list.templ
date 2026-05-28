@@ -1,19 +1,123 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// ListPage is the public events index. Filter to upcoming / live / past.
-templ ListPage() {
-	@view.Base("Events", "Upcoming, live, and past K9 trial events.", "events", listBody())
+// ListPage is the public events index (P1). Renders the full page shell;
+// the filterable grid is factored into EventGridFragment so discipline
+// filter chips can swap just the grid via htmx.
+templ ListPage(d ListViewData) {
+	@view.Base("Events", "Upcoming, live, and past K9 trial events.", "events", listBody(d))
 }
 
-templ listBody() {
-	@components.StubPage(
-		"Events",
-		"All trials in one place.",
-		"List of upcoming, currently running, and past events. Filter and search go here.",
-	)
+templ listBody(d ListViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="flex-col gap-6">
+				<div class="flex-col gap-2 max-w-2xl">
+					@components.Eyebrow() {
+						Events
+					}
+					<h1 class="h2">Find a trial</h1>
+					<p class="lede">{ eventsSubtitle(d.Count) }</p>
+				</div>
+				<div class="flex flex-wrap gap-2" role="group" aria-label="Filter by discipline">
+					for _, f := range d.Filters {
+						@filterChip(f)
+					}
+				</div>
+				@EventGridFragment(d)
+			</div>
+		}
+	</section>
+}
+
+// filterChip is one discipline filter pill. Uses htmx to swap the grid in
+// place and push the URL so the filtered view is shareable/back-able.
+templ filterChip(f DisciplineFilter) {
+	<a
+		href={ templ.SafeURL(f.Href) }
+		hx-get={ f.Href }
+		hx-target="#event-grid"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+		aria-current?={ f.Active }
+	>
+		{ f.Label }
+	</a>
+}
+
+// EventGridFragment renders the event card grid alone. Returned directly
+// for htmx filter swaps and embedded in the full page on first load.
+// Carries id="event-grid" so the filter chips can target it.
+templ EventGridFragment(d ListViewData) {
+	if len(d.Events) == 0 {
+		<div id="event-grid" class="card flex-col items-start gap-3" style="padding:32px;">
+			<div class="eyebrow">No events</div>
+			<p class="body" style="margin:0;">No published events match this filter yet. Check back soon — or clear the filter to see everything.</p>
+		</div>
+	} else {
+		<div id="event-grid" class="grid grid-cols-2 gap-4">
+			for _, e := range d.Events {
+				@eventCard(e)
+			}
+		</div>
+	}
+}
+
+// eventCard is one event in the index grid. The whole card is a link to
+// the event detail page; data-event tints the eyebrow + rail accent.
+templ eventCard(e EventCard) {
+	<a
+		href={ templ.SafeURL("/events/" + e.Slug) }
+		data-event={ e.EventKey }
+		class="event-tile"
+	>
+		<div class="rail"></div>
+		<div class="body">
+			<div class="flex justify-between items-center gap-2">
+				<div class="flex flex-wrap gap-1">
+					for _, t := range e.Disciplines {
+						<span class={ "pill", "pill-event-" + t.Key }>{ t.Label }</span>
+					}
+				</div>
+				if e.RegOpen {
+					<span class="pill pill-open">Registration open</span>
+				} else {
+					<span class="pill pill-closed">Closed</span>
+				}
+			</div>
+			<div class="serif" style="font-size:20px; line-height:1.1;">{ e.Name }</div>
+			<div class="body-sm" style="margin:0;">{ eventMeta(e) }</div>
+		</div>
+	</a>
+}
+
+// eventsSubtitle renders the count line under the index headline.
+func eventsSubtitle(n int) string {
+	if n == 0 {
+		return "No published events yet."
+	}
+	if n == 1 {
+		return "1 published event."
+	}
+	return fmt.Sprintf("%d published events.", n)
+}
+
+// eventMeta renders the "Location · Dates · N trials" line for a card.
+func eventMeta(e EventCard) string {
+	trials := "trials"
+	if e.TrialCount == 1 {
+		trials = "trial"
+	}
+	loc := e.Location
+	if loc == "" {
+		loc = "Location TBD"
+	}
+	return fmt.Sprintf("%s · %s · %d %s", loc, e.DateRange, e.TrialCount, trials)
 }

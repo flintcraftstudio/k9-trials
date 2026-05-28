@@ -1,0 +1,126 @@
+package entries
+
+import (
+	"fmt"
+
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DetailPage is the public read-only entry page (P4). Renders a finalized
+// scoresheet breakdown, an "in progress" notice for entries still being
+// scored, or a "not yet scored" notice for registered entries.
+templ DetailPage(d DetailViewData) {
+	@view.Base(d.DogName, "Entry result.", "events", detailBody(d))
+}
+
+templ detailBody(d DetailViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-3xl">
+				<a
+					href={ templ.SafeURL(fmt.Sprintf("/events/%s/trials/%d", d.EventSlug, d.TrialID)) }
+					class="body-sm"
+					style="text-decoration:none;"
+				>← Leaderboard</a>
+				<div class="flex-col gap-2">
+					@components.Eyebrow() {
+						{ d.Eyebrow }
+					}
+					<h1 class="h2">{ d.DogName }</h1>
+					<div class="body" style="margin:0;">{ d.DogMeta }</div>
+				</div>
+				if d.Finalized {
+					@finalizedBody(d)
+				} else if d.Scoring {
+					@noticeCard("Scoring in progress", "Results appear here when the judge finalizes this run. No partial scores are shown.")
+				} else {
+					@noticeCard("Not yet scored", "This entry is registered and waiting to run. The scoresheet appears once judging is complete.")
+				}
+			</div>
+		}
+	</section>
+}
+
+// finalizedBody renders the score summary card + per-exercise breakdown +
+// judging footer for a finalized entry.
+templ finalizedBody(d DetailViewData) {
+	<div
+		class="flex items-center gap-4"
+		style={ scoreCardStyle(d.Passed) }
+	>
+		<div class="flex-col" style="flex:1;">
+			@components.Eyebrow() {
+				Final
+			}
+			<div class="serif" style="font-size:32px;line-height:1;font-variant-numeric:tabular-nums;">
+				{ fmt.Sprintf("%d / %d", d.Points, d.MaxPoints) }
+			</div>
+			<div class="body-sm" style="margin:0;">{ resultLine(d) }</div>
+		</div>
+		if d.Passed {
+			<span class="pill pill-qual">Qualified</span>
+		} else {
+			<span class="pill pill-closed">NQ</span>
+		}
+	</div>
+	<div class="flex-col gap-2">
+		@components.Eyebrow() {
+			Score breakdown
+		}
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, ex := range d.Exercises {
+				<div class="flex justify-between items-center" style="padding:10px 16px;border-top:1px solid var(--color-divider);">
+					<span>{ fmt.Sprintf("%d · %s", ex.Num, ex.Name) }</span>
+					<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d / %d", ex.Score, ex.Max) }</span>
+				</div>
+			}
+		</div>
+	</div>
+	<div class="body-sm" style="margin:0;">{ judgedLine(d) }</div>
+}
+
+// noticeCard is the neutral state panel for non-finalized entries.
+templ noticeCard(title, body string) {
+	<div class="card flex-col items-start gap-2" style="padding:24px;">
+		<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">{ title }</div>
+		<p class="body-sm" style="margin:0;">{ body }</p>
+	</div>
+}
+
+// scoreCardStyle tints the summary card green for a pass, red for an NQ.
+func scoreCardStyle(passed bool) string {
+	if passed {
+		return "padding:16px;border-radius:12px;background:var(--green-50);border:1px solid var(--green-300);"
+	}
+	return "padding:16px;border-radius:12px;background:var(--color-danger-bg);border:1px solid var(--color-danger-border);"
+}
+
+// resultLine renders the "qualifying · threshold N" sub-line under the
+// score, or the NQ equivalent.
+func resultLine(d DetailViewData) string {
+	if d.Passed {
+		return fmt.Sprintf("qualifying · threshold %d", d.Threshold)
+	}
+	return fmt.Sprintf("not qualifying · threshold %d", d.Threshold)
+}
+
+// judgedLine renders the "Judged by X · date · Locked" footer.
+func judgedLine(d DetailViewData) string {
+	s := ""
+	if d.JudgedBy != "" {
+		s = "Judged by " + d.JudgedBy
+	}
+	if d.FinalizedDate != "" {
+		if s != "" {
+			s += " · "
+		}
+		s += d.FinalizedDate
+	}
+	if s != "" {
+		s += " · 🔒 Locked"
+	} else {
+		s = "🔒 Locked"
+	}
+	return s
+}

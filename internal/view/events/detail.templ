@@ -1,26 +1,116 @@
 package events
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// DetailPage is the public per-event page: schedule, trials, leaderboard
-// per trial, registration link when status='published'.
-templ DetailPage(slug string) {
-	@view.Base("Event", "Event detail, trials, and live results.", "events", detailBody(slug))
+// DetailPage is the public per-event page (P2): hero, discipline tags,
+// dates, a registration CTA when registration is open, and the trial
+// roster. Each trial row links to its leaderboard (P3).
+templ DetailPage(d DetailViewData) {
+	@view.Base(d.Name, "Event detail, trials, and live results.", "events", detailBody(d))
 }
 
-templ detailBody(slug string) {
-	@components.StubPage(
-		"Event",
-		"Event: " + slug,
-		"Schedule, trials, registration status, and live results for this event.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/events/" + slug + "/register"}) {
-				Register a dog
-			}
+templ detailBody(d DetailViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-4xl">
+				<a href="/events" class="body-sm" style="text-decoration:none;">← All events</a>
+				<div class="flex-col gap-3">
+					<div class="flex flex-wrap gap-1">
+						for _, t := range d.Disciplines {
+							<span class={ "pill", "pill-event-" + t.Key }>{ t.Label }</span>
+						}
+					</div>
+					<h1 class="h2">{ d.Name }</h1>
+					<div class="body" style="margin:0;">{ detailMeta(d) }</div>
+				</div>
+				@registrationBanner(d)
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						Trials at this event
+					}
+					if len(d.Trials) == 0 {
+						<div class="card flex-col items-start gap-2" style="padding:24px;">
+							<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials published yet</div>
+							<p class="body-sm" style="margin:0;">The organizers haven't added trials for this event. Check back soon.</p>
+						</div>
+					} else {
+						<div class="flex-col gap-2">
+							for _, t := range d.Trials {
+								@trialRow(d.Slug, t)
+							}
+						</div>
+					}
+				</div>
+			</div>
+		}
+	</section>
+}
+
+// registrationBanner shows the registration state + CTA. Open events show
+// a primary Register action (gated on auth at the route level); closed
+// events show a neutral "registration closed" note.
+templ registrationBanner(d DetailViewData) {
+	if d.RegOpen {
+		<div class="card flex-col gap-3" style="padding:20px;">
+			<div class="flex items-center gap-2">
+				<span class="pill pill-open">Registration open</span>
+				<span class="body-sm" style="margin:0;">{ trialCountLabel(d.TrialCount) }</span>
+			</div>
+			<div class="flex flex-wrap items-center gap-3">
+				@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Href: "/events/" + d.Slug + "/register"}) {
+					Register a dog →
+				}
+				if !d.LoggedIn {
+					<span class="body-sm" style="margin:0;">
+						<a href="/login">Log in</a> or <a href="/signup">sign up</a> to register.
+					</span>
+				}
+			</div>
+		</div>
+	} else {
+		<div class="card flex items-center gap-2" style="padding:16px 20px;">
+			<span class="pill pill-closed">Registration closed</span>
+			<span class="body-sm" style="margin:0;">This event is no longer accepting entries.</span>
 		</div>
 	}
+}
+
+// trialRow is one trial line within the event roster, linking to the
+// public leaderboard. data-event tints the left rail per discipline.
+templ trialRow(slug string, t TrialRow) {
+	<a
+		href={ templ.SafeURL(fmt.Sprintf("/events/%s/trials/%d", slug, t.ID)) }
+		data-event={ t.EventKey }
+		class="event-tile"
+	>
+		<div class="rail"></div>
+		<div class="body" style="padding:14px 18px;">
+			<div class="flex justify-between items-center gap-3">
+				<span style="font-weight:600;color:var(--mist-950);">{ t.DisciplineLvl }</span>
+				<span class="body-sm" style="margin:0;">{ t.Date }</span>
+			</div>
+		</div>
+	</a>
+}
+
+// detailMeta renders the "Location · Dates" line under the event title.
+func detailMeta(d DetailViewData) string {
+	loc := d.Location
+	if loc == "" {
+		loc = "Location TBD"
+	}
+	return loc + " · " + d.DateRange
+}
+
+// trialCountLabel renders "N trials" / "1 trial".
+func trialCountLabel(n int) string {
+	if n == 1 {
+		return "1 trial"
+	}
+	return fmt.Sprintf("%d trials", n)
 }
