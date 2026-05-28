@@ -12,6 +12,7 @@ templ obedienceBody(d ScoreViewData) {
 	<section class="judge-screen">
 		<div class="appbar event-rail">
 			<div class="a-left">
+				<a class="btn btn-ghost" href="/judge" style="padding:5px 10px;">← Queue</a>
 				<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
 				<div class="col g2">
 					<span class="trial-sub">Run { itoa(d.Run.Number) } · { d.Discipline.Label() } { d.Trial.Class }</span>
