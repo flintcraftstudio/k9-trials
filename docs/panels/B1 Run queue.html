@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1400" />
+<title>B1 · Run queue</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../hifi.css" />
+<style>
+  /* Standalone viewing: give the panel some breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1280px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head a { color: var(--blue-700); }
+</style>
+</head>
+<body data-event="obedience">
+<div class="standalone-head">
+  <strong>B1 · Run queue</strong> — extracted from <code>K9 Scoring Hi-Fi.html</code> for reference. Styling pulled from <code>colors_and_type.css</code> + <code>hifi.css</code>.
+</div>
+<section class="tab-panel" data-tab="b1" id="panel-b1" data-screen-label="B1 Run queue">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">B1 · Run queue <em>— today's slate</em></h2>
+      <div class="panel-sub">Linear list, your pick. Refined: tighter status pills, filter chips with live counts, sync chip always anchored top-right, current run highlighted with the event rail.</div>
+      <span class="panel-decision">Variant 1 — Linear list</span>
+    </div>
+  </header>
+
+  <div class="strip">
+
+    <article class="variant single theme-target">
+      <header>
+        <span class="v-num"><span class="picked">✓ Picked</span>Hi-fi · single direction</span>
+        <span class="v-title">Linear list with status pills</span>
+        <span class="v-blurb">All runs in chronological order. Filter chips on top show counts so the judge knows what's outstanding at a glance. The current run gets the event rail; in-pocket runs use a dashed orange pill so they read distinctly from delivered ones.</span>
+      </header>
+      <div class="ipad wide">
+        <div class="ipad-screen" data-event="obedience">
+          <div class="statusbar">
+            <span>10.25</span>
+            <div class="right">
+              <span class="sb-signal"><i></i><i></i><i></i><i></i></span>
+              <span class="sb-wifi">Wi-Fi off</span>
+              <span class="sb-bat"><span>76%</span><span class="glyph"><span class="fill"></span></span></span>
+            </div>
+          </div>
+          <div class="appbar">
+            <div class="a-left">
+              <button class="btn btn-ghost" aria-label="Trials"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+              <div class="col" style="gap:1px;">
+                <span class="trial-sub">Obedience · Open class</span>
+                <span class="trial">Cedar Creek Spring Trial</span>
+              </div>
+            </div>
+            <div class="a-right">
+              <span class="sync-chip"><span class="dot"></span><strong>3</strong> in pocket · last sync 09.12</span>
+              <span class="judge-chip"><span class="avatar circ h-1 sm">HV</span>H. Vance</span>
+            </div>
+          </div>
+          <div class="row g8" style="padding:11px 18px; border-bottom:1px solid var(--color-divider); background:var(--mist-50);">
+            <span class="pill" style="background:var(--mist-950);color:white;">All · 14</span>
+            <span class="pill pending">Pending · 7</span>
+            <span class="pill inprog">Scoring · 1</span>
+            <span class="pill unsynced">In pocket · 3</span>
+            <span class="pill synced">Delivered · 2</span>
+            <span class="pill scratch">Scratch · 1</span>
+            <div class="f1"></div>
+            <button class="btn btn-soft" style="padding:5px 12px; font-size:12px;">
+              <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 21l-4.3-4.3M19 11a8 8 0 11-16 0 8 8 0 0116 0z"/></svg>
+              Search
+            </button>
+          </div>
+          <div class="scroll-y f1">
+            <div class="run-row event-rail" data-event="obedience">
+              <span class="rn">14</span>
+              <span class="avatar circ dog-3 md portrait">E</span>
+              <div class="col"><span class="dog-name">Echo</span><span class="h-meta">J. Marsh · German Shepherd · K9-2419</span></div>
+              <span class="when">09.40 · scored 193</span>
+              <span class="pill synced"><span class="dot"></span>Delivered</span>
+            </div>
+            <div class="run-row event-rail" data-event="obedience">
+              <span class="rn">15</span>
+              <span class="avatar circ dog-1 md portrait">A</span>
+              <div class="col"><span class="dog-name">Atlas</span><span class="h-meta">R. Okafor · Belgian Malinois · K9-3041</span></div>
+              <span class="when">09.55 · scored 187</span>
+              <span class="pill synced"><span class="dot"></span>Delivered</span>
+            </div>
+            <div class="run-row event-rail" data-event="obedience">
+              <span class="rn">16</span>
+              <span class="avatar circ dog-4 md portrait">S</span>
+              <div class="col"><span class="dog-name">Saber</span><span class="h-meta">K. Hessel · Dutch Shepherd · K9-2877</span></div>
+              <span class="when">10.10 · scored 189</span>
+              <span class="pill unsynced"><span class="dot"></span>In pocket</span>
+            </div>
+            <div class="run-row current event-rail" data-event="obedience">
+              <span class="rn">17</span>
+              <span class="avatar circ dog-2 md portrait">V</span>
+              <div class="col"><span class="dog-name">Vex</span><span class="h-meta">L. Tanaka · Czech GSD · K9-3187 · <strong style="color:var(--blue-700);">at the gate</strong></span></div>
+              <span class="when">10.25</span>
+              <span class="pill inprog"><span class="dot"></span>Scoring now</span>
+            </div>
+            <div class="run-row">
+              <span class="rn">18</span>
+              <span class="avatar circ dog-5 md portrait">B</span>
+              <div class="col"><span class="dog-name">Birch</span><span class="h-meta">M. Pereira · Rottweiler · K9-1944</span></div>
+              <span class="when">10.40</span>
+              <span class="pill pending"><span class="dot"></span>Up next</span>
+            </div>
+            <div class="run-row">
+              <span class="rn">19</span>
+              <span class="avatar circ dog-1 md portrait">L</span>
+              <div class="col"><span class="dog-name">Lumen</span><span class="h-meta">S. Yi · Belgian Malinois · K9-3502</span></div>
+              <span class="when">10.55</span>
+              <span class="pill pending"><span class="dot"></span>Pending</span>
+            </div>
+            <div class="run-row">
+              <span class="rn">20</span>
+              <span class="avatar circ dog-3 md portrait">J</span>
+              <div class="col"><span class="dog-name">Junebug</span><span class="h-meta">D. Royo · German Shepherd · K9-1812</span></div>
+              <span class="when">11.10</span>
+              <span class="pill pending"><span class="dot"></span>Pending</span>
+            </div>
+            <div class="run-row">
+              <span class="rn">21</span>
+              <span class="avatar circ dog-4 md portrait" style="opacity:0.5;">K</span>
+              <div class="col"><span class="dog-name" style="text-decoration:line-through; color:var(--mist-500);">Karma</span><span class="h-meta">T. Frye · Dutch Shepherd · withdrew 07.52</span></div>
+              <span class="when" style="color:var(--mist-500);">11.25</span>
+              <span class="pill scratch">Scratched</span>
+            </div>
+            <div class="run-row">
+              <span class="rn">22</span>
+              <span class="avatar circ dog-1 md portrait">F</span>
+              <div class="col"><span class="dog-name">Ferro</span><span class="h-meta">A. Reyes · Belgian Malinois · K9-2218</span></div>
+              <span class="when">11.40</span>
+              <span class="pill pending"><span class="dot"></span>Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hi-note"><div><strong>Refinements from wireframe v0.1:</strong> sync chip now shows "last sync" timestamp (you'll see if the iPad has been offline a long time); scratched rows keep their slot for the audit record but mute visually; "scored 189" appears inline on in-pocket / delivered rows so the judge can spot oddities without opening them.</div></div>
+    </article>
+
+  </div>
+</section>
+<script src="../hifi.js" defer></script>
+</body>
+</html>

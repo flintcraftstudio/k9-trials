@@ -1,0 +1,254 @@
+package judge
+
+import "fmt"
+
+// ReviewPage is the run review (B4). Two columns: exercise list with inline
+// drawer for flagged rows + totals rail with provisional total.
+templ ReviewPage(d ReviewViewData) {
+	@shell("Review · "+d.Run.DogName, d.Trial.Discipline.EventKey(), reviewBody(d))
+}
+
+templ reviewBody(d ReviewViewData) {
+	<section class="judge-screen" x-data="{ open: '' }">
+		<div class="appbar event-rail">
+			<div class="a-left">
+				<a class="btn btn-ghost" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/score") } style="padding:5px 10px;">← Back to scoresheet</a>
+				<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
+				<div class="col g2">
+					<span class="trial-sub">Run { itoa(d.Run.Number) } · Reviewing</span>
+					<span class="trial">
+						{ d.Run.DogName }
+						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
+							{ d.Run.HandlerSh } · { d.Run.K9ID }
+						</span>
+					</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<span class="sync-chip">
+					<span class="dot"></span>
+					<strong>{ itoa(d.Trial.InPocket) }</strong>
+					&nbsp;in pocket
+				</span>
+				<span class="judge-chip">
+					<span class="avatar circ h-1 sm">{ d.Trial.JudgeInits }</span>
+					{ d.Trial.JudgeName }
+				</span>
+			</div>
+		</div>
+
+		<div class="row f1" style="min-height:480px;">
+			<!-- Exercise list + critique recorder -->
+			<div class="col f1 scroll-y p18 g14">
+				<div class="col g6">
+					<div class="row between">
+						<span class="eyebrow muted">Exercises · tap any row to edit</span>
+						<span class="muted" style="font-size:11px;">
+							{ itoa(len(d.Exercises)) } exercises · { itoa(flaggedCount(d.Exercises)) } flagged
+						</span>
+					</div>
+					<div class="card" style="overflow:hidden;">
+						for _, ex := range d.Exercises {
+							@reviewExerciseRow(ex)
+						}
+					</div>
+				</div>
+
+				<!-- End-of-run critique -->
+				<div class="col g6">
+					<div class="row between">
+						<span class="eyebrow muted">End-of-run critique · voice or text</span>
+						<span class="muted" style="font-size:11px;">Cataloged with the run</span>
+					</div>
+					<div class="card p12">
+						<div class="voice-note" style="border:0; padding:0; margin-bottom:10px; background:transparent;">
+							<button class="mic" aria-label="Stop">
+								<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"></rect></svg>
+							</button>
+							<div class="waveform done">
+								for _, h := range waveformBars(20, true) {
+									<i style={ "height:" + h }></i>
+								}
+							</div>
+							<div class="vn-meta">
+								<span class="time">0:34</span>
+								<span style="color:var(--green-700);">● Saved</span>
+							</div>
+						</div>
+						<div class="col g4" style="padding-top:10px; border-top:1px solid var(--color-divider);">
+							<span class="eyebrow muted">Auto-transcript · editable</span>
+							<div style="font-size:12.5px; line-height:1.55; color:var(--mist-900); padding:6px 10px; background:var(--mist-50); border-radius:8px; border:1px solid var(--color-border);">
+								Strong heeling work overall. Dog anticipated on the second recall — broke before the call but recovered cleanly. Stand for exam was textbook. The retrieve sequence is where this team needs work; refusal on flat retrieve, then a clean retrieve over jump. Recommend revisiting motivation on the unmarked retrieve.
+							</div>
+							<div class="row between" style="padding-top:4px;">
+								<button class="btn btn-ghost" style="font-size:11px; padding:4px;">Edit transcript</button>
+								<button class="btn btn-ghost" style="font-size:11px; padding:4px;">Re-record →</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Totals rail -->
+			<div class="col p18 g14" style="width:33%; background:var(--mist-50); border-left:1px solid var(--color-divider); overflow-y:auto;">
+				<div class="col g4">
+					<span class="eyebrow">Provisional total</span>
+					<div class="row g6 items-baseline">
+						<span class="serif tabular" style="font-size:56px; line-height:1;">{ fnum(d.Provisional) }</span>
+						<span class="muted" style="font-size:12px;">/ { fnum(d.Max) }</span>
+					</div>
+					<div class="row g6 items-center">
+						if d.Provisional >= d.Qualifying {
+							<span class="pill synced">qualifying</span>
+							<span class="muted tabular" style="font-size:11px;">
+								+{ fmt.Sprintf("%.1f", d.Provisional-d.Qualifying) } over { fnum(d.Qualifying) }
+							</span>
+						} else {
+							<span class="pill nq">non-qualifying</span>
+							<span class="muted tabular" style="font-size:11px;">
+								{ fmt.Sprintf("%.1f", d.Provisional-d.Qualifying) } from { fnum(d.Qualifying) }
+							</span>
+						}
+					</div>
+				</div>
+
+				if d.UnscoredCount > 0 {
+					<div class="card warn p12 col g4">
+						<div class="row between">
+							<span class="bold" style="font-size:12px;">⚠ { itoa(d.UnscoredCount) } unscored exercise</span>
+							<span class="muted tabular" style="font-size:10px;">flag</span>
+						</div>
+						<div class="muted" style="font-size:11.5px; line-height:1.5;">
+							"{ d.UnscoredExercise }" has no score entered. Submitting will record this in the audit log as "not scored by judge."
+						</div>
+						<button class="btn btn-outline" style="font-size:12px; padding:6px 10px; align-self:flex-start;">Open flag →</button>
+					</div>
+				}
+
+				<div class="card p12 col g4">
+					<span class="eyebrow muted">Deductions summary</span>
+					for _, ded := range d.Deductions {
+						<div class="row between" style="font-size:12px;">
+							<span class="muted">{ ded.Where }</span>
+							<span class="tabular">
+								{ fmt.Sprintf("%.1f", ded.Value) }
+								if ded.Tag != "" {
+									&nbsp;<span style="color:var(--mist-600); font-size:10px;">({ ded.Tag })</span>
+								}
+							</span>
+						</div>
+					}
+					<div class="row between" style="font-size:12.5px; padding-top:6px; border-top:1px solid var(--color-divider); font-weight:600;">
+						<span>Total deductions</span>
+						<span class="tabular">{ fmt.Sprintf("%.1f", sumDeductions(d.Deductions)) }</span>
+					</div>
+				</div>
+
+				<div class="card flat p12 col g4">
+					<span class="eyebrow muted">Override</span>
+					<button class="btn btn-outline" style="justify-content:space-between; font-size:12px;">
+						Mark non-qualifying
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+							<path d="M9 18l6-6-6-6"></path>
+						</svg>
+					</button>
+					<span class="muted" style="font-size:10px;">Reason required · routes to audit log</span>
+				</div>
+
+				<a
+					class="btn btn-primary btn-lg btn-block mta"
+					data-event-tinted
+					href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/submit") }
+				>
+					Continue to submit →
+				</a>
+			</div>
+		</div>
+	</section>
+}
+
+templ reviewExerciseRow(ex ReviewExercise) {
+	if ex.Flagged {
+		@flaggedRow(ex)
+	} else {
+		@plainRow(ex)
+	}
+}
+
+templ flaggedRow(ex ReviewExercise) {
+	<div
+		class="row between p10"
+		style="background:var(--orange-50); border-left:3px solid var(--orange-600); cursor:pointer; border-bottom:1px solid var(--color-divider);"
+		x-on:click={ "open = open === 'ex" + itoa(ex.Num) + "' ? '' : 'ex" + itoa(ex.Num) + "'" }
+	>
+		<div class="row g10 items-center">
+			<span class="muted tabular" style="font-size:12px; width:18px;">{ itoa(ex.Num) }</span>
+			<span style="font-size:13px; font-weight:600;">{ ex.Name }</span>
+			if len(ex.Note) > 0 {
+				<span class="pill unsynced tone-cap" style="font-size:10px;">{ ex.Note }</span>
+			}
+		</div>
+		<div class="row g10 items-center">
+			if ex.Scored {
+				<span class="tabular bold" style="font-size:14px;">{ fnum(ex.Score) }</span>
+				<span class="muted" style="font-size:11px;">/ { fnum(ex.Max) }</span>
+			} else {
+				<span class="tabular muted" style="font-size:14px;">—</span>
+			}
+			<span style="color:var(--orange-700);">›</span>
+		</div>
+	</div>
+	<div class="drawer" x-show={ "open === 'ex" + itoa(ex.Num) + "'" } x-cloak>
+		<div class="row between" style="align-items:flex-start;">
+			<div class="col g4">
+				<span class="eyebrow" style="color:var(--orange-700);">Flag · exercise { itoa(ex.Num) }</span>
+				<div class="bold" style="font-size:14px;">{ ex.Note } — "{ ex.Name }"</div>
+				<div class="muted" style="font-size:12px; line-height:1.5;">
+					You can still submit the run — the missing score will be flagged in the audit log as <em>"not scored by judge"</em>. If the exercise didn't happen (handler skipped, dog refused) that's the correct outcome.
+				</div>
+			</div>
+			<button class="btn btn-primary" data-event-tinted style="background:var(--orange-600);">
+				Jump to exercise { itoa(ex.Num) } →
+			</button>
+		</div>
+		<div class="row g8">
+			<button class="btn btn-soft" style="font-size:12px; padding:6px 12px;">Mark as "exercise skipped"</button>
+			<button class="btn btn-ghost" style="font-size:12px; padding:6px 12px;">Dismiss flag · submit without score</button>
+		</div>
+	</div>
+}
+
+templ plainRow(ex ReviewExercise) {
+	<div class="row between p10" style="border-bottom:1px solid var(--color-divider);">
+		<div class="row g10 items-center">
+			<span class="muted tabular" style="font-size:12px; width:18px;">{ itoa(ex.Num) }</span>
+			<span style="font-size:13px;">{ ex.Name }</span>
+			if len(ex.Note) > 0 {
+				<span class="pill nq tone-cap" style="font-size:10px;">{ ex.Note }</span>
+			}
+		</div>
+		<div class="row g10 items-center">
+			<span class="tabular bold" style="font-size:14px;">{ fnum(ex.Score) }</span>
+			<span class="muted" style="font-size:11px;">/ { fnum(ex.Max) }</span>
+			<span class="muted">›</span>
+		</div>
+	</div>
+}
+
+func flaggedCount(xs []ReviewExercise) int {
+	c := 0
+	for _, x := range xs {
+		if x.Flagged {
+			c++
+		}
+	}
+	return c
+}
+
+func sumDeductions(ds []ReviewDeduction) float64 {
+	s := 0.0
+	for _, d := range ds {
+		s += d.Value
+	}
+	return s
+}

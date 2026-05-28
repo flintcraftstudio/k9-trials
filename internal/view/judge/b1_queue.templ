@@ -1,0 +1,147 @@
+package judge
+
+// QueuePage is the judge dashboard / run queue (B1).
+templ QueuePage(d QueueViewData) {
+	@shell("Run queue", d.Trial.Discipline.EventKey(), queueBody(d))
+}
+
+templ queueBody(d QueueViewData) {
+	<section class="judge-screen">
+		<div class="appbar">
+			<div class="a-left">
+				<button class="btn btn-ghost" aria-label="Trials" style="padding:6px 10px;">
+					<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+						<path d="M3 6h18M3 12h18M3 18h18"></path>
+					</svg>
+				</button>
+				<div class="col g2">
+					<span class="trial-sub">{ d.Trial.Discipline.Label() } · { d.Trial.Class }</span>
+					<span class="trial">{ d.Trial.Name }</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<span class="sync-chip">
+					<span class="dot"></span>
+					<strong>{ itoa(d.Trial.InPocket) }</strong>
+					&nbsp;in pocket · last sync { d.Trial.LastSync }
+				</span>
+				<span class="judge-chip">
+					<span class="avatar circ h-1 sm">{ d.Trial.JudgeInits }</span>
+					{ d.Trial.JudgeName }
+				</span>
+			</div>
+		</div>
+
+		<div class="row g8 wrap items-center" style="padding:11px 18px; border-bottom:1px solid var(--color-divider); background:var(--mist-50);">
+			<div class="filter-chips row g8 wrap items-center f1">
+				<span class="pill" aria-selected="true">All · { itoa(d.Counts.All) }</span>
+				<span class="pill pending">Pending · { itoa(d.Counts.Pending) }</span>
+				<span class="pill inprog">Scoring · { itoa(d.Counts.Scoring) }</span>
+				<span class="pill unsynced">In pocket · { itoa(d.Counts.InPocket) }</span>
+				<span class="pill synced">Delivered · { itoa(d.Counts.Delivered) }</span>
+				<span class="pill scratch">Scratch · { itoa(d.Counts.Scratch) }</span>
+			</div>
+			<button class="btn btn-soft" style="padding:6px 12px; font-size:12px;">
+				<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+					<path d="M21 21l-4.3-4.3M19 11a8 8 0 11-16 0 8 8 0 0116 0z"></path>
+				</svg>
+				Search
+			</button>
+		</div>
+
+		<div class="col">
+			for _, r := range d.Runs {
+				@runRow(r, d.Trial)
+			}
+		</div>
+	</section>
+}
+
+templ runRow(r Run, t Trial) {
+	<a
+		class={ runRowClass(r) }
+		data-event={ t.Discipline.EventKey() }
+		href={ runRowHref(r) }
+	>
+		<span class="rn">{ itoa(r.Number) }</span>
+		<span class={ dogAvatarClass(r.DogVariant, "md") }>{ r.DogInit }</span>
+		<div class="col" style="min-width:0;">
+			<span class={ runRowNameClass(r) }>{ r.DogName }</span>
+			<span class="h-meta">
+				{ r.HandlerSh }
+				if r.Breed != "" {
+					&nbsp;· { r.Breed }
+				}
+				if r.K9ID != "" {
+					&nbsp;· { r.K9ID }
+				}
+				if r.Note != "" {
+					&nbsp;·&nbsp;<strong style="color:var(--blue-700);">{ r.Note }</strong>
+				}
+			</span>
+		</div>
+		<span class={ runRowWhenClass(r) }>
+			{ r.Scheduled }
+			if r.Score != "" {
+				&nbsp;· { r.Score }
+			}
+		</span>
+		@statusPill(r.Status)
+	</a>
+}
+
+templ statusPill(s Status) {
+	switch s {
+		case StatusPending:
+			<span class="pill pending"><span class="dot"></span>Pending</span>
+		case StatusInProg:
+			<span class="pill inprog"><span class="dot"></span>Scoring now</span>
+		case StatusInPocket:
+			<span class="pill unsynced"><span class="dot"></span>In pocket</span>
+		case StatusDelivered:
+			<span class="pill synced"><span class="dot"></span>Delivered</span>
+		case StatusScratch:
+			<span class="pill scratch">Scratched</span>
+	}
+}
+
+// runRowClass adds .current for the in-progress row + .event-rail for active ones.
+func runRowClass(r Run) string {
+	base := "run-row"
+	switch r.Status {
+	case StatusInProg:
+		base += " current event-rail"
+	case StatusDelivered, StatusInPocket:
+		base += " event-rail"
+	}
+	return base
+}
+
+// runRowHref picks the right next screen for each status.
+func runRowHref(r Run) templ.SafeURL {
+	switch r.Status {
+	case StatusDelivered:
+		return templ.SafeURL("/judge/entry/" + r.ID + "/locked")
+	case StatusInPocket:
+		return templ.SafeURL("/judge/entry/" + r.ID + "/review")
+	case StatusInProg:
+		return templ.SafeURL("/judge/entry/" + r.ID + "/score")
+	case StatusScratch:
+		return templ.SafeURL("#")
+	}
+	return templ.SafeURL("/judge/entry/" + r.ID + "/gate")
+}
+
+func runRowNameClass(r Run) string {
+	if r.Status == StatusScratch {
+		return "dog-name"
+	}
+	return "dog-name"
+}
+
+func runRowWhenClass(r Run) string {
+	if r.Status == StatusScratch {
+		return "when muted"
+	}
+	return "when"
+}

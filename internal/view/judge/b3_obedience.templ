@@ -1,0 +1,260 @@
+package judge
+
+import "fmt"
+
+// ObedienceScorePage is the two-pane obedience scoresheet (B3-O).
+// Left: exercise nav rail. Right: active exercise with numpad + deductions.
+templ ObedienceScorePage(d ScoreViewData) {
+	@shell("Score · "+d.Run.DogName, d.Discipline.EventKey(), obedienceBody(d))
+}
+
+templ obedienceBody(d ScoreViewData) {
+	<section class="judge-screen">
+		<div class="appbar event-rail">
+			<div class="a-left">
+				<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
+				<div class="col g2">
+					<span class="trial-sub">Run { itoa(d.Run.Number) } · { d.Discipline.Label() } { d.Trial.Class }</span>
+					<span class="trial">
+						{ d.Run.DogName }
+						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
+							{ d.Run.HandlerSh } · { d.Run.K9ID }
+						</span>
+					</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<div class="col txt-right">
+					<span class="eyebrow muted">Running total · { itoa(countScored(d.Exercises)) } of { itoa(len(d.Exercises)) }</span>
+					<span class="tabular bold" style="font-size:16px;">
+						{ fnum(d.Score) }
+						<span class="muted" style="font-weight:400;font-size:11px;">
+							&nbsp;/ { fnum(d.ScoreMax) } · need { fnum(d.NeedToPass) }
+						</span>
+					</span>
+				</div>
+				<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>Review →</a>
+			</div>
+		</div>
+
+		<div class="row f1" style="min-height:520px;">
+			<!-- Exercise nav rail -->
+			<div class="col" style="width:36%; background:var(--mist-50); border-right:1px solid var(--color-divider); overflow-y:auto;">
+				<div class="row between p12" style="font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist-600); font-weight:700;">
+					<span>Exercises</span>
+					<span>{ itoa(countScored(d.Exercises)) }/{ itoa(len(d.Exercises)) } scored</span>
+				</div>
+				for i, ex := range d.Exercises {
+					@obNavRow(i, ex, d.ActiveIdx, d.Discipline.EventKey())
+				}
+			</div>
+
+			<!-- Detail pane -->
+			<div class="col f1">
+				<div class="col p16 g10 f1 scroll-y" style="min-height:0;">
+					if active := activeExercise(d); active != nil {
+						@obActivePane(*active, d.ActiveIdx, len(d.Exercises))
+					}
+				</div>
+				<div class="row between" style="padding:12px 16px; border-top:1px solid var(--color-divider); background:var(--mist-50);">
+					<button class="btn btn-soft">← Prev exercise</button>
+					<button class="btn btn-primary" data-event-tinted>Next exercise →</button>
+				</div>
+			</div>
+		</div>
+	</section>
+}
+
+templ obNavRow(i int, ex Exercise, activeIdx int, eventKey string) {
+	if i == activeIdx {
+		<div class="row between event-rail" data-event={ eventKey } style="padding:11px 12px; align-items:center; background:var(--event-50);">
+			<div class="row g8 items-center">
+				<span class="row-prog"><i class="on" style="background:var(--event-600);"></i></span>
+				<span class="bold" style="font-size:12.5px;">{ itoa(ex.Num) } · { ex.Name }</span>
+			</div>
+			<span class="tabular bold" style="font-size:12px;">{ fnum(ex.Score) }</span>
+		</div>
+	} else {
+		<div class="row between" style="padding:9px 12px; align-items:center;">
+			<div class="row g8 items-center">
+				<span class="row-prog">
+					if ex.Scored {
+						<i class="on"></i>
+					} else {
+						<i></i>
+					}
+				</span>
+				<span style={ obNavLabelStyle(ex.Scored) }>
+					{ itoa(ex.Num) } · { ex.Name }
+				</span>
+			</div>
+			if ex.Scored {
+				<span class="tabular muted" style="font-size:12px;">{ fnum(ex.Score) }</span>
+			} else {
+				<span class="muted" style="font-size:12px;">—</span>
+			}
+		</div>
+	}
+}
+
+templ obActivePane(ex Exercise, idx, total int) {
+	<div class="row between" style="align-items:flex-start;">
+		<div class="col g4">
+			<span class="eyebrow">Exercise { itoa(idx + 1) } of { itoa(total) } · { fnum(ex.Max) } points</span>
+			<div class="serif" style="font-size:26px; line-height:1.05;">{ ex.Name }</div>
+		</div>
+		<span class="pill inprog">scoring now</span>
+	</div>
+
+	<div class="row g16" style="align-items:flex-start;">
+		<div class="col g6" style="width:140px;">
+			<span class="eyebrow muted">Score</span>
+			<div class="row g6 items-baseline">
+				<span class="serif tabular" style="font-size:54px; line-height:1;">{ fnum(ex.Score) }</span>
+				<span class="muted" style="font-size:12px;">/ { fnum(ex.Max) }</span>
+			</div>
+			<span class="muted" style="font-size:11px;">{ fnum(ex.Max) } − { fnumSigned(ex.Max - ex.Score) } deductions</span>
+		</div>
+		<div class="col f1 g4">
+			<span class="eyebrow muted">Tap to enter</span>
+			<div class="numpad">
+				for _, opt := range scoreOptions(ex.Max) {
+					if opt == ex.Score {
+						<button class="active">{ fnum(opt) }</button>
+					} else {
+						<button>{ fnum(opt) }</button>
+					}
+				}
+				<button class="alt">⌫</button>
+			</div>
+		</div>
+	</div>
+
+	if len(ex.Deductions) > 0 {
+		<div class="col g6">
+			<div class="row between">
+				<span class="eyebrow muted">Deductions · catalog</span>
+				<span class="muted" style="font-size:11px;">Tap to apply</span>
+			</div>
+			<div class="row wrap g6">
+				for _, ded := range ex.Deductions {
+					@dedChip(ded)
+				}
+				<span class="ded-chip add">+ custom…</span>
+			</div>
+			<div class="muted" style="font-size:11px; padding-top:2px;">
+				<span style="color:var(--orange-700);">●</span>
+				&nbsp;Recently used at this trial — appears as a quick-add chip so judges don't retype.
+			</div>
+		</div>
+	}
+
+	if ex.Voice != nil {
+		<div class="col g6">
+			<span class="eyebrow muted">Voice note · this exercise</span>
+			@voiceNote(*ex.Voice)
+		</div>
+	}
+}
+
+templ dedChip(d Deduction) {
+	if d.Applied {
+		<span class="ded-chip applied">{ d.Label } <span class="val">{ fmt.Sprintf("%.1f", d.Value) }</span></span>
+	} else if d.Recent {
+		<span class="ded-chip recent">{ d.Label } <span class="val">{ fmt.Sprintf("%.1f", d.Value) }</span></span>
+	} else {
+		<span class="ded-chip">{ d.Label } <span class="val">{ fmt.Sprintf("%.1f", d.Value) }</span></span>
+	}
+}
+
+templ voiceNote(v VoiceNote) {
+	<div class="voice-note">
+		if v.State == "recording" {
+			<button class="mic recording" aria-label="Recording">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="14" rx="3"></rect></svg>
+			</button>
+			<div class="waveform recording">
+				for _, h := range waveformBars(18, true) {
+					<i style={ "height:" + h }></i>
+				}
+			</div>
+		} else if v.State == "done" {
+			<button class="mic" aria-label="Play">
+				<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"></path></svg>
+			</button>
+			<div class="waveform done">
+				for _, h := range waveformBars(18, false) {
+					<i style={ "height:" + h }></i>
+				}
+			</div>
+		} else {
+			<button class="mic idle" aria-label="Record">
+				<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="13" rx="3"></rect></svg>
+			</button>
+			<div class="waveform">
+				for _, h := range waveformBars(12, false) {
+					<i style={ "height:" + h }></i>
+				}
+			</div>
+		}
+		<div class="vn-meta">
+			<span class="time">{ v.Duration }</span>
+			<span>{ v.Label }</span>
+		</div>
+	</div>
+}
+
+// --- helpers ---
+
+func countScored(xs []Exercise) int {
+	c := 0
+	for _, x := range xs {
+		if x.Scored {
+			c++
+		}
+	}
+	return c
+}
+
+func activeExercise(d ScoreViewData) *Exercise {
+	if d.ActiveIdx < 0 || d.ActiveIdx >= len(d.Exercises) {
+		return nil
+	}
+	return &d.Exercises[d.ActiveIdx]
+}
+
+// scoreOptions returns the 10..0 ladder for a max-10 exercise in half-point
+// steps, mirroring the panel's 5-column numpad layout (10, 9.5, 9, 8.5, 8 …).
+func scoreOptions(max float64) []float64 {
+	if max <= 0 {
+		return nil
+	}
+	step := 0.5
+	out := make([]float64, 0, int(max/step)+1)
+	for v := max; v >= 6; v -= step {
+		out = append(out, v)
+	}
+	return out
+}
+
+func obNavLabelStyle(scored bool) string {
+	if scored {
+		return "font-size:12px;"
+	}
+	return "font-size:12px; color:var(--mist-700);"
+}
+
+// waveformBars produces N pseudo-random heights so the templ output is stable
+// per render (vs. running random in the template). Heights cycle through a
+// short palette to read as a "sound wave" without animation logic.
+func waveformBars(n int, dense bool) []string {
+	pattern := []string{"30%", "70%", "50%", "90%", "60%", "80%", "40%", "75%", "55%", "85%", "45%", "65%"}
+	if !dense {
+		pattern = []string{"30%", "40%", "30%", "50%", "30%", "40%", "30%", "50%"}
+	}
+	out := make([]string, n)
+	for i := 0; i < n; i++ {
+		out[i] = pattern[i%len(pattern)]
+	}
+	return out
+}

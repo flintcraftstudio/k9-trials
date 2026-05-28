@@ -6,6 +6,7 @@
   .event-tile, .photo, etc.).
 */
 @import "../K9 Elements Design System/ui_kits/marketing-site/styles.css";
+@import "../K9 Elements Design System/ui_kits/judge-app/styles.css";
 
 @tailwind base;
 @tailwind components;

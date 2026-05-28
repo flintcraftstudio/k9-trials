@@ -113,6 +113,15 @@ func main() {
 	mux.Handle("POST /login", handler.LoginSubmit(st))
 	mux.Handle("POST /logout", handler.Logout(st))
 
+	// Judge-side scoring UI (B1–B6 panels, currently rendered against
+	// hardcoded fixtures in internal/view/judge — no persistence yet).
+	mux.Handle("GET /judge", handler.JudgeQueue())
+	mux.Handle("GET /judge/entry/{id}/gate", handler.JudgeGate())
+	mux.Handle("GET /judge/entry/{id}/score", handler.JudgeScore())
+	mux.Handle("GET /judge/entry/{id}/review", handler.JudgeReview())
+	mux.Handle("GET /judge/entry/{id}/submit", handler.JudgeSubmit())
+	mux.Handle("GET /judge/entry/{id}/locked", handler.JudgeLocked())
+
 	// Session + logging middleware
 	srv := session.Middleware(st)(mux)
 	srv = middleware.Logging(logger)(srv)

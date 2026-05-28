@@ -1,0 +1,156 @@
+package judge
+
+// SubmitPage is the submit-confirmation modal (B5). Rendered as a regular page
+// with a scrim + modal overlay, plus a faded review snapshot behind. The
+// keypad↔signature toggle is driven by Alpine.
+templ SubmitPage(d SubmitViewData) {
+	@shell("Lock score · "+d.Run.DogName, d.Trial.Discipline.EventKey(), submitBody(d))
+}
+
+templ submitBody(d SubmitViewData) {
+	<section class="judge-screen" x-data="{ mode: 'pin' }" style="position:relative;">
+		<!-- Faded review context behind scrim -->
+		<div style="opacity:0.32; pointer-events:none;">
+			<div class="appbar event-rail">
+				<div class="a-left">
+					<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
+					<div class="col g2">
+						<span class="trial-sub">Run { itoa(d.Run.Number) } · Reviewing</span>
+						<span class="trial">{ d.Run.DogName } · { d.Run.HandlerSh }</span>
+					</div>
+				</div>
+				<div class="a-right">
+					<span class="tabular bold serif" style="font-size:24px;">{ fnum(d.Total) }</span>
+					if d.Qualifying {
+						<span class="pill synced">qualifying</span>
+					} else {
+						<span class="pill nq">non-qualifying</span>
+					}
+				</div>
+			</div>
+			<div class="col p16 g8">
+				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 1 · Heel free</span></div>
+				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 2 · Figure 8</span></div>
+				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 3 · Stand for exam</span></div>
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div class="modal-scrim">
+			<div class="modal" style="width:560px;">
+				<div class="row between" style="align-items:flex-start;">
+					<div class="col g4">
+						<span class="eyebrow">Lock submission · Run { itoa(d.Run.Number) } { d.Trial.Discipline.Label() }</span>
+						<div class="serif" style="font-size:24px; line-height:1.05;">
+							{ d.Run.DogName } · { fnum(d.Total) }
+							if d.Qualifying {
+								&nbsp;— qualifying
+							} else {
+								&nbsp;— non-qualifying
+							}
+						</div>
+						<div class="muted tabular" style="font-size:12px;">
+							{ d.Run.HandlerSh } · { d.Run.K9ID } · { d.ExercisesOK } · { d.DedSummary }
+						</div>
+					</div>
+					<a class="btn btn-ghost" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") } style="font-size:18px; padding:4px 10px;">×</a>
+				</div>
+
+				<!-- PIN mode -->
+				<div class="col g12" x-show="mode === 'pin'">
+					<div class="row g14" style="align-items:flex-start;">
+						<div class="col g8 f1">
+							<span class="eyebrow muted">Enter your PIN · { d.Trial.JudgeName }</span>
+							<div class="row g8">
+								<div class="pin-cell filled">●</div>
+								<div class="pin-cell filled">●</div>
+								<div class="pin-cell filled">●</div>
+								<div class="pin-cell focus"></div>
+							</div>
+							<div class="muted" style="font-size:12px; line-height:1.5;">
+								Binds this submission to your judge account in the audit log. Same PIN unlocks all runs you score today.
+							</div>
+							<div class="card flat p10">
+								<div class="row g6 items-center">
+									<span style="color:var(--mist-700);">🔒</span>
+									<span style="font-size:12px;">
+										<strong>Locked submissions cannot be edited.</strong>
+										&nbsp;Corrections route through the audited flow.
+									</span>
+								</div>
+							</div>
+						</div>
+						<div class="col" style="width:220px;">
+							<span class="eyebrow muted" style="margin-bottom:6px;">Keypad</span>
+							<div class="numpad" style="grid-template-columns:repeat(3, 1fr); gap:5px;">
+								<button>1</button><button>2</button><button>3</button>
+								<button>4</button><button>5</button><button>6</button>
+								<button>7</button><button>8</button><button>9</button>
+								<button class="alt">cancel</button>
+								<button>0</button>
+								<button class="alt">⌫</button>
+							</div>
+						</div>
+					</div>
+					<div class="row between" style="padding-top:4px; border-top:1px solid var(--color-divider);">
+						<button class="btn btn-ghost" style="font-size:12px;" x-on:click="mode = 'sig'">
+							<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+								<path d="M3 17l6-6 4 4 8-8"></path>
+							</svg>
+							Use signature instead
+						</button>
+						<div class="row g8">
+							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
+							<a class="btn btn-primary btn-lg" data-event-tinted href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/locked") }>Lock score</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Signature mode -->
+				<div class="col g10" x-show="mode === 'sig'" x-cloak>
+					<span class="eyebrow muted">Sign to lock · { d.Trial.JudgeName }</span>
+					<div class="sig-pad">
+						<svg viewBox="0 0 500 110" style="position:absolute; inset:0; width:100%; height:100%;">
+							<path d="M 30 80 Q 70 25, 110 65 T 180 60 Q 220 100, 260 50 T 340 70 Q 380 35, 420 75 L 460 50" fill="none" stroke="var(--mist-950)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+						</svg>
+						<div class="lbl">Sign here</div>
+					</div>
+					<div class="row between">
+						<button class="btn btn-ghost" style="font-size:12px;">Clear ✕</button>
+						<span class="muted" style="font-size:11px;">Saved with the audit record</span>
+					</div>
+					<div class="row between" style="padding-top:4px; border-top:1px solid var(--color-divider);">
+						<button class="btn btn-ghost" style="font-size:12px;" x-on:click="mode = 'pin'">
+							<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+								<rect x="6" y="11" width="12" height="9" rx="2"></rect>
+								<path d="M9 11V8a3 3 0 016 0v3"></path>
+							</svg>
+							Use PIN instead
+						</button>
+						<div class="row g8">
+							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
+							<a class="btn btn-primary btn-lg" data-event-tinted href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/locked") }>Lock signed score</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+	<style>
+		.pin-cell {
+			width: 42px; height: 54px;
+			border: 1.5px solid var(--mist-950);
+			border-radius: 10px;
+			display: grid; place-items: center;
+			font-family: var(--font-display);
+			font-size: 24px;
+			background: white;
+		}
+		.pin-cell.focus {
+			border-width: 2px;
+			outline: 3px solid var(--event-100, var(--blue-100));
+			outline-offset: 1px;
+		}
+		[x-cloak] { display: none !important; }
+	</style>
+}

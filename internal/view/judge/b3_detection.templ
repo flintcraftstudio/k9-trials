@@ -1,0 +1,136 @@
+package judge
+
+// DetectionScorePage is the active-hide focus scoresheet (B3-D).
+// Completed hides as a strip; the active hide takes the rest of the screen.
+templ DetectionScorePage(d ScoreViewData) {
+	@shell("Score · "+d.Run.DogName, d.Discipline.EventKey(), detectionBody(d))
+}
+
+templ detectionBody(d ScoreViewData) {
+	<section class="judge-screen">
+		<div class="appbar event-rail">
+			<div class="a-left">
+				<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
+				<div class="col g2">
+					<span class="trial-sub">Run { itoa(d.Run.Number) } · { d.Discipline.Label() } { d.Trial.Class } · Room A</span>
+					<span class="trial">
+						{ d.Run.DogName }
+						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
+							{ d.Run.HandlerSh } · { d.Run.K9ID }
+						</span>
+					</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<div class="col txt-right">
+					<span class="eyebrow muted">Finds · false alerts</span>
+					<span class="tabular bold" style="font-size:14px;">
+						<span style="color:var(--green-700);">{ itoa(d.FindsMade) } / { itoa(d.FindsTotal) }</span>
+						&nbsp;·&nbsp;
+						<span style="color:var(--orange-700);">{ itoa(d.FalseAlerts) } FA</span>
+					</span>
+				</div>
+				<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>Review →</a>
+			</div>
+		</div>
+
+		<!-- Completed hides strip -->
+		<div class="row g8 scroll-x" style="padding:10px 18px; border-bottom:1px solid var(--color-divider); background:var(--mist-50);">
+			for _, h := range d.Hides {
+				@hideChip(h)
+			}
+		</div>
+
+		<!-- Active hide pane -->
+		<div class="col f1 p18 g14" style="min-height:0;">
+			if active := activeHide(d); active != nil {
+				@activeHidePane(*active, d.Elapsed)
+			}
+		</div>
+	</section>
+}
+
+templ hideChip(h DetectionHide) {
+	switch h.State {
+		case "find":
+			<div class="card p10" style="flex-shrink:0; background:var(--green-50); border-color:var(--green-300); min-width:120px;">
+				<div class="col g2">
+					<span class="eyebrow" style="color:var(--green-800);">Hide { itoa(h.Num) } · Find</span>
+					<div class="row g6 items-baseline">
+						<span class="serif tabular" style="font-size:18px;">{ h.Time }</span>
+						<span class="muted" style="font-size:10px;">{ h.Detail }</span>
+					</div>
+				</div>
+			</div>
+		case "active":
+			<div class="card p10 event-rail" data-event="detection" style="flex-shrink:0; background:var(--orange-50); border-color:var(--orange-400); border-style:dashed; min-width:120px;">
+				<div class="col g2">
+					<span class="eyebrow">Hide { itoa(h.Num) } · Active</span>
+					<div class="muted tabular" style="font-size:11px;">— { h.Detail }</div>
+				</div>
+			</div>
+		default:
+			<div class="card p10" style="flex-shrink:0; opacity:0.55; min-width:120px;">
+				<div class="col g2">
+					<span class="eyebrow muted">Hide { itoa(h.Num) } · Queued</span>
+					<div class="muted" style="font-size:11px;">—</div>
+				</div>
+			</div>
+	}
+}
+
+templ activeHidePane(h DetectionHide, elapsed string) {
+	<div class="row between" style="align-items:flex-start;">
+		<div class="col g4">
+			<span class="eyebrow">Active · Hide { itoa(h.Num) } of 4</span>
+			<div class="serif" style="font-size:26px; line-height:1.05;">Pseudo-Eucalyptol</div>
+			<div class="muted" style="font-size:12px;">Low / hidden behind cabinet</div>
+		</div>
+		<button class="btn btn-soft" style="padding:8px 14px;">
+			<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+				<rect x="6" y="5" width="4" height="14"></rect>
+				<rect x="14" y="5" width="4" height="14"></rect>
+			</svg>
+			Pause clock
+		</button>
+	</div>
+
+	<div class="row g16 items-center">
+		<div class="col card flat p14 g2 center" style="min-width:220px;">
+			<span class="eyebrow muted">Elapsed</span>
+			<div class="serif tabular" style="font-size:64px; line-height:1; letter-spacing:-0.02em;">{ elapsed }</div>
+			<span class="muted tabular" style="font-size:11px;">Started 13.00.41</span>
+		</div>
+		<div class="col f1 g8">
+			<button class="btn btn-success btn-xl">
+				<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+					<path d="M5 12l5 5 9-12"></path>
+				</svg>
+				Find — stop time
+			</button>
+			<div class="row g8">
+				<button class="btn btn-outline btn-lg" style="flex:1;">⚠ False alert</button>
+				<button class="btn btn-soft btn-lg" style="flex:1;">No-find</button>
+			</div>
+			<div class="row g6 items-center">
+				<button class="mic-btn" aria-label="Voice note">
+					<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="9" y="3" width="6" height="13" rx="3"></rect></svg>
+				</button>
+				<span class="muted f1" style="font-size:11px;">Voice note attached to this hide (optional)</span>
+				<button class="btn btn-ghost" style="font-size:11px;">Handler call ▾</button>
+			</div>
+		</div>
+	</div>
+}
+
+func activeHide(d ScoreViewData) *DetectionHide {
+	for i := range d.Hides {
+		if d.Hides[i].State == "active" {
+			return &d.Hides[i]
+		}
+	}
+	if d.HideActive < len(d.Hides) {
+		return &d.Hides[d.HideActive]
+	}
+	return nil
+}

@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=1400" />
+<title>B6 · Read-only run</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<link rel="stylesheet" href="../hifi.css" />
+<style>
+  /* Standalone viewing: give the panel some breathing room */
+  body { background: var(--mist-100); margin: 0; padding: 24px; font-family: var(--font-sans); }
+  .tab-panel { display: block; }
+  .standalone-head { max-width: 1280px; margin: 0 auto 16px; padding: 12px 16px; background: white; border: 1px solid var(--color-border); border-radius: 8px; font-size: 12px; color: var(--mist-700); }
+  .standalone-head strong { color: var(--mist-950); }
+  .standalone-head a { color: var(--blue-700); }
+</style>
+</head>
+<body data-event="obedience">
+<div class="standalone-head">
+  <strong>B6 · Read-only run</strong> — extracted from <code>K9 Scoring Hi-Fi.html</code> for reference. Styling pulled from <code>colors_and_type.css</code> + <code>hifi.css</code>.
+</div>
+<section class="tab-panel" data-tab="b6" id="panel-b6" data-screen-label="B6 Read-only run">
+  <header class="panel-head">
+    <div>
+      <h2 class="panel-title">B6 · Read-only run <em>— tabs for breakdown alongside audit</em></h2>
+      <div class="panel-sub">You wanted V2's audit chain primary <em>and</em> V1's exercise breakdown referenceable. Solution: three tabs inside the screen — Summary &amp; audit, Exercise breakdown, Narrative &amp; critique. All three views are read-only; "Request correction" lives in the header on every tab.</div>
+      <span class="panel-decision">Variant 2 — tabbed for breakdown access</span>
+    </div>
+  </header>
+
+  <div class="strip">
+
+    <article class="variant single theme-target">
+      <header>
+        <span class="v-num"><span class="picked">✓ Picked</span>Hi-fi · single direction</span>
+        <span class="v-title">Tabbed read-only with audit, breakdown, critique</span>
+        <span class="v-blurb">Click the tabs in the iPad to switch between views. All views share the locked banner and the "Request correction" action in the header — that's the entrance to the B6→C1 audit flow.</span>
+      </header>
+      <div class="ipad wide">
+        <div class="ipad-screen" data-event="obedience">
+          <div class="statusbar"><span>14.18</span><div class="right"><span class="sb-signal"><i></i><i></i><i></i><i></i></span><span class="sb-wifi">Wi-Fi off</span><span class="sb-bat"><span>61%</span><span class="glyph"><span class="fill"></span></span></span></div></div>
+          <div class="appbar event-rail" data-event="obedience">
+            <div class="a-left">
+              <button class="btn btn-ghost" style="padding:5px 10px;">← Queue</button>
+              <span class="avatar circ dog-3 sm portrait">E</span>
+              <div class="col" style="gap:1px;">
+                <span class="trial-sub">Run 14 · Scored · synced 13.42</span>
+                <span class="trial" style="font-size:15px;">Echo <span class="muted" style="font-size:11px; font-family:var(--font-sans);">J. Marsh · K9-2419 · Obedience Open</span></span>
+              </div>
+            </div>
+            <div class="a-right">
+              <span class="pill synced lg"><span class="dot"></span>Delivered</span>
+              <button class="btn btn-outline">Request correction…</button>
+            </div>
+          </div>
+          <!-- locked banner -->
+          <div class="row between" style="padding:8px 18px; background:var(--mist-100); border-bottom:1px solid var(--color-divider); font-size:12px;">
+            <div class="row g10">
+              <span class="bold" style="color:var(--mist-950);">🔒 Locked</span>
+              <span class="muted">Submitted 09.58 by H. Vance (PIN) · 8/8 exercises scored · Total <strong style="color:var(--mist-950);">193 / 200</strong></span>
+            </div>
+            <span class="muted" style="font-size:11px;">Viewable by: judge · secretary · handler</span>
+          </div>
+          <!-- in-iPad tabs -->
+          <div class="in-tabs" data-b6-tabs>
+            <button data-b6-tab="summary" aria-selected="true">Summary &amp; audit</button>
+            <button data-b6-tab="breakdown" aria-selected="false">Exercise breakdown</button>
+            <button data-b6-tab="critique" aria-selected="false">Narrative &amp; critique</button>
+          </div>
+
+          <!-- Pane: Summary & audit -->
+          <div class="col f1 scroll-y" data-b6-pane="summary" style="padding:18px; gap:14px;">
+            <div class="row g14">
+              <div class="col card event-rail" data-event="obedience" style="flex:2; background:white; padding:16px; gap:6px;">
+                <span class="eyebrow">Result</span>
+                <div class="row" style="align-items:baseline; gap:8px;"><span class="serif tabular" style="font-size:56px; line-height:1;">193</span><span class="muted" style="font-size:13px;">/ 200</span><span class="pill synced">qualifying</span></div>
+                <div class="muted" style="font-size:12px;">Obedience Open · 8/8 exercises scored · 1 deduction · 27 minutes ring time</div>
+              </div>
+              <div class="col card flat p14" style="flex:1; gap:6px;">
+                <span class="eyebrow muted">Submitted</span>
+                <div class="row g8" style="align-items:center;">
+                  <span class="avatar circ h-1 md">HV</span>
+                  <div class="col"><div class="bold" style="font-size:13px;">H. Vance</div><div class="muted tabular" style="font-size:11px;">09.58 · PIN ✓</div></div>
+                </div>
+                <div class="muted" style="font-size:11px; padding-top:6px; border-top:1px solid var(--color-divider);">Synced 13.42 to Secretary tablet</div>
+              </div>
+            </div>
+            <div class="col g6">
+              <span class="eyebrow muted">Audit chain · 5 records · append-only</span>
+              <div class="card p14">
+                <div class="audit-step green">
+                  <span class="dot"></span>
+                  <div class="col" style="gap:2px;"><span class="bold" style="font-size:13px;">Sync · accepted by secretary</span><span class="muted" style="font-size:11.5px;">H. Vance iPad → Secretary tablet · payload checksummed</span></div>
+                  <span class="muted tabular" style="font-size:11px;">13.42</span>
+                </div>
+                <div class="audit-step lock">
+                  <span class="dot"></span>
+                  <div class="col" style="gap:2px;"><span class="bold" style="font-size:13px;">Run submitted · locked</span><span class="muted" style="font-size:11.5px;">H. Vance · PIN ✓ · final total 193 / 200 · qualifying</span></div>
+                  <span class="muted tabular" style="font-size:11px;">09.58</span>
+                </div>
+                <div class="audit-step">
+                  <span class="dot"></span>
+                  <div class="col" style="gap:2px;"><span class="bold" style="font-size:13px;">End-of-run critique recorded</span><span class="muted" style="font-size:11.5px;">Voice note · 0:48 · auto-transcribed (see Critique tab)</span></div>
+                  <span class="muted tabular" style="font-size:11px;">09.57</span>
+                </div>
+                <div class="audit-step">
+                  <span class="dot"></span>
+                  <div class="col" style="gap:2px;"><span class="bold" style="font-size:13px;">Run started · identity confirmed</span><span class="muted" style="font-size:11.5px;">H. Vance confirmed Echo / J. Marsh / K9-2419 at the gate</span></div>
+                  <span class="muted tabular" style="font-size:11px;">09.40</span>
+                </div>
+                <div class="audit-step">
+                  <span class="dot"></span>
+                  <div class="col" style="gap:2px;"><span class="bold" style="font-size:13px;">Run created from schedule</span><span class="muted" style="font-size:11.5px;">Trial secretary K. Sundaram · run #14 of 23</span></div>
+                  <span class="muted tabular" style="font-size:11px;">07.02</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane: Exercise breakdown -->
+          <div class="col f1 scroll-y" data-b6-pane="breakdown" style="padding:18px; gap:12px; display:none;">
+            <div class="row g14" style="align-items:flex-start;">
+              <div class="col f1 g6">
+                <span class="eyebrow muted">Exercises · final scores · read-only</span>
+                <div class="card" style="overflow:hidden;">
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">1</span><span style="font-size:13px;">Heel free</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.5</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">2</span><span style="font-size:13px;">Figure 8</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.0</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">3</span><span style="font-size:13px;">Stand for exam</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">10.0</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">4</span><span style="font-size:13px;">Recall over jump</span><span class="pill nq tone-cap" style="font-size:10px;">crooked sit −0.5</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.5</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">5</span><span style="font-size:13px;">Drop on recall</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.5</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">6</span><span style="font-size:13px;">Retrieve on flat</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.0</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10" style="border-bottom:1px solid var(--color-divider);"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">7</span><span style="font-size:13px;">Retrieve over jump</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.0</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                  <div class="row between p10"><div class="row g10"><span class="muted tabular" style="font-size:12px; width:18px;">8</span><span style="font-size:13px;">Broad jump</span></div><div class="row g10"><span class="tabular bold" style="font-size:14px;">9.5</span><span class="muted" style="font-size:11px;">/ 10</span></div></div>
+                </div>
+              </div>
+              <div class="col" style="width:280px; gap:14px;">
+                <div class="col card p12 g4">
+                  <span class="eyebrow muted">Totals</span>
+                  <div class="row between" style="font-size:12.5px;"><span>Max possible</span><span class="tabular">200.0</span></div>
+                  <div class="row between" style="font-size:12.5px;"><span>Deductions</span><span class="tabular">−7.0</span></div>
+                  <div class="row between" style="font-size:14px; padding-top:6px; border-top:1px solid var(--color-divider); font-weight:600;"><span>Final</span><span class="tabular">193.0</span></div>
+                  <div class="row between" style="font-size:11px; color:var(--mist-600);"><span>Qualifying line</span><span class="tabular">170</span></div>
+                </div>
+                <div class="col card flat p12 g4">
+                  <span class="eyebrow muted">Deductions applied</span>
+                  <div style="font-size:11.5px; line-height:1.7;">
+                    <div class="row between"><span class="muted">Ex 1 · Tight turn</span><span class="tabular">−0.5</span></div>
+                    <div class="row between"><span class="muted">Ex 2 · Slow sit</span><span class="tabular">−1.0</span></div>
+                    <div class="row between"><span class="muted">Ex 4 · Crooked sit</span><span class="tabular">−0.5</span></div>
+                    <div class="row between"><span class="muted">Ex 5 · Forged on call</span><span class="tabular">−0.5</span></div>
+                    <div class="row between"><span class="muted">Ex 6 · Slow pickup</span><span class="tabular">−1.0</span></div>
+                    <div class="row between"><span class="muted">Ex 7 · Touched jump</span><span class="tabular">−1.0</span></div>
+                    <div class="row between"><span class="muted">Ex 8 · Touched broad</span><span class="tabular">−0.5</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane: Narrative & critique -->
+          <div class="col f1 scroll-y" data-b6-pane="critique" style="padding:18px; gap:14px; display:none;">
+            <div class="row between">
+              <span class="eyebrow muted">End-of-run voice critique · 0:48 · recorded 09.57</span>
+              <span class="muted" style="font-size:11px;">Visible to handler in their training record</span>
+            </div>
+            <div class="card p14 col g10">
+              <div class="voice-note" style="border:0; padding:0;">
+                <button class="mic idle" aria-label="Play"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+                <div class="waveform done"><i style="height:55%"></i><i style="height:40%"></i><i style="height:65%"></i><i style="height:80%"></i><i style="height:50%"></i><i style="height:70%"></i><i style="height:45%"></i><i style="height:85%"></i><i style="height:35%"></i><i style="height:60%"></i><i style="height:75%"></i><i style="height:50%"></i><i style="height:65%"></i><i style="height:45%"></i><i style="height:80%"></i><i style="height:55%"></i><i style="height:40%"></i><i style="height:70%"></i><i style="height:50%"></i><i style="height:60%"></i><i style="height:75%"></i><i style="height:45%"></i><i style="height:65%"></i><i style="height:55%"></i><i style="height:80%"></i></div>
+                <div class="vn-meta"><span class="time">0:48</span><span class="muted">Tap to play</span></div>
+              </div>
+              <div class="col g4" style="padding-top:10px; border-top:1px solid var(--color-divider);">
+                <span class="eyebrow muted">Auto-transcript</span>
+                <div style="font-size:13px; line-height:1.6; color:var(--mist-900);">
+                  Strong overall performance from this team. Echo's heelwork was crisp through the figure 8, holding position cleanly on both inside and outside turns. The stand for exam was textbook — dog held steady, accepted contact without weight shift. Where I'd push this team is on the retrieve sequence; pickups felt deliberate but not yet eager, costing them on the flat retrieve. Recall over the jump was clean but the front sit drifted slightly — a half-point off there. Recommend continued work on motivation drills for the retrieve and tightening the front-position finish.
+                </div>
+              </div>
+              <div class="row between" style="padding-top:8px; border-top:1px solid var(--color-divider);">
+                <div class="row g8">
+                  <span class="muted" style="font-size:11px;">Transcribed automatically · accuracy reviewed by judge</span>
+                </div>
+                <div class="row g6">
+                  <button class="btn btn-ghost" style="font-size:11px;">Download audio</button>
+                  <button class="btn btn-ghost" style="font-size:11px;">Copy transcript</button>
+                </div>
+              </div>
+            </div>
+            <div class="col g6">
+              <span class="eyebrow muted">Per-exercise voice notes · 2 attached</span>
+              <div class="card p10 row g10">
+                <button class="mic-btn has-note"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+                <div class="col f1"><span class="bold" style="font-size:12.5px;">Exercise 4 · Recall over jump</span><span class="muted" style="font-size:11.5px;">"Front sit drifted left by maybe four inches…"</span></div>
+                <span class="muted tabular" style="font-size:11px;">0:11</span>
+              </div>
+              <div class="card p10 row g10">
+                <button class="mic-btn has-note"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></button>
+                <div class="col f1"><span class="bold" style="font-size:12.5px;">Exercise 6 · Retrieve on flat</span><span class="muted" style="font-size:11.5px;">"Pickup was slow — second time today I've seen that…"</span></div>
+                <span class="muted tabular" style="font-size:11px;">0:08</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="hi-note"><div><strong>Try it:</strong> click the three tabs inside the iPad to switch between Summary &amp; audit, Exercise breakdown, and Narrative &amp; critique. The audit chain logs the voice-critique recording as its own step (09.57) so corrections can reference it.</div></div>
+    </article>
+
+  </div>
+</section>
+<script src="../hifi.js" defer></script>
+</body>
+</html>

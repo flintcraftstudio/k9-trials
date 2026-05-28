@@ -1,0 +1,88 @@
+package judge
+
+// GatePage is the wrong-dog identity gate (B2). Shown after the judge taps
+// into a pending run from the queue, before scoring begins.
+templ GatePage(d GateViewData) {
+	@shell("Identity gate", d.Trial.Discipline.EventKey(), gateBody(d))
+}
+
+templ gateBody(d GateViewData) {
+	<section class="judge-screen">
+		<div class="appbar">
+			<div class="a-left">
+				<a class="btn btn-ghost" href="/judge" style="padding:6px 10px;">← Queue</a>
+				<div class="col g2">
+					<span class="trial-sub">{ d.Trial.Discipline.Label() } · Run { itoa(d.Run.Number) } of 23</span>
+					<span class="trial">Identity gate</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<span class="sync-chip">
+					<span class="dot"></span>
+					<strong>{ itoa(d.Trial.InPocket) }</strong>
+					&nbsp;in pocket
+				</span>
+				<span class="judge-chip">
+					<span class="avatar circ h-1 sm">{ d.Trial.JudgeInits }</span>
+					{ d.Trial.JudgeName }
+				</span>
+			</div>
+		</div>
+
+		<div class="row g14 p18 f1" style="align-items:stretch;">
+			<!-- Handler card -->
+			<div class="col card f1 p14 g10">
+				<span class="eyebrow muted">Handler at the gate</span>
+				<div class="avatar sq h-2 xl portrait">LT</div>
+				<div class="col g2">
+					<div class="serif" style="font-size:26px; line-height:1;">{ d.Run.HandlerSh }</div>
+					<div class="muted tabular" style="font-size:11px;">Handler ID · H-04412</div>
+				</div>
+			</div>
+			<!-- Dog card -->
+			<div class="col card f1 p14 g10 event-rail">
+				<span class="eyebrow">Dog · entered for { d.Trial.Discipline.Label() } { d.Trial.Class }</span>
+				<div class={ dogAvatarSquareClass(d.Run.DogVariant, "xl") }>{ d.Run.DogInit }</div>
+				<div class="col g2">
+					<div class="serif" style="font-size:26px; line-height:1;">{ d.Run.DogName }</div>
+					<div class="muted tabular" style="font-size:12px;">
+						{ d.Run.K9ID }
+						if d.Run.Breed != "" {
+							&nbsp;· { d.Run.Breed }
+						}
+					</div>
+				</div>
+			</div>
+			<!-- Right rail -->
+			<div class="col g10" style="width:220px;">
+				<div class="col card flat p12 g4">
+					<span class="eyebrow muted">Run</span>
+					<div class="row g8 items-baseline">
+						<span class="serif tabular" style="font-size:44px; line-height:1;">{ itoa(d.Run.Number) }</span>
+						<span class="muted" style="font-size:11px;">/ 23 today</span>
+					</div>
+					<div class="muted tabular" style="font-size:11px;">
+						Scheduled { d.Run.Scheduled } · Ring B
+					</div>
+				</div>
+				<div class="col card flat p12 g4">
+					<span class="eyebrow muted">Judge</span>
+					<div class="bold" style="font-size:14px;">{ d.Trial.JudgeName }</div>
+					<div class="muted" style="font-size:11px;">Certified · Obedience IPO</div>
+				</div>
+				<a
+					class="btn btn-primary btn-xl btn-hold btn-block mta col"
+					data-event-tinted
+					href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/score") }
+					style="flex-direction:column; gap:2px;"
+				>
+					<span>Hold to start</span>
+					<span style="font-size:10px; opacity:0.75; letter-spacing:0.08em; text-transform:uppercase;">1.5s press</span>
+				</a>
+				<button class="btn btn-ghost" style="font-size:11px; padding:6px;">
+					Wrong dog · scratch · substitute…
+				</button>
+			</div>
+		</div>
+	</section>
+}

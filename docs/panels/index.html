@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Hi-Fi panels — extracted</title>
+<link rel="stylesheet" href="../colors_and_type.css" />
+<style>
+  body { font-family: var(--font-sans); background: var(--mist-100); margin: 0; padding: 48px 24px; color: var(--mist-950); }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-family: var(--font-display); font-weight: 400; font-size: 36px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .sub { color: var(--mist-700); margin: 0 0 32px; font-size: 14px; line-height: 1.6; }
+  ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  li a { display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: white; border: 1px solid var(--color-border); border-radius: 10px; text-decoration: none; color: var(--mist-950); transition: background 150ms; }
+  li a:hover { background: var(--mist-50); }
+  .code { font-family: var(--font-mono, monospace); font-size: 11px; color: var(--mist-600); padding: 3px 7px; background: var(--mist-50); border-radius: 4px; letter-spacing: 0.04em; }
+  .title { font-weight: 500; font-size: 15px; flex: 1; }
+  .arrow { color: var(--mist-500); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Hi-fi panels</h1>
+  <p class="sub">Each of the 7 judge-side panels from <code>K9 Scoring Hi-Fi.html</code>, split into standalone files so they can be passed individually to a UI agent. All reference the shared <code>colors_and_type.css</code> + <code>hifi.css</code> + <code>hifi.js</code> in the parent folder.</p>
+  <ul>
+    <li><a href="B1 Run queue.html"><span class="code">B1</span><span class="title">Run queue</span><span class="arrow">→</span></a></li>
+    <li><a href="B2 Identity gate.html"><span class="code">B2</span><span class="title">Identity gate</span><span class="arrow">→</span></a></li>
+    <li><a href="B3-O Obedience scoresheet.html"><span class="code">B3·O</span><span class="title">Obedience scoresheet</span><span class="arrow">→</span></a></li>
+    <li><a href="B3-D Detection scoresheet.html"><span class="code">B3·D</span><span class="title">Detection scoresheet</span><span class="arrow">→</span></a></li>
+    <li><a href="B4 Run review.html"><span class="code">B4</span><span class="title">Run review</span><span class="arrow">→</span></a></li>
+    <li><a href="B5 Submit confirmation.html"><span class="code">B5</span><span class="title">Submit confirmation</span><span class="arrow">→</span></a></li>
+    <li><a href="B6 Read-only run.html"><span class="code">B6</span><span class="title">Read-only run</span><span class="arrow">→</span></a></li>
+  </ul>
+</div>
+</body>
+</html>

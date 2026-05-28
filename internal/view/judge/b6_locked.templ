@@ -1,0 +1,239 @@
+package judge
+
+import "fmt"
+
+// LockedPage is the read-only view of a finalized/locked run (B6).
+// Three Alpine-driven tabs share the locked banner and "Request correction".
+templ LockedPage(d LockedViewData) {
+	@shell("Locked · "+d.Run.DogName, d.Trial.Discipline.EventKey(), lockedBody(d))
+}
+
+templ lockedBody(d LockedViewData) {
+	<section class="judge-screen" x-data="{ tab: 'summary' }">
+		<div class="appbar event-rail">
+			<div class="a-left">
+				<a class="btn btn-ghost" href="/judge" style="padding:5px 10px;">← Queue</a>
+				<span class={ dogAvatarClass(d.Run.DogVariant, "md") }>{ d.Run.DogInit }</span>
+				<div class="col g2">
+					<span class="trial-sub">Run { itoa(d.Run.Number) } · Scored · synced { d.SyncedAt }</span>
+					<span class="trial">
+						{ d.Run.DogName }
+						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
+							{ d.Run.HandlerSh } · { d.Run.K9ID } · { d.Trial.Discipline.Label() } { d.Trial.Class }
+						</span>
+					</span>
+				</div>
+			</div>
+			<div class="a-right">
+				<span class="pill synced lg"><span class="dot"></span>Delivered</span>
+				<button class="btn btn-outline">Request correction…</button>
+			</div>
+		</div>
+
+		<!-- Locked banner -->
+		<div class="row between" style="padding:8px 18px; background:var(--mist-100); border-bottom:1px solid var(--color-divider); font-size:12px;">
+			<div class="row g10 items-center">
+				<span class="bold" style="color:var(--mist-950);">🔒 Locked</span>
+				<span class="muted">
+					Submitted { d.SubmittedBy.At } by { d.SubmittedBy.Name } ({ d.SubmittedBy.Method }) · { itoa(len(d.Exercises)) }/{ itoa(len(d.Exercises)) } exercises scored · Total
+					<strong style="color:var(--mist-950);">&nbsp;{ fnum(d.Total) } / { fnum(d.Max) }</strong>
+				</span>
+			</div>
+			<span class="muted" style="font-size:11px;">Viewable by: judge · secretary · handler</span>
+		</div>
+
+		<!-- Tabs -->
+		<div class="in-tabs">
+			<button x-on:click="tab = 'summary'" x-bind:aria-selected="tab === 'summary'">Summary &amp; audit</button>
+			<button x-on:click="tab = 'breakdown'" x-bind:aria-selected="tab === 'breakdown'">Exercise breakdown</button>
+			<button x-on:click="tab = 'critique'" x-bind:aria-selected="tab === 'critique'">Narrative &amp; critique</button>
+		</div>
+
+		<!-- Summary & audit pane -->
+		<div class="col f1 scroll-y p18 g14" x-show="tab === 'summary'">
+			<div class="row g14">
+				<div class="col card event-rail f1 p14 g6" style="flex:2;">
+					<span class="eyebrow">Result</span>
+					<div class="row g8 items-baseline">
+						<span class="serif tabular" style="font-size:56px; line-height:1;">{ fnum(d.Total) }</span>
+						<span class="muted" style="font-size:13px;">/ { fnum(d.Max) }</span>
+						if d.Total >= d.Qualifying {
+							<span class="pill synced">qualifying</span>
+						} else {
+							<span class="pill nq">non-qualifying</span>
+						}
+					</div>
+					<div class="muted" style="font-size:12px;">
+						{ d.Trial.Discipline.Label() } { d.Trial.Class } · { itoa(len(d.Exercises)) }/{ itoa(len(d.Exercises)) } exercises scored · { itoa(len(d.Deductions)) } deductions · 27 minutes ring time
+					</div>
+				</div>
+				<div class="col card flat p14 f1 g6">
+					<span class="eyebrow muted">Submitted</span>
+					<div class="row g8 items-center">
+						<span class="avatar circ h-1 md">{ d.SubmittedBy.Inits }</span>
+						<div class="col">
+							<div class="bold" style="font-size:13px;">{ d.SubmittedBy.Name }</div>
+							<div class="muted tabular" style="font-size:11px;">{ d.SubmittedBy.At } · { d.SubmittedBy.Method }</div>
+						</div>
+					</div>
+					<div class="muted" style="font-size:11px; padding-top:6px; border-top:1px solid var(--color-divider);">
+						Synced { d.SyncedAt } to Secretary tablet
+					</div>
+				</div>
+			</div>
+
+			<div class="col g6">
+				<span class="eyebrow muted">Audit chain · { itoa(len(d.Audit)) } records · append-only</span>
+				<div class="card p14">
+					for _, s := range d.Audit {
+						@auditStep(s)
+					}
+				</div>
+			</div>
+		</div>
+
+		<!-- Exercise breakdown pane -->
+		<div class="col f1 scroll-y p18 g12" x-show="tab === 'breakdown'" x-cloak>
+			<div class="row g14" style="align-items:flex-start;">
+				<div class="col f1 g6">
+					<span class="eyebrow muted">Exercises · final scores · read-only</span>
+					<div class="card" style="overflow:hidden;">
+						for _, ex := range d.Exercises {
+							@lockedExerciseRow(ex)
+						}
+					</div>
+				</div>
+				<div class="col" style="width:280px; gap:14px;">
+					<div class="col card p12 g4">
+						<span class="eyebrow muted">Totals</span>
+						<div class="row between" style="font-size:12.5px;">
+							<span>Max possible</span><span class="tabular">{ fnum(d.Max) }</span>
+						</div>
+						<div class="row between" style="font-size:12.5px;">
+							<span>Deductions</span><span class="tabular">{ fmt.Sprintf("%.1f", sumDeductions(d.Deductions)) }</span>
+						</div>
+						<div class="row between" style="font-size:14px; padding-top:6px; border-top:1px solid var(--color-divider); font-weight:600;">
+							<span>Final</span><span class="tabular">{ fnum(d.Total) }</span>
+						</div>
+						<div class="row between" style="font-size:11px; color:var(--mist-600);">
+							<span>Qualifying line</span><span class="tabular">{ fnum(d.Qualifying) }</span>
+						</div>
+					</div>
+					<div class="col card flat p12 g4">
+						<span class="eyebrow muted">Deductions applied</span>
+						<div style="font-size:11.5px; line-height:1.7;">
+							for _, ded := range d.Deductions {
+								<div class="row between">
+									<span class="muted">{ ded.Where }</span>
+									<span class="tabular">{ fmt.Sprintf("%.1f", ded.Value) }</span>
+								</div>
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Critique pane -->
+		<div class="col f1 scroll-y p18 g14" x-show="tab === 'critique'" x-cloak>
+			<div class="row between">
+				<span class="eyebrow muted">End-of-run voice critique · { d.Critique.Duration } · recorded { d.Critique.RecordedAt }</span>
+				<span class="muted" style="font-size:11px;">Visible to handler in their training record</span>
+			</div>
+			<div class="card p14 col g10">
+				<div class="voice-note" style="border:0; padding:0; background:transparent;">
+					<button class="mic idle" aria-label="Play">
+						<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"></path></svg>
+					</button>
+					<div class="waveform done">
+						for _, h := range waveformBars(25, true) {
+							<i style={ "height:" + h }></i>
+						}
+					</div>
+					<div class="vn-meta">
+						<span class="time">{ d.Critique.Duration }</span>
+						<span class="muted">Tap to play</span>
+					</div>
+				</div>
+				<div class="col g4" style="padding-top:10px; border-top:1px solid var(--color-divider);">
+					<span class="eyebrow muted">Auto-transcript</span>
+					<div style="font-size:13px; line-height:1.6; color:var(--mist-900);">
+						{ d.Critique.Transcript }
+					</div>
+				</div>
+				<div class="row between" style="padding-top:8px; border-top:1px solid var(--color-divider);">
+					<span class="muted" style="font-size:11px;">Transcribed automatically · accuracy reviewed by judge</span>
+					<div class="row g6">
+						<button class="btn btn-ghost" style="font-size:11px;">Download audio</button>
+						<button class="btn btn-ghost" style="font-size:11px;">Copy transcript</button>
+					</div>
+				</div>
+			</div>
+
+			if len(d.PerExerciseNotes) > 0 {
+				<div class="col g6">
+					<span class="eyebrow muted">Per-exercise voice notes · { itoa(len(d.PerExerciseNotes)) } attached</span>
+					for _, n := range d.PerExerciseNotes {
+						<div class="card p10 row g10 items-center">
+							<button class="mic-btn has-note">
+								<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"></path></svg>
+							</button>
+							<div class="col f1">
+								<span class="bold" style="font-size:12.5px;">{ n.Title }</span>
+								<span class="muted" style="font-size:11.5px;">{ n.Quote }</span>
+							</div>
+							<span class="muted tabular" style="font-size:11px;">{ n.Duration }</span>
+						</div>
+					}
+				</div>
+			}
+		</div>
+	</section>
+}
+
+templ auditStep(s AuditStep) {
+	if s.Tone == "green" {
+		<div class="audit-step green">
+			<span class="dot"></span>
+			<div class="col g2">
+				<span class="bold" style="font-size:13px;">{ s.Title }</span>
+				<span class="muted" style="font-size:11.5px;">{ s.Body }</span>
+			</div>
+			<span class="muted tabular" style="font-size:11px;">{ s.When }</span>
+		</div>
+	} else if s.Tone == "lock" {
+		<div class="audit-step lock">
+			<span class="dot"></span>
+			<div class="col g2">
+				<span class="bold" style="font-size:13px;">{ s.Title }</span>
+				<span class="muted" style="font-size:11.5px;">{ s.Body }</span>
+			</div>
+			<span class="muted tabular" style="font-size:11px;">{ s.When }</span>
+		</div>
+	} else {
+		<div class="audit-step">
+			<span class="dot"></span>
+			<div class="col g2">
+				<span class="bold" style="font-size:13px;">{ s.Title }</span>
+				<span class="muted" style="font-size:11.5px;">{ s.Body }</span>
+			</div>
+			<span class="muted tabular" style="font-size:11px;">{ s.When }</span>
+		</div>
+	}
+}
+
+templ lockedExerciseRow(ex ReviewExercise) {
+	<div class="row between p10" style="border-bottom:1px solid var(--color-divider);">
+		<div class="row g10 items-center">
+			<span class="muted tabular" style="font-size:12px; width:18px;">{ itoa(ex.Num) }</span>
+			<span style="font-size:13px;">{ ex.Name }</span>
+			if ex.Note != "" {
+				<span class="pill nq tone-cap" style="font-size:10px;">{ ex.Note }</span>
+			}
+		</div>
+		<div class="row g10 items-center">
+			<span class="tabular bold" style="font-size:14px;">{ fnum(ex.Score) }</span>
+			<span class="muted" style="font-size:11px;">/ { fnum(ex.Max) }</span>
+		</div>
+	</div>
+}

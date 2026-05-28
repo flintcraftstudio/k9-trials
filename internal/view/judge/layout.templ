@@ -1,0 +1,61 @@
+package judge
+
+import (
+	"fmt"
+
+	"github.com/flintcraftstudio/k9-trials/internal/view"
+)
+
+// shell is the judge-app page wrapper. Deliberately no marketing nav/footer —
+// judges aren't browsing the marketing site mid-trial. The .judge-shell main
+// carries the data-event attribute so the event-scoped accent tokens flow
+// to everything inside.
+templ shell(title, eventKey string, body templ.Component) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<meta name="description" content="Judge-side scoring"/>
+			<title>{ title } | { view.SiteName }</title>
+			<link rel="icon" type="image/png" href="/static/img/k9-elements-logo.png"/>
+			<link rel="stylesheet" href="/static/css/site.css"/>
+			<script src="/static/js/htmx.min.js" defer></script>
+			<script src="/static/js/alpine.min.js" defer></script>
+		</head>
+		<body class="min-h-screen antialiased">
+			<main class="judge-shell" data-event={ eventKey }>
+				<div class="judge-frame">
+					@body
+				</div>
+			</main>
+		</body>
+	</html>
+}
+
+func itoa(n int) string {
+	return fmt.Sprintf("%d", n)
+}
+
+func fnum(f float64) string {
+	if f == float64(int(f)) {
+		return fmt.Sprintf("%d", int(f))
+	}
+	return fmt.Sprintf("%.1f", f)
+}
+
+func fnumSigned(f float64) string {
+	if f == float64(int(f)) {
+		return fmt.Sprintf("%+d", int(f))
+	}
+	return fmt.Sprintf("%+.1f", f)
+}
+
+// dogAvatarClass formats the variant suffix into a class string.
+func dogAvatarClass(variant int, size string) string {
+	return fmt.Sprintf("avatar circ %s portrait dog-%d", size, variant)
+}
+
+func dogAvatarSquareClass(variant int, size string) string {
+	return fmt.Sprintf("avatar sq %s portrait dog-%d", size, variant)
+}
