@@ -1,20 +1,98 @@
 package dogs
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// ProfilePage is the public dog profile: call name, registered name,
-// breed, owner, and every event entry across all events.
-templ ProfilePage(dogID string) {
-	@view.Base("Dog", "Dog profile and trial history.", "competitors", profileBody(dogID))
+// ProfilePage is the public dog profile (P7): identity header, breed/age/
+// registration pills, owner link, and finalized trial history (handler of
+// record shown per row, since it isn't always the owner).
+templ ProfilePage(d ProfileViewData) {
+	@view.Base(d.CallName, "Dog profile and trial history.", "competitors", profileBody(d))
 }
 
-templ profileBody(dogID string) {
-	@components.StubPage(
-		"Dog",
-		"Dog #" + dogID,
-		"Public dog profile with breed, owner link, and full trial history.",
-	)
+templ profileBody(d ProfileViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="flex-col gap-8 max-w-3xl">
+				<div class="flex-col gap-3">
+					<div class="flex-col">
+						<h1 class="h2" style="margin:0;">{ d.CallName }</h1>
+						if d.RegisteredName != "" {
+							<div class="body-sm" style="margin:0;">{ d.RegisteredName }</div>
+						}
+					</div>
+					<div class="flex flex-wrap gap-1">
+						if d.Breed != "" {
+							<span class="pill pill-muted">{ d.Breed }</span>
+						}
+						if d.Age != "" {
+							<span class="pill pill-muted">{ d.Age }</span>
+						}
+						if d.RegNo != "" {
+							<span class="pill pill-muted" style="font-variant-numeric:tabular-nums;">{ d.RegNo }</span>
+						}
+					</div>
+					<div class="body-sm" style="margin:0;">
+						Owner · <a href={ templ.SafeURL("/competitors/" + d.OwnerHandle) }>{ ownerLabel(d) }</a>
+					</div>
+				</div>
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						Trial history
+					}
+					@historyList(d.History)
+				</div>
+			</div>
+		}
+	</section>
+}
+
+// historyList renders the finalized trial-history rows, or an intentional
+// empty state for a dog with no completed runs.
+templ historyList(rows []HistoryRow) {
+	if len(rows) == 0 {
+		<div class="card flex-col items-start gap-1" style="padding:20px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No finalized entries yet</div>
+			<p class="body-sm" style="margin:0;">Results appear here once this dog completes a trial.</p>
+		</div>
+	} else {
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, row := range rows {
+				@historyRow(row)
+			}
+		</div>
+	}
+}
+
+// historyRow is one finalized trial line, linking to the public entry
+// detail (P4). The sub-line carries the handler of record for this run.
+templ historyRow(row HistoryRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/entries/%d", row.EntryID)) } class="flex justify-between items-center gap-3" style="padding:10px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;">
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if row.HasScore {
+				<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+			}
+			if row.Qualified {
+				<span class="body-sm" style="margin:0;color:var(--green-700);">Q</span>
+			} else {
+				<span class="pill pill-closed">NQ</span>
+			}
+		</div>
+	</a>
+}
+
+// ownerLabel renders the owner display name, falling back to the @handle.
+func ownerLabel(d ProfileViewData) string {
+	if d.OwnerName != "" {
+		return d.OwnerName
+	}
+	return "@" + d.OwnerHandle
 }

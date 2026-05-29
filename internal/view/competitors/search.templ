@@ -1,19 +1,129 @@
 package competitors
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// SearchPage is the public competitor directory + search.
-templ SearchPage() {
-	@view.Base("Competitors", "Search handlers and dogs by name.", "competitors", searchBody())
+// SearchPage is the public competitor directory (P5). The search input
+// live-queries the results fragment via htmx (keyup, debounced); the
+// fragment is also the initial server render so the page works without JS.
+templ SearchPage(d SearchViewData) {
+	@view.Base("Competitors", "Search handlers and dogs by name.", "competitors", searchBody(d))
 }
 
-templ searchBody() {
-	@components.StubPage(
-		"Competitors",
-		"Find a handler or a dog.",
-		"Search by handler name or dog name. Results link to public profiles with event history.",
-	)
+templ searchBody(d SearchViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-3xl">
+				<div class="flex-col gap-2">
+					@components.Eyebrow() {
+						Competitors
+					}
+					<h1 class="h2">Find a handler or a dog</h1>
+				</div>
+				<div class="flex-col gap-2">
+					@components.Input(components.InputProps{
+						Type:         "search",
+						Name:         "q",
+						Value:        d.Query,
+						Placeholder:  "Name, @handle, or registration number",
+						Autocomplete: "off",
+						Attrs: templ.Attributes{
+							"hx-get":      "/competitors",
+							"hx-trigger":  "input changed delay:250ms, search",
+							"hx-target":   "#competitor-results",
+							"hx-swap":     "outerHTML",
+							"hx-push-url": "true",
+							"aria-label":  "Search competitors",
+						},
+					})
+					<p class="body-sm" style="margin:0;">Searches handler names &amp; handles, dog call names, registered names, and registration numbers.</p>
+				</div>
+				@ResultsFragment(d)
+			</div>
+		}
+	</section>
+}
+
+// ResultsFragment renders the directory results alone — returned for htmx
+// search swaps and embedded on first load. Shows a "recently active"
+// heading when there's no query, a result count when there is, and a
+// distinct empty state for each case.
+templ ResultsFragment(d SearchViewData) {
+	<div id="competitor-results" class="flex-col gap-3">
+		@components.Eyebrow() {
+			{ resultsHeading(d) }
+		}
+		if len(d.Cards) == 0 {
+			<div class="card flex-col items-start gap-2" style="padding:24px;">
+				if d.Searched {
+					<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No matches</div>
+					<p class="body-sm" style="margin:0;">No handlers or dogs match &ldquo;{ d.Query }&rdquo;. Try a different name or registration number.</p>
+				} else {
+					<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No competitors yet</div>
+					<p class="body-sm" style="margin:0;">Once handlers sign up and run trials, they&rsquo;ll appear here.</p>
+				}
+			</div>
+		} else {
+			<div class="flex-col gap-2">
+				for _, c := range d.Cards {
+					@directoryCard(c)
+				}
+			</div>
+		}
+	</div>
+}
+
+// directoryCard is one competitor result, linking to their public profile.
+templ directoryCard(c DirectoryCard) {
+	<a href={ templ.SafeURL("/competitors/" + c.Handle) } class="card flex-col gap-1" style="padding:12px 16px;text-decoration:none;color:inherit;">
+		<div class="flex justify-between items-center gap-2">
+			<span>
+				<span style="font-weight:600;color:var(--mist-950);">{ c.DisplayName }</span>
+				<span class="body-sm" style="margin-left:6px;">{ "@" + c.Handle }</span>
+			</span>
+			<span class="body-sm" style="margin:0;">{ dogCountLabel(c.DogCount) }</span>
+		</div>
+		<div class="body-sm" style="margin:0;">{ cardActivity(c) }</div>
+	</a>
+}
+
+// resultsHeading picks the heading above the results list.
+func resultsHeading(d SearchViewData) string {
+	if !d.Searched {
+		return "Recently active"
+	}
+	if len(d.Cards) == 1 {
+		return "1 result"
+	}
+	return fmt.Sprintf("%d results", len(d.Cards))
+}
+
+// dogCountLabel renders "3 dogs" / "1 dog" / "no dogs".
+func dogCountLabel(n int) string {
+	switch n {
+	case 0:
+		return "no dogs"
+	case 1:
+		return "1 dog"
+	default:
+		return fmt.Sprintf("%d dogs", n)
+	}
+}
+
+// cardActivity renders the "N finalized entries · last ran X" sub-line,
+// dropping the activity clause when the competitor has never competed.
+func cardActivity(c DirectoryCard) string {
+	entries := "finalized entries"
+	if c.FinalizedCount == 1 {
+		entries = "finalized entry"
+	}
+	s := fmt.Sprintf("%d %s", c.FinalizedCount, entries)
+	if c.LastCompeted != "" {
+		s += " · last ran " + c.LastCompeted
+	}
+	return s
 }

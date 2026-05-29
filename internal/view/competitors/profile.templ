@@ -1,20 +1,108 @@
 package competitors
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
-// ProfilePage is the public competitor profile: display name, bio,
-// dogs they own, and their full event history.
-templ ProfilePage(handle string) {
-	@view.Base("Competitor", "Handler profile and event history.", "competitors", profileBody(handle))
+// ProfilePage is the public competitor profile (P6): header with avatar +
+// bio, the dogs they own, and their finalized event history. Reads as
+// intentional even with zero finalized entries — the dogs roster and bio
+// still anchor the page.
+templ ProfilePage(d ProfileViewData) {
+	@view.Base(d.DisplayName, "Handler profile and event history.", "competitors", profileBody(d))
 }
 
-templ profileBody(handle string) {
-	@components.StubPage(
-		"Competitor",
-		"@" + handle,
-		"Public handler profile with dogs and event history.",
-	)
+templ profileBody(d ProfileViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="flex-col gap-8 max-w-3xl">
+				<div class="flex items-center gap-4">
+					<div class="avatar-lg">{ d.Initials }</div>
+					<div class="flex-col">
+						<h1 class="h2" style="margin:0;">{ d.DisplayName }</h1>
+						<div class="body-sm" style="margin:0;">{ "@" + d.Handle }</div>
+					</div>
+				</div>
+				if d.Bio != "" {
+					<p class="body" style="margin:0;max-width:60ch;">{ d.Bio }</p>
+				}
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						{ fmt.Sprintf("Dogs · %d", d.DogCount) }
+					}
+					if len(d.Dogs) == 0 {
+						<p class="body-sm" style="margin:0;">No dogs listed yet.</p>
+					} else {
+						<div class="grid grid-cols-2 gap-2">
+							for _, dog := range d.Dogs {
+								@dogTag(dog)
+							}
+						</div>
+					}
+				</div>
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						Event history
+					}
+					@historyList(d.History)
+				</div>
+			</div>
+		}
+	</section>
+}
+
+// dogTag is one dog card in the profile roster, linking to the dog profile.
+templ dogTag(dog DogTag) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/dogs/%d", dog.ID)) } class="card flex-col gap-1" style="padding:10px 14px;text-decoration:none;color:inherit;">
+		<div class="flex justify-between items-center gap-2">
+			<span style="font-weight:600;color:var(--mist-950);">{ dog.CallName }</span>
+			if dog.RegNo != "" {
+				<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ dog.RegNo }</span>
+			}
+		</div>
+		if dog.Meta != "" {
+			<span class="body-sm" style="margin:0;">{ dog.Meta }</span>
+		}
+	</a>
+}
+
+// historyList renders the finalized event-history rows, or an empty state
+// that reads as intentional for a new competitor.
+templ historyList(rows []HistoryRow) {
+	if len(rows) == 0 {
+		<div class="card flex-col items-start gap-1" style="padding:20px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No finalized entries yet</div>
+			<p class="body-sm" style="margin:0;">Results appear here once this handler completes a trial.</p>
+		</div>
+	} else {
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, row := range rows {
+				@historyRow(row)
+			}
+		</div>
+	}
+}
+
+// historyRow is one finalized entry line: title + sub on the left, score +
+// Q/NQ on the right. Links to the public entry detail (P4).
+templ historyRow(row HistoryRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/entries/%d", row.EntryID)) } class="flex justify-between items-center gap-3" style="padding:10px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;">
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if row.HasScore {
+				<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+			}
+			if row.Qualified {
+				<span class="body-sm" style="margin:0;color:var(--green-700);">Q</span>
+			} else {
+				<span class="pill pill-closed">NQ</span>
+			}
+		</div>
+	</a>
 }
