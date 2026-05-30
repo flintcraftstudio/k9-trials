@@ -138,11 +138,11 @@ func main() {
 	mux.Handle("GET /account/dogs/{id}/edit", competitor(handler.AccountDogsEdit(st)))
 	mux.Handle("POST /account/dogs/{id}", competitor(handler.AccountDogsUpdate(st)))
 	mux.Handle("POST /account/dogs/{id}/delete", competitor(handler.AccountDogsDelete(st)))
-	mux.Handle("GET /account/entries", competitor(handler.AccountEntries()))
-	mux.Handle("GET /account/entries/{id}", competitor(handler.AccountEntryDetail()))
-	mux.Handle("GET /account/challenges", competitor(handler.AccountChallenges()))
-	mux.Handle("GET /account/challenges/new", competitor(handler.AccountChallengeNew()))
-	mux.Handle("POST /account/challenges", competitor(handler.AccountChallengeSubmit()))
+	mux.Handle("GET /account/entries", competitor(handler.AccountEntries(st)))
+	mux.Handle("GET /account/entries/{id}", competitor(handler.AccountEntryDetail(st)))
+	mux.Handle("GET /account/challenges", competitor(handler.AccountChallenges(st)))
+	mux.Handle("GET /account/challenges/new", competitor(handler.AccountChallengeNew(st)))
+	mux.Handle("POST /account/challenges", competitor(handler.AccountChallengeSubmit(st)))
 
 	// Event registration (competitor-side) — lives under /events/{slug}/register
 	mux.Handle("GET /events/{slug}/register", competitor(handler.RegisterPage()))

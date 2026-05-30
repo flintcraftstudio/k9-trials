@@ -274,24 +274,3 @@ func AccountDogsDelete(st *store.Store) http.HandlerFunc {
 		hxRedirect(w, r, "/account/dogs")
 	}
 }
-
-// AccountEntries lists the logged-in competitor's entries across all
-// events. Built in chunk 2 (A5).
-func AccountEntries() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := account.EntriesListPage().Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
-	}
-}
-
-// AccountEntryDetail renders the read-only scoresheet for an owned entry.
-// Built in chunk 2 (A6).
-func AccountEntryDetail() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		if err := account.EntryDetailPage(id).Render(r.Context(), w); err != nil {
-			slog.Error("render error", "err", err)
-		}
-	}
-}

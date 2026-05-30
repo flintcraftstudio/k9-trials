@@ -109,6 +109,34 @@ func (s *Store) CountOwnerDogs(ctx context.Context, ownerID int64) (int64, error
 	return s.q.CountDogsByOwner(ctx, ownerID)
 }
 
+// ListFiledChallenges returns every challenge a competitor has filed,
+// newest first, each joined to the disputed entry's trial and event.
+// Backs the challenges list (A7).
+func (s *Store) ListFiledChallenges(ctx context.Context, competitorID int64) ([]db.ListChallengesByFilerRow, error) {
+	return s.q.ListChallengesByFiler(ctx, competitorID)
+}
+
+// ChallengeForEntry returns the most recent challenge a competitor filed
+// against one entry, or sql.ErrNoRows when none exists. Used to stop a
+// duplicate filing and to label an already-challenged entry.
+func (s *Store) ChallengeForEntry(ctx context.Context, entryID, filedBy int64) (db.Challenge, error) {
+	return s.q.GetChallengeForEntryByFiler(ctx, db.GetChallengeForEntryByFilerParams{
+		EntryID: entryID,
+		FiledBy: filedBy,
+	})
+}
+
+// FileChallenge records a competitor's dispute of a finalized entry and
+// returns the new row. The handler enforces ownership, finalized status,
+// and no-duplicate before calling.
+func (s *Store) FileChallenge(ctx context.Context, entryID, filedBy int64, reason string) (db.Challenge, error) {
+	return s.q.CreateChallenge(ctx, db.CreateChallengeParams{
+		EntryID: entryID,
+		FiledBy: filedBy,
+		Reason:  reason,
+	})
+}
+
 // DogListItem is one dog on the account dogs list (A3) with the derived
 // activity hint. LastCompeted is nil when the dog has no finalized entry;
 // EntryCount is the total entries (any status) recorded against it.

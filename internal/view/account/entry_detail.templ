@@ -1,24 +1,143 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// EntryDetailPage is the read-only scoresheet view a competitor sees for
-// one of their own entries. Once status='finalized', a "Challenge this
-// score" button links to /account/challenges/new?entry={id}.
-templ EntryDetailPage(entryID string) {
-	@shell("Entry", "Your scoresheet for this entry.", "entries", entryDetailBody(entryID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// EntryDetailPage is the read-only scoresheet a competitor sees for one of
+// their own entries (A6). Finalized entries render the full breakdown plus
+// a challenge affordance; scoring and pending entries render a neutral
+// state with no partial scores.
+templ EntryDetailPage(d EntryDetailViewData) {
+	@shell("Entry", "Your scoresheet for this entry.", "entries", entryDetailBody(d))
 }
 
-templ entryDetailBody(entryID string) {
-	@components.StubPage(
-		"Entry",
-		"Entry #" + entryID,
-		"Read-only scoresheet. Once finalized, you can file a challenge if you believe something is incorrect.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/challenges/new?entry=" + entryID}) {
-				Challenge this score
+templ entryDetailBody(d EntryDetailViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-3xl">
+				<a href="/account/entries" class="body-sm" style="text-decoration:none;">← All entries</a>
+				<div class="flex-col gap-2">
+					@components.Eyebrow() {
+						{ d.Eyebrow }
+					}
+					<h1 class="h2" style="margin:0;">{ d.EventName }</h1>
+					<div class="body" style="margin:0;">{ d.DogMeta }</div>
+				</div>
+				if d.Finalized {
+					@entryFinalized(d)
+				} else if d.Scoring {
+					@entryNotice("Scoring in progress", "Results appear here when the judge finalizes this run. No partial scores are shown.")
+				} else {
+					@entryNotice("Not yet run", "This entry is registered and waiting to run. The scoresheet appears once judging is complete.")
+				}
+			</div>
+		}
+	</section>
+}
+
+// entryFinalized renders the score summary, per-exercise breakdown,
+// challenge affordance, and judging footer.
+templ entryFinalized(d EntryDetailViewData) {
+	<div class="flex items-center gap-4" style={ entryScoreStyle(d.Passed) }>
+		<div class="flex-col" style="flex:1;">
+			@components.Eyebrow() {
+				Final
+			}
+			<div class="serif" style="font-size:32px;line-height:1;font-variant-numeric:tabular-nums;">
+				{ fmt.Sprintf("%d / %d", d.Points, d.MaxPoints) }
+			</div>
+			<div class="body-sm" style="margin:0;">{ entryResultLine(d) }</div>
+		</div>
+		if d.Passed {
+			<span class="pill pill-qual">Qualified</span>
+		} else {
+			<span class="pill pill-closed">NQ</span>
+		}
+	</div>
+	<div class="flex-col gap-2">
+		@components.Eyebrow() {
+			Score breakdown
+		}
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, ex := range d.Exercises {
+				<div class="flex justify-between items-center" style="padding:10px 16px;border-top:1px solid var(--color-divider);">
+					<span>{ fmt.Sprintf("%d · %s", ex.Num, ex.Name) }</span>
+					<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d / %d", ex.Score, ex.Max) }</span>
+				</div>
 			}
 		</div>
+	</div>
+	@entryChallengeBlock(d)
+	<div class="body-sm" style="margin:0;">{ entryJudgedLine(d) }</div>
+}
+
+// entryChallengeBlock shows the file-a-challenge CTA, an already-filed
+// note, or a window-closed note depending on the entry's dispute state.
+templ entryChallengeBlock(d EntryDetailViewData) {
+	if d.AlreadyFiled {
+		<div class="card flex items-center gap-2" style="padding:12px 16px;">
+			<span class="body-sm" style="margin:0;">You have filed a challenge on this entry.</span>
+			<span style="margin-left:auto;">
+				@components.Pill(challengeKind(d.ChallengeStatus)) {
+					{ challengeLabel(d.ChallengeStatus) }
+				}
+			</span>
+		</div>
+	} else if d.CanChallenge {
+		<div class="card flex-col items-start gap-2" style="padding:16px;border-color:var(--orange-300);background:var(--orange-50);">
+			<div class="body-sm" style="margin:0;">
+				<strong style="color:var(--mist-950);">Something look wrong?</strong> If you believe this score is incorrect, file a challenge within 7 days. The judge will be asked to re-score; the audit chain stays intact.
+			</div>
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: d.ChallengeHref}) {
+				Challenge this score →
+			}
+		</div>
+	} else if d.WindowClosed {
+		<div class="body-sm" style="margin:0;">The 7-day window to challenge this score has closed.</div>
 	}
+}
+
+// entryNotice is the neutral panel for non-finalized states.
+templ entryNotice(title, body string) {
+	<div class="card flex-col items-start gap-2" style="padding:24px;">
+		<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">{ title }</div>
+		<p class="body-sm" style="margin:0;">{ body }</p>
+	</div>
+}
+
+// entryScoreStyle tints the summary card green for a pass, red for an NQ.
+func entryScoreStyle(passed bool) string {
+	if passed {
+		return "padding:16px;border-radius:12px;background:var(--green-50);border:1px solid var(--green-300);"
+	}
+	return "padding:16px;border-radius:12px;background:var(--color-danger-bg);border:1px solid var(--color-danger-border);"
+}
+
+func entryResultLine(d EntryDetailViewData) string {
+	if d.Passed {
+		return fmt.Sprintf("qualifying · threshold %d", d.Threshold)
+	}
+	return fmt.Sprintf("not qualifying · threshold %d", d.Threshold)
+}
+
+func entryJudgedLine(d EntryDetailViewData) string {
+	s := ""
+	if d.JudgedBy != "" {
+		s = "Judged by " + d.JudgedBy
+	}
+	if d.FinalizedDate != "" {
+		if s != "" {
+			s += " · "
+		}
+		s += d.FinalizedDate
+	}
+	if s != "" {
+		s += " · 🔒 Locked"
+	} else {
+		s = "🔒 Locked"
+	}
+	return s
 }

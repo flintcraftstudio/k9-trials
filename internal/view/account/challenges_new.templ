@@ -1,17 +1,96 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// ChallengesNewPage is the file-a-challenge form, prefilled with an
-// entry_id from the query string (?entry={id}).
-templ ChallengesNewPage(entryID string) {
-	@shell("File a challenge", "Dispute a finalized score.", "challenges", challengesNewBody(entryID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// ChallengesNewPage is the file-a-challenge form (A8), entered from a
+// finalized entry. It shows the disputed scoresheet summary up top so the
+// competitor has the data in front of them while writing the reason. When
+// a challenge already exists for the entry, the form is replaced with a
+// notice instead.
+templ ChallengesNewPage(d ChallengeNewViewData) {
+	@shell("File a challenge", "Dispute a finalized score.", "challenges", challengesNewBody(d))
 }
 
-templ challengesNewBody(entryID string) {
-	@components.StubPage(
-		"File a challenge",
-		"Dispute a score.",
-		"Form: reason text. Filed against entry #" + entryID + ". Admin reviews and either resolves (via re-scoring) or dismisses.",
-	)
+templ challengesNewBody(d ChallengeNewViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				<a href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", d.EntryID)) } class="body-sm" style="text-decoration:none;">← Entry detail</a>
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						New challenge
+					}
+					<h1 class="h2" style="margin:0;">File a dispute</h1>
+				</div>
+				<div class="card event-rail flex-col gap-1" data-event={ d.EventKey } style="padding:12px 14px 12px 16px;">
+					@components.Eyebrow() {
+						Disputing
+					}
+					<div style="font-weight:600;color:var(--mist-950);">{ d.DisputeTitle }</div>
+					<div class="body-sm" style="margin:0;">{ d.DisputeSub }</div>
+				</div>
+				if d.AlreadyFiled {
+					<div class="card flex items-center gap-2" style="padding:16px;">
+						<span class="body-sm" style="margin:0;">You have already filed a challenge on this entry.</span>
+						<span style="margin-left:auto;">
+							@components.Pill(challengeKind(d.ChallengeStatus)) {
+								{ challengeLabel(d.ChallengeStatus) }
+							}
+						</span>
+					</div>
+					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/challenges"}) {
+						View your challenges
+					}
+				} else {
+					@ChallengeForm(d)
+				}
+			</div>
+		}
+	</section>
+}
+
+// ChallengeForm is the swappable reason form — returned on validation
+// error so the message and prior text render in place. On success the
+// handler issues an HX-Redirect to the challenges list.
+templ ChallengeForm(d ChallengeNewViewData) {
+	<form hx-post="/account/challenges" hx-swap="outerHTML" class="flex flex-col gap-5">
+		<input type="hidden" name="entry" value={ fmt.Sprintf("%d", d.EntryID) }/>
+		if d.Err != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+			</div>
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "reason"}) {
+				Your reason *
+			}
+			@components.Textarea(components.TextareaProps{
+				ID:          "reason",
+				Name:        "reason",
+				Value:       d.Reason,
+				Rows:        6,
+				Required:    true,
+				Placeholder: "Be specific. Which phase or exercise? What do you believe the score should have been? Any context that was not visible from the judge's position?",
+			})
+			@components.Description(components.FieldProps{}) {
+				Plain text. The admin and the judge will both read this.
+			}
+		}
+		<div class="card flex-col gap-1" style="padding:14px 16px;background:var(--blue-50);border-color:var(--blue-300);">
+			<span style="font-weight:600;color:var(--mist-950);">What happens next</span>
+			<span class="body-sm" style="margin:0;">An admin reviews your dispute, then either dismisses it or asks the judge to re-score the entry. You will see status updates here and on your entries list.</span>
+		</div>
+		<div class="flex items-center gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				Submit challenge
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: fmt.Sprintf("/account/entries/%d", d.EntryID)}) {
+				Cancel
+			}
+		</div>
+	</form>
 }

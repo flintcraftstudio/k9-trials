@@ -1,17 +1,69 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
+
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
 
 // ChallengesListPage lists every challenge the logged-in competitor has
-// filed: open, under_review, resolved, dismissed.
-templ ChallengesListPage() {
-	@shell("My challenges", "Your filed score disputes.", "challenges", challengesListBody())
+// filed (A7), newest first, status-keyed. The empty state explains the
+// concept since most competitors will never file one.
+templ ChallengesListPage(d ChallengesListViewData) {
+	@shell("My challenges", "Your filed score disputes.", "challenges", challengesListBody(d))
 }
 
-templ challengesListBody() {
-	@components.StubPage(
-		"My challenges",
-		"Challenges you've filed.",
-		"Disputes on your finalized scores. Filter by status: open, under review, resolved, dismissed.",
-	)
+templ challengesListBody(d ChallengesListViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-2xl flex-col gap-6">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						{ fmt.Sprintf("Challenges · %d", d.Total) }
+					}
+					<h1 class="h2" style="margin:0;">Score disputes</h1>
+				</div>
+				if len(d.Rows) == 0 {
+					@challengesEmptyState()
+				} else {
+					<div class="flex-col gap-2">
+						for _, row := range d.Rows {
+							@challengeRow(row)
+						}
+					</div>
+				}
+			</div>
+		}
+	</section>
+}
+
+templ challengeRow(row ChallengeRow) {
+	<a
+		href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", row.EntryID)) }
+		class="card flex items-center justify-between gap-3"
+		style="padding:12px 16px;text-decoration:none;color:inherit;"
+	>
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+			<span class="body-sm" style="margin:2px 0 0;">{ row.Filed }</span>
+		</div>
+		@components.Pill(challengeKind(row.Status)) {
+			{ challengeLabel(row.Status) }
+		}
+	</a>
+}
+
+// challengesEmptyState explains what a challenge is and points back to the
+// entries list, since disputes are filed from a finalized entry.
+templ challengesEmptyState() {
+	<div class="card flex-col items-start gap-3" style="padding:28px;">
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No challenges filed</div>
+			<p class="body-sm" style="margin:0;">From a finalized entry, you can dispute a score if you believe something is incorrect. An admin reviews each dispute and either resolves it through a re-score or dismisses it.</p>
+		</div>
+		@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/entries"}) {
+			View your entries
+		}
+	</div>
 }

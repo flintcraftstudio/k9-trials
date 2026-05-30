@@ -77,3 +77,99 @@ type DogFormViewData struct {
 	PublicURL      string // dog public page, edit only
 	Err            string
 }
+
+// EntriesListViewData backs the account entries list (A5).
+type EntriesListViewData struct {
+	Total   int
+	Filters []EntryFilter
+	Rows    []EntryRow
+}
+
+// EntryFilter is one status chip in the entries filter row.
+type EntryFilter struct {
+	Key    string // "" (all) / upcoming / scoring / finalized
+	Label  string
+	Count  int
+	Href   string
+	Active bool
+}
+
+// EntryRow is one entry line on the list (A5).
+type EntryRow struct {
+	EntryID     int64
+	Title       string // "Cedar Creek · Obedience · Level 2"
+	Sub         string // "Vex · entry #17 · Sat 14 Mar" (+ "· scored 182")
+	EventKey    string
+	StatusLabel string
+	StatusKind  string // pill variant
+}
+
+// EntryDetailViewData backs the read-only entry page a competitor sees for
+// their own entry (A6).
+type EntryDetailViewData struct {
+	EntryID   int64
+	Eyebrow   string // "Obedience · Level 2 · Entry 14"
+	EventName string
+	EventKey  string
+	DogMeta   string // "Vex · handled by L. Tanaka · 14 Mar 2026"
+
+	// Exactly one of these states is true.
+	Finalized bool
+	Scoring   bool
+	Pending   bool
+
+	// Finalized payload.
+	Points        int
+	MaxPoints     int
+	Passed        bool
+	Threshold     int
+	Exercises     []ExerciseLine
+	JudgedBy      string
+	FinalizedDate string
+
+	// Challenge affordance (finalized only).
+	CanChallenge    bool   // within window and not already filed
+	ChallengeHref   string // /account/challenges/new?entry=ID
+	WindowClosed    bool   // finalized but past the dispute window
+	AlreadyFiled    bool
+	ChallengeStatus string // status label when AlreadyFiled
+}
+
+// ExerciseLine is one scored exercise row on the entry breakdown.
+type ExerciseLine struct {
+	Num   int
+	Name  string
+	Score int
+	Max   int
+}
+
+// ChallengesListViewData backs the challenges list (A7).
+type ChallengesListViewData struct {
+	Total int
+	Rows  []ChallengeRow
+}
+
+// ChallengeRow is one filed dispute on the list. Status is the raw stored
+// status; the template derives its label and pill variant.
+type ChallengeRow struct {
+	EntryID int64
+	Title   string // "Hopkins Mill · Protection · Level 2"
+	Sub     string // "Vex · entry #08 · 12 Jan"
+	Filed   string // "Filed 5 days ago"
+	Status  string // open / under_review / resolved / dismissed
+}
+
+// ChallengeNewViewData backs the file-a-challenge form (A8).
+type ChallengeNewViewData struct {
+	EntryID      int64
+	DisputeTitle string // "Hopkins Mill · Protection · Level 2 · Entry 08"
+	DisputeSub   string // "Vex · 12 Jan · judged by H. Vance · result NQ"
+	EventKey     string
+	Reason       string
+	Err          string
+
+	// When the entry already has a challenge from this filer, the form is
+	// replaced with this notice.
+	AlreadyFiled    bool
+	ChallengeStatus string
+}

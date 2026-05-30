@@ -1,17 +1,85 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
+
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
 
 // EntriesListPage lists every entry across all events for the logged-in
-// competitor: upcoming, in-progress, finalized.
-templ EntriesListPage() {
-	@shell("My entries", "Past and upcoming entries.", "entries", entriesListBody())
+// competitor (A5): upcoming, in-progress, finalized. Status chips filter
+// the list via htmx, swapping just the results fragment.
+templ EntriesListPage(d EntriesListViewData) {
+	@shell("My entries", "Past and upcoming entries.", "entries", entriesListBody(d))
 }
 
-templ entriesListBody() {
-	@components.StubPage(
-		"My entries",
-		"All your entries.",
-		"Upcoming, in-progress, and finalized entries across every event. Click through for the full scoresheet.",
-	)
+templ entriesListBody(d EntriesListViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-2xl flex-col gap-6">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						{ fmt.Sprintf("Entries · %d", d.Total) }
+					}
+					<h1 class="h2" style="margin:0;">Your runs</h1>
+				</div>
+				<div class="flex gap-2 flex-wrap">
+					for _, f := range d.Filters {
+						@entryFilterChip(f)
+					}
+				</div>
+				@EntriesResults(d)
+			</div>
+		}
+	</section>
+}
+
+// entryFilterChip is one status filter pill; htmx swaps the results
+// fragment in place and pushes the filtered URL.
+templ entryFilterChip(f EntryFilter) {
+	<a
+		href={ templ.SafeURL(f.Href) }
+		hx-get={ f.Href }
+		hx-target="#entries-results"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+		style="text-decoration:none;"
+	>
+		{ fmt.Sprintf("%s · %d", f.Label, f.Count) }
+	</a>
+}
+
+// EntriesResults is the filterable list body, returned alone for htmx
+// filter swaps and embedded on first load.
+templ EntriesResults(d EntriesListViewData) {
+	<div id="entries-results" class="flex-col gap-2">
+		if len(d.Rows) == 0 {
+			<div class="card flex-col items-start gap-1" style="padding:20px;">
+				<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Nothing here</div>
+				<p class="body-sm" style="margin:0;">No entries match this filter.</p>
+			</div>
+		} else {
+			for _, row := range d.Rows {
+				@entryRow(row)
+			}
+		}
+	</div>
+}
+
+templ entryRow(row EntryRow) {
+	<a
+		href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", row.EntryID)) }
+		class="card event-rail flex items-center justify-between gap-3"
+		data-event={ row.EventKey }
+		style="padding:10px 14px 10px 16px;text-decoration:none;color:inherit;"
+	>
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+		</div>
+		@components.Pill(row.StatusKind) {
+			{ row.StatusLabel }
+		}
+	</a>
 }
