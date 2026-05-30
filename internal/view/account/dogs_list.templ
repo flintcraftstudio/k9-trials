@@ -1,22 +1,82 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// DogsListPage lists every dog owned by the logged-in competitor.
-templ DogsListPage() {
-	@shell("My dogs", "Manage your dogs.", "dogs", dogsListBody())
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DogsListPage lists every dog owned by the logged-in competitor (A3).
+// One card per dog with an edit link and public-page link; a prominent
+// add CTA, since a dog is the gate for event registration. Zero dogs
+// renders a hero empty state instead of the roster.
+templ DogsListPage(d DogsListViewData) {
+	@shell("My dogs", "Manage your dogs.", "dogs", dogsListBody(d))
 }
 
-templ dogsListBody() {
-	@components.StubPage(
-		"My dogs",
-		"Dogs you own.",
-		"List of your dogs. Add new, edit details, retire.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs/new"}) {
-				Add a dog
+templ dogsListBody(d DogsListViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-2xl flex-col gap-6">
+				<div class="flex items-start justify-between gap-4">
+					<div class="flex-col gap-1">
+						@components.Eyebrow() {
+							{ fmt.Sprintf("Dogs · %d", d.Count) }
+						}
+						<h1 class="h2" style="margin:0;">Your roster</h1>
+					</div>
+					if d.Count > 0 {
+						@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs/new"}) {
+							+ Add a dog
+						}
+					}
+				</div>
+				if len(d.Dogs) == 0 {
+					@dogsEmptyState()
+				} else {
+					<div class="flex-col gap-2">
+						for _, dog := range d.Dogs {
+							@dogCard(dog)
+						}
+					</div>
+				}
+			</div>
+		}
+	</section>
+}
+
+templ dogCard(dog DogCard) {
+	<div class="card flex-col gap-2" style="padding:12px 16px;">
+		<div class="flex items-center justify-between gap-2">
+			<span style="font-weight:600;color:var(--mist-950);">{ dog.CallName }</span>
+			if dog.RegNo != "" {
+				<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ dog.RegNo }</span>
 			}
 		</div>
-	}
+		if dog.Meta != "" {
+			<div class="body-sm" style="margin:0;">{ dog.Meta }</div>
+		}
+		<div class="flex gap-2">
+			@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Href: fmt.Sprintf("/account/dogs/%d/edit", dog.ID)}) {
+				Edit
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: dog.PublicURL}) {
+				Public page ↗
+			}
+		</div>
+	</div>
+}
+
+// dogsEmptyState is the first-run hero shown when the competitor owns no
+// dogs — registration is gated on having one, so the CTA is the whole point.
+templ dogsEmptyState() {
+	<div class="card flex-col items-start gap-3" style="padding:28px;">
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Add your first dog</div>
+			<p class="body-sm" style="margin:0;">Your dogs live here. You will need at least one to register for an event.</p>
+		</div>
+		@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Href: "/account/dogs/new"}) {
+			Add a dog
+		}
+	</div>
 }

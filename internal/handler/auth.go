@@ -65,8 +65,7 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set("HX-Redirect", "/")
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		hxRedirect(w, r, "/")
 	}
 }
 
@@ -76,6 +75,6 @@ func Logout(s *store.Store) http.HandlerFunc {
 		if err := session.Destroy(r.Context(), w, r, s); err != nil {
 			slog.Error("session destroy error", "err", err)
 		}
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		hxRedirect(w, r, "/")
 	}
 }

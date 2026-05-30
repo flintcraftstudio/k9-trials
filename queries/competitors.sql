@@ -70,3 +70,29 @@ JOIN trials t ON t.id = e.trial_id
 JOIN events ev ON ev.id = t.event_id
 WHERE e.handler_id = ? AND e.status = 'finalized'
 ORDER BY t.trial_date DESC, e.id DESC;
+
+-- name: CreateCompetitor :one
+-- Inserts a competitor identity. user_id links it to a login account;
+-- handle is the public URL slug. Returns the new row.
+INSERT INTO competitors (user_id, handle, display_name, bio)
+VALUES (?, ?, ?, ?)
+RETURNING *;
+
+-- name: GetCompetitorByUserID :one
+-- Resolves the competitor identity for a logged-in user. Returns
+-- sql.ErrNoRows when the account has no competitor row (admins seeded
+-- without one) so callers can render a neutral state.
+SELECT * FROM competitors WHERE user_id = ?;
+
+-- name: UpdateCompetitorProfile :exec
+-- Saves the editable profile fields. updated_at is bumped so the editor
+-- can show a last-saved hint.
+UPDATE competitors
+SET display_name = ?, handle = ?, bio = ?, updated_at = CURRENT_TIMESTAMP
+WHERE id = ?;
+
+-- name: CountCompetitorsByHandle :one
+-- Number of competitors using a handle, excluding one competitor id. Used
+-- for live availability checks on signup (pass 0 to exclude nobody) and to
+-- guard handle edits on the profile editor (pass the editor own id).
+SELECT COUNT(*) FROM competitors WHERE handle = ? AND id != ?;

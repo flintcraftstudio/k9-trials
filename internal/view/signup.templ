@@ -2,16 +2,146 @@ package view
 
 import "github.com/flintcraftstudio/k9-trials/internal/view/components"
 
-// SignupPage is the competitor self-signup form. Creates a user
-// (role=competitor) and the matching competitors row in one step.
-templ SignupPage() {
-	@Base("Sign up", "Create a competitor account.", "signup", signupBody())
+// SignupValues carries the submitted field values so the form can be
+// re-rendered with the user's input intact after a validation error.
+type SignupValues struct {
+	Email       string
+	DisplayName string
+	Handle      string
 }
 
-templ signupBody() {
-	@components.StubPage(
-		"Sign up",
-		"Create your account.",
-		"Sign up as a competitor to register dogs and review scores. Form goes here: email, password, display name, handle.",
-	)
+// SignupPage is the competitor self-signup form (U1). Creates a user
+// (role=competitor) and the matching competitors row in one step. Judges
+// and admins are seeded server-side, so this is the only self-service
+// account path.
+templ SignupPage(errMsg string, vals SignupValues) {
+	@Base("Sign up", "Create a competitor account.", "signup", signupContent(errMsg, vals))
+}
+
+templ signupContent(errMsg string, vals SignupValues) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-md flex-col gap-6">
+				@components.Eyebrow() {
+					Create account
+				}
+				<div class="flex-col gap-2">
+					<h1 class="h2" style="margin:0;">Join K9 Elements</h1>
+					<p class="body-sm" style="margin:0;">For handlers and owners. Judges and admins are added by the trial organizers &mdash; you do not need to sign up for those.</p>
+				</div>
+				@SignupForm(errMsg, vals)
+			</div>
+		}
+	</section>
+}
+
+// SignupForm is the form body, re-rendered on validation error (hx-post
+// swaps it in place) with the error banner and prior input preserved.
+templ SignupForm(errMsg string, vals SignupValues) {
+	<form hx-post="/signup" hx-swap="outerHTML" class="flex flex-col gap-5">
+		if errMsg != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ errMsg }</p>
+			</div>
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "email"}) {
+				Email
+			}
+			@components.Input(components.InputProps{
+				Type:         "email",
+				ID:           "email",
+				Name:         "email",
+				Value:        vals.Email,
+				Placeholder:  "you@kennel.com",
+				Autocomplete: "email",
+				Required:     true,
+			})
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "password"}) {
+				Password
+			}
+			@components.Input(components.InputProps{
+				Type:         "password",
+				ID:           "password",
+				Name:         "password",
+				Placeholder:  "8 characters or more",
+				Autocomplete: "new-password",
+				Required:     true,
+			})
+			@components.Description(components.FieldProps{}) {
+				8 characters or more.
+			}
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "display_name"}) {
+				Display name
+			}
+			@components.Input(components.InputProps{
+				ID:           "display_name",
+				Name:         "display_name",
+				Value:        vals.DisplayName,
+				Placeholder:  "L. Tanaka",
+				Autocomplete: "name",
+				Required:     true,
+			})
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "handle"}) {
+				Handle
+			}
+			<div class="flex items-center gap-2">
+				<span class="body-sm" style="margin:0;">{ "@" }</span>
+				@components.Input(components.InputProps{
+					ID:           "handle",
+					Name:         "handle",
+					Value:        vals.Handle,
+					Placeholder:  "ltanaka",
+					Autocomplete: "off",
+					Required:     true,
+					Class:        "flex-1",
+					Attrs: templ.Attributes{
+						"hx-get":     "/signup/handle",
+						"hx-trigger": "input changed delay:300ms",
+						"hx-target":  "#handle-status",
+						"hx-swap":    "innerHTML",
+						"pattern":    "[a-z0-9-]+",
+					},
+				})
+			</div>
+			<div id="handle-status">
+				@HandleStatus(vals.Handle, false, false)
+			</div>
+		}
+		<div>
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Type: "submit"}) {
+				Create account
+			}
+		</div>
+		<p class="body-sm" style="margin:0;text-align:center;">
+			Already registered? <a href="/login" style="color:var(--mist-950);font-weight:500;">Log in</a>
+		</p>
+	</form>
+}
+
+// HandleStatus is the live availability hint under the handle field,
+// returned by GET /signup/handle. It shows the resulting public URL plus
+// an available / taken pill. checked is false on first render (no probe
+// yet) so the page loads without a verdict.
+templ HandleStatus(handle string, available, checked bool) {
+	if handle == "" {
+		<p class="body-sm" style="margin:0;">Lowercase letters, digits, and hyphens. Becomes your public URL.</p>
+	} else {
+		<div class="flex items-center gap-2 flex-wrap">
+			<span class="body-sm" style="margin:0;">
+				Your page: <code style="background:var(--mist-100);padding:1px 5px;border-radius:3px;">/competitors/{ handle }</code>
+			</span>
+			if checked && available {
+				<span class="pill pill-qual">available</span>
+			} else if checked {
+				<span class="pill pill-closed">taken</span>
+			}
+		</div>
+	}
 }

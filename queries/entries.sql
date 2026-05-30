@@ -42,3 +42,19 @@ RETURNING *;
 
 -- name: DeleteEntry :exec
 DELETE FROM entries WHERE id = ?;
+
+-- name: ListEntriesByHandler :many
+-- Every entry handled by a competitor across all events and statuses,
+-- joined to trial + event. Newest trial date first. Backs the account
+-- entries list (A5) and the dashboard up-next / recent clusters (A1).
+-- template_version is included so finalized rows can be re-evaluated.
+SELECT
+    e.id, e.entry_number, e.dog_name, e.dog_breed, e.handler_name,
+    e.status, e.dog_id,
+    t.id AS trial_id, t.discipline, t.level, t.trial_date, t.template_version,
+    ev.name AS event_name, ev.slug AS event_slug
+FROM entries e
+JOIN trials t ON t.id = e.trial_id
+JOIN events ev ON ev.id = t.event_id
+WHERE e.handler_id = ?
+ORDER BY t.trial_date DESC, e.id DESC;

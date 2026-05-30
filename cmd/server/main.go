@@ -113,7 +113,8 @@ func main() {
 	mux.Handle("POST /login", handler.LoginSubmit(st))
 	mux.Handle("POST /logout", handler.Logout(st))
 	mux.Handle("GET /signup", handler.SignupPage())
-	mux.Handle("POST /signup", handler.SignupSubmit())
+	mux.Handle("POST /signup", handler.SignupSubmit(st))
+	mux.Handle("GET /signup/handle", handler.SignupHandleCheck(st))
 
 	// Public — events, competitors, dogs
 	mux.Handle("GET /events", handler.EventsList(st))
@@ -128,11 +129,15 @@ func main() {
 	competitor := func(h http.Handler) http.Handler {
 		return session.RequireRole(h, "competitor", "admin")
 	}
-	mux.Handle("GET /account", competitor(handler.AccountDashboard()))
-	mux.Handle("GET /account/profile", competitor(handler.AccountProfile()))
-	mux.Handle("GET /account/dogs", competitor(handler.AccountDogs()))
-	mux.Handle("GET /account/dogs/new", competitor(handler.AccountDogsNew()))
-	mux.Handle("GET /account/dogs/{id}/edit", competitor(handler.AccountDogsEdit()))
+	mux.Handle("GET /account", competitor(handler.AccountDashboard(st)))
+	mux.Handle("GET /account/profile", competitor(handler.AccountProfile(st)))
+	mux.Handle("POST /account/profile", competitor(handler.AccountProfileSave(st)))
+	mux.Handle("GET /account/dogs", competitor(handler.AccountDogs(st)))
+	mux.Handle("POST /account/dogs", competitor(handler.AccountDogsCreate(st)))
+	mux.Handle("GET /account/dogs/new", competitor(handler.AccountDogsNew(st)))
+	mux.Handle("GET /account/dogs/{id}/edit", competitor(handler.AccountDogsEdit(st)))
+	mux.Handle("POST /account/dogs/{id}", competitor(handler.AccountDogsUpdate(st)))
+	mux.Handle("POST /account/dogs/{id}/delete", competitor(handler.AccountDogsDelete(st)))
 	mux.Handle("GET /account/entries", competitor(handler.AccountEntries()))
 	mux.Handle("GET /account/entries/{id}", competitor(handler.AccountEntryDetail()))
 	mux.Handle("GET /account/challenges", competitor(handler.AccountChallenges()))

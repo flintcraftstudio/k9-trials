@@ -1,0 +1,27 @@
+package account
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// NoProfilePage is shown when a logged-in user reaches the account area
+// without a competitor identity — an admin account, which is seeded
+// server-side and has no competitor row. The self-service account surface
+// only applies to competitors.
+templ NoProfilePage() {
+	@shell("My account", "Competitor account.", "dashboard", noProfileBody())
+}
+
+templ noProfileBody() {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-4">
+				<div class="card flex-col items-start gap-2" style="padding:24px;">
+					<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No competitor profile</div>
+					<p class="body-sm" style="margin:0;">This account is not set up as a competitor, so there is nothing to manage here. Admin tools live under the admin area.</p>
+					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin"}) {
+						Go to admin
+					}
+				</div>
+			</div>
+		}
+	</section>
+}

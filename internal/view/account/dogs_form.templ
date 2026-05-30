@@ -1,24 +1,156 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// DogsFormPage is the add/edit dog form. dogID is empty for "new".
-templ DogsFormPage(dogID string) {
-	@shell("Dog", "Add or edit a dog.", "dogs", dogsFormBody(dogID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DogsFormPage is the add/edit dog form (A4). One form, two URLs: a fresh
+// add posts to /account/dogs, an edit posts to /account/dogs/{id}. Only
+// the call name is required so a dog can exist in the registry before it
+// ever competes.
+templ DogsFormPage(d DogFormViewData) {
+	@shell(dogFormTitle(d), "Add or edit a dog.", "dogs", dogsFormBody(d))
 }
 
-templ dogsFormBody(dogID string) {
-	if dogID == "" {
-		@components.StubPage(
-			"New dog",
-			"Add a dog.",
-			"Form: call name, registered name, breed, date of birth, registration number.",
-		)
-	} else {
-		@components.StubPage(
-			"Edit dog",
-			"Edit dog #" + dogID,
-			"Form: call name, registered name, breed, date of birth, registration number.",
-		)
+templ dogsFormBody(d DogFormViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				<a href="/account/dogs" class="body-sm" style="text-decoration:none;">← All dogs</a>
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						{ dogFormEyebrow(d) }
+					}
+					<h1 class="h2" style="margin:0;">{ dogFormHeading(d) }</h1>
+					if d.IsEdit {
+						<a href={ templ.SafeURL(d.PublicURL) } class="body-sm" style="color:var(--blue-700);text-decoration:none;">View public profile ↗</a>
+					}
+				</div>
+				@DogForm(d)
+			</div>
+		}
+	</section>
+}
+
+// DogForm is the swappable form body — returned on validation error so the
+// message and prior input render in place without a full navigation. On
+// success the handler issues an HX-Redirect instead.
+templ DogForm(d DogFormViewData) {
+	<div id="dog-form" class="flex-col gap-6">
+		<form hx-post={ dogFormAction(d) } hx-target="#dog-form" hx-swap="outerHTML" class="flex flex-col gap-5">
+			if d.Err != "" {
+				<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+					<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+				</div>
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "call_name"}) {
+					Call name *
+				}
+				@components.Input(components.InputProps{
+					ID:       "call_name",
+					Name:     "call_name",
+					Value:    d.CallName,
+					Required: true,
+				})
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "registered_name"}) {
+					Registered name
+				}
+				@components.Input(components.InputProps{
+					ID:    "registered_name",
+					Name:  "registered_name",
+					Value: d.RegisteredName,
+				})
+				@components.Description(components.FieldProps{}) {
+					Optional — used on certificates.
+				}
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "breed"}) {
+					Breed
+				}
+				@components.Input(components.InputProps{
+					ID:    "breed",
+					Name:  "breed",
+					Value: d.Breed,
+				})
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "date_of_birth"}) {
+					Date of birth
+				}
+				@components.Input(components.InputProps{
+					Type:  "date",
+					ID:    "date_of_birth",
+					Name:  "date_of_birth",
+					Value: d.DOB,
+				})
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "registration_number"}) {
+					Registration number
+				}
+				@components.Input(components.InputProps{
+					ID:    "registration_number",
+					Name:  "registration_number",
+					Value: d.RegNo,
+				})
+				@components.Description(components.FieldProps{}) {
+					Optional. Lets buyers and clubs verify.
+				}
+			}
+			<div class="flex items-center gap-3">
+				@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+					Save
+				}
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/dogs"}) {
+					Cancel
+				}
+			</div>
+		</form>
+		if d.IsEdit {
+			<form
+				hx-post={ fmt.Sprintf("/account/dogs/%d/delete", d.DogID) }
+				hx-confirm="Delete this dog? Past results keep their record; the dog is removed from your roster."
+				class="flex"
+				style="border-top:1px solid var(--color-divider);padding-top:16px;"
+			>
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Class: "text-[var(--color-danger)]"}) {
+					Delete dog
+				}
+			</form>
+		}
+	</div>
+}
+
+func dogFormTitle(d DogFormViewData) string {
+	if d.IsEdit {
+		return "Edit dog"
 	}
+	return "New dog"
+}
+
+func dogFormEyebrow(d DogFormViewData) string {
+	if d.IsEdit {
+		return "Edit dog"
+	}
+	return "New dog"
+}
+
+func dogFormHeading(d DogFormViewData) string {
+	if d.IsEdit && d.CallName != "" {
+		return d.CallName
+	}
+	return "Add a dog"
+}
+
+func dogFormAction(d DogFormViewData) string {
+	if d.IsEdit {
+		return fmt.Sprintf("/account/dogs/%d", d.DogID)
+	}
+	return "/account/dogs"
 }

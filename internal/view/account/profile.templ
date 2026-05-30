@@ -2,15 +2,100 @@ package account
 
 import "github.com/flintcraftstudio/k9-trials/internal/view/components"
 
-// ProfilePage edits the logged-in competitor's display name, handle, bio.
-templ ProfilePage() {
-	@shell("Profile", "Edit your public profile.", "profile", profileBody())
+// ProfilePage edits the logged-in competitor's public page (A2): display
+// name, handle (URL slug), and bio. The public-URL banner makes the
+// consequence of a handle change concrete.
+templ ProfilePage(d ProfileViewData) {
+	@shell("Profile", "Edit your public profile.", "profile", profileBody(d))
 }
 
-templ profileBody() {
-	@components.StubPage(
-		"Profile",
-		"Your public profile.",
-		"Edit display name, handle (URL slug), and bio. Shown on your public competitor page.",
-	)
+templ profileBody(d ProfileViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						Profile
+					}
+					<h1 class="h2" style="margin:0;">Edit your public page</h1>
+				</div>
+				<a href={ templ.SafeURL(d.PublicURL) } class="card flex items-center gap-2" style="padding:10px 14px;text-decoration:none;color:inherit;">
+					<span class="body-sm" style="margin:0;">Your public page is <code style="background:var(--mist-100);padding:1px 5px;border-radius:3px;">{ d.PublicURL }</code></span>
+					<span class="body-sm" style="margin:0 0 0 auto;">View ↗</span>
+				</a>
+				@ProfileForm(d)
+			</div>
+		}
+	</section>
+}
+
+// ProfileForm is the editable body, re-rendered in place on save (success
+// or validation error) so the saved confirmation and any error message
+// swap without a full navigation.
+templ ProfileForm(d ProfileViewData) {
+	<form hx-post="/account/profile" hx-swap="outerHTML" class="flex flex-col gap-5">
+		if d.Err != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+			</div>
+		}
+		if d.Saved {
+			<div class="rounded-md border border-[var(--green-300)] bg-[var(--green-50)] p-3">
+				<p class="text-sm" style="color:var(--green-800);">Profile saved.</p>
+			</div>
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "display_name"}) {
+				Display name
+			}
+			@components.Input(components.InputProps{
+				ID:       "display_name",
+				Name:     "display_name",
+				Value:    d.DisplayName,
+				Required: true,
+			})
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "handle"}) {
+				Handle
+			}
+			<div class="flex items-center gap-2">
+				<span class="body-sm" style="margin:0;">{ "@" }</span>
+				@components.Input(components.InputProps{
+					ID:       "handle",
+					Name:     "handle",
+					Value:    d.Handle,
+					Required: true,
+					Class:    "flex-1",
+					Attrs:    templ.Attributes{"pattern": "[a-z0-9-]+"},
+				})
+			</div>
+			@components.Description(components.FieldProps{}) {
+				Changing this updates your public URL. Lowercase letters, digits, and hyphens.
+			}
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "bio"}) {
+				Bio
+			}
+			@components.Textarea(components.TextareaProps{
+				ID:          "bio",
+				Name:        "bio",
+				Value:       d.Bio,
+				Rows:        4,
+				Placeholder: "Tell visitors about your training, your dogs, your lines.",
+			})
+			@components.Description(components.FieldProps{}) {
+				Plain text. Shows on your public page.
+			}
+		}
+		<div class="flex items-center gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				Save
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account"}) {
+				Cancel
+			}
+		</div>
+	</form>
 }

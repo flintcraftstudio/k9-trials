@@ -1,29 +1,155 @@
 package account
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// DashboardPage is the competitor's logged-in landing page: next trial,
-// recent scores, open challenges, quick links.
-templ DashboardPage() {
-	@shell("My account", "Your trials, dogs, and challenges.", "dashboard", dashboardBody())
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DashboardPage is the competitor's logged-in landing page (A1): the
+// up-next entry takes prime position, with recent results, an
+// open-challenge banner, and quick actions below.
+templ DashboardPage(d DashboardViewData) {
+	@shell("My account", "Your trials, dogs, and challenges.", "dashboard", dashboardBody(d))
 }
 
-templ dashboardBody() {
-	@components.StubPage(
-		"My account",
-		"Welcome back.",
-		"Next entry, recent results, open challenges. Quick links to dogs and entries.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs"}) {
-				My dogs
+templ dashboardBody(d DashboardViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="flex-col gap-6 max-w-3xl">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						{ "Hi, " + d.DisplayName }
+					}
+					<p class="body-sm" style="margin:0;">{ dashboardMeta(d) }</p>
+				</div>
+				if d.UpNext != nil {
+					@upNextCard(*d.UpNext)
+				}
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						Recent results
+					}
+					@recentResults(d.Recent)
+				</div>
+				if d.OpenChallenges > 0 {
+					<a href="/account/challenges" class="card flex items-center gap-2" style="padding:12px 16px;text-decoration:none;color:inherit;border-color:var(--orange-300);background:var(--orange-50);">
+						<span style="font-weight:600;color:var(--mist-950);">{ openChallengeLabel(d.OpenChallenges) }</span>
+						<span class="body-sm" style="margin:0 0 0 auto;">View →</span>
+					</a>
+				}
+				<div class="flex-col gap-3">
+					@components.Eyebrow() {
+						Quick actions
+					}
+					<div class="flex gap-3 flex-wrap">
+						@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/events"}) {
+							Register for an event
+						}
+						@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/dogs/new"}) {
+							Add a dog
+						}
+						if d.Handle != "" {
+							@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/competitors/" + d.Handle}) {
+								View public profile
+							}
+						}
+					</div>
+				</div>
+			</div>
+		}
+	</section>
+}
+
+// upNextCard renders the prominent next-entry panel, accent-tinted by the
+// entry's discipline.
+templ upNextCard(c UpNextCard) {
+	<a
+		href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", c.EntryID)) }
+		class="card event-rail flex-col gap-2"
+		data-event={ c.EventKey }
+		style="padding:16px 16px 16px 20px;text-decoration:none;color:inherit;"
+	>
+		<div class="flex items-center justify-between gap-2">
+			@components.Eyebrow() {
+				Up next
 			}
-			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/entries"}) {
-				My entries
+			@components.Pill(c.StatusKind) {
+				{ c.StatusLabel }
 			}
-			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/challenges"}) {
-				Challenges
+		</div>
+		<div class="serif" style="font-size:20px;line-height:1.1;color:var(--mist-950);">{ c.EventName }</div>
+		<div class="body-sm" style="margin:0;">{ c.Meta }</div>
+		if c.DogName != "" {
+			<div style="font-weight:600;color:var(--mist-950);">{ c.DogName }</div>
+		}
+	</a>
+}
+
+// recentResults renders the last few finalized runs, or an intentional
+// empty state for a competitor who has not finalized anything.
+templ recentResults(rows []RecentRow) {
+	if len(rows) == 0 {
+		<div class="card flex-col items-start gap-1" style="padding:20px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No results yet</div>
+			<p class="body-sm" style="margin:0;">Your finalized scores appear here after you run a trial.</p>
+		</div>
+	} else {
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, row := range rows {
+				@recentRow(row)
 			}
 		</div>
 	}
+}
+
+templ recentRow(row RecentRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", row.EntryID)) } class="flex justify-between items-center gap-3" style="padding:10px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;">
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if row.HasScore {
+				<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+			}
+			if row.Qualified {
+				<span class="body-sm" style="margin:0;color:var(--green-700);">Q</span>
+			} else {
+				<span class="pill pill-closed">NQ</span>
+			}
+		</div>
+	</a>
+}
+
+// dashboardMeta renders the "N dogs · M finalized entries · K open
+// challenges" summary line, dropping the challenges clause when there are
+// none.
+func dashboardMeta(d DashboardViewData) string {
+	s := fmt.Sprintf("%s · %s", dogsWord(d.DogCount), finalizedWord(d.FinalizedCount))
+	if d.OpenChallenges > 0 {
+		s += " · " + openChallengeLabel(d.OpenChallenges)
+	}
+	return s
+}
+
+func dogsWord(n int) string {
+	if n == 1 {
+		return "1 dog"
+	}
+	return fmt.Sprintf("%d dogs", n)
+}
+
+func finalizedWord(n int) string {
+	if n == 1 {
+		return "1 finalized entry"
+	}
+	return fmt.Sprintf("%d finalized entries", n)
+}
+
+func openChallengeLabel(n int) string {
+	if n == 1 {
+		return "1 open challenge"
+	}
+	return fmt.Sprintf("%d open challenges", n)
 }
