@@ -26,11 +26,17 @@ func AccountEntries(st *store.Store) http.HandlerFunc {
 			http.Error(w, "account unavailable", http.StatusInternalServerError)
 			return
 		}
+		regs, err := st.ListPendingRegistrations(r.Context(), c.ID)
+		if err != nil {
+			slog.Error("account pending registrations", "competitor", c.ID, "err", err)
+			http.Error(w, "account unavailable", http.StatusInternalServerError)
+			return
+		}
 		filter := r.URL.Query().Get("status")
 		if !validEntryFilter(filter) {
 			filter = ""
 		}
-		data := toEntriesListVD(r, st, entries, filter)
+		data := toEntriesListVD(r, st, entries, regs, filter)
 		if r.Header.Get("HX-Request") == "true" {
 			renderPublic(w, r, account.EntriesResults(data))
 			return

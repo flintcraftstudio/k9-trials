@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
@@ -32,13 +33,36 @@ func entryGroup(status string) string {
 	}
 }
 
-// toEntriesListVD assembles the A5 list, counting each status group for the
-// filter chips and rendering only the rows matching the active filter.
-// Finalized rows are evaluated for their score and Q/NQ pill.
-func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesByHandlerRow, active string) account.EntriesListViewData {
-	var upcoming, scoring, finalized int
+// listRow pairs a built view row with the data the list needs to count and
+// order it: its filter group and its trial date.
+type listRow struct {
+	row   account.EntryRow
+	group string
+	date  time.Time
+}
+
+// toEntriesListVD assembles the A5 list from finalized/scoring/registered
+// entries plus not-yet-accepted registrations. It counts each status group
+// for the filter chips and renders only the rows matching the active
+// filter, newest trial date first. Finalized rows are scored for their
+// points and Q/NQ pill; pending registrations join the "upcoming" group.
+func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesByHandlerRow, regs []db.ListPendingRegistrationsByCompetitorRow, active string) account.EntriesListViewData {
+	all := make([]listRow, 0, len(entries)+len(regs))
 	for _, e := range entries {
-		switch entryGroup(e.Status) {
+		group := entryGroup(e.Status)
+		all = append(all, listRow{row: entryRowVD(r, st, e, group), group: group, date: e.TrialDate})
+	}
+	for _, rg := range regs {
+		all = append(all, listRow{row: registrationRowVD(rg), group: "upcoming", date: rg.TrialDate})
+	}
+
+	// Newest trial date first; stable so same-date rows keep insertion order.
+	sort.SliceStable(all, func(i, j int) bool { return all[i].date.After(all[j].date) })
+
+	var upcoming, scoring, finalized int
+	rows := make([]account.EntryRow, 0, len(all))
+	for _, lr := range all {
+		switch lr.group {
 		case "upcoming":
 			upcoming++
 		case "scoring":
@@ -46,21 +70,33 @@ func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesB
 		case "finalized":
 			finalized++
 		}
-	}
-
-	rows := make([]account.EntryRow, 0, len(entries))
-	for _, e := range entries {
-		group := entryGroup(e.Status)
-		if active != "" && group != active {
-			continue
+		if active == "" || lr.group == active {
+			rows = append(rows, lr.row)
 		}
-		rows = append(rows, entryRowVD(r, st, e, group))
 	}
 
 	return account.EntriesListViewData{
-		Total:   len(entries),
-		Filters: entryFilters(active, len(entries), upcoming, scoring, finalized),
+		Total:   len(all),
+		Filters: entryFilters(active, len(all), upcoming, scoring, finalized),
 		Rows:    rows,
+	}
+}
+
+// registrationRowVD builds an A5 row for a not-yet-accepted registration.
+// It links to the public event since there is no entry detail until an
+// admin accepts it.
+func registrationRowVD(rg db.ListPendingRegistrationsByCompetitorRow) account.EntryRow {
+	label, kind := "Pending", "wait"
+	if rg.Status == "waitlisted" {
+		label = "Waitlisted"
+	}
+	return account.EntryRow{
+		Href:        "/events/" + rg.EventSlug,
+		Title:       rg.EventName + " · " + disciplineLevelLabel(rg.Discipline, rg.Level),
+		Sub:         rg.DogName + " · " + shortDate(rg.TrialDate) + " · pending review",
+		EventKey:    disciplineKey(rg.Discipline),
+		StatusLabel: label,
+		StatusKind:  kind,
 	}
 }
 
@@ -95,7 +131,7 @@ func entryFilters(active string, total, upcoming, scoring, finalized int) []acco
 // entryRowVD builds one A5 row, evaluating the score for finalized entries.
 func entryRowVD(r *http.Request, st *store.Store, e db.ListEntriesByHandlerRow, group string) account.EntryRow {
 	row := account.EntryRow{
-		EntryID:  e.ID,
+		Href:     fmt.Sprintf("/account/entries/%d", e.ID),
 		Title:    e.EventName + " · " + disciplineLevelLabel(e.Discipline, e.Level),
 		EventKey: disciplineKey(e.Discipline),
 	}

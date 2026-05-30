@@ -109,6 +109,46 @@ func (s *Store) CountOwnerDogs(ctx context.Context, ownerID int64) (int64, error
 	return s.q.CountDogsByOwner(ctx, ownerID)
 }
 
+// OwnerDogs returns a competitor's dogs as plain rows (no activity
+// counts), alphabetical by call name. Used by the registration form where
+// only the identity fields are needed.
+func (s *Store) OwnerDogs(ctx context.Context, ownerID int64) ([]db.Dog, error) {
+	return s.q.ListDogsByOwner(ctx, ownerID)
+}
+
+// RegisteredTrialIDsForDog returns the set of trial ids a dog already holds
+// an active (non-withdrawn, non-rejected) registration in.
+func (s *Store) RegisteredTrialIDsForDog(ctx context.Context, dogID int64) (map[int64]bool, error) {
+	ids, err := s.q.RegisteredTrialIDsForDog(ctx, dogID)
+	if err != nil {
+		return nil, err
+	}
+	set := make(map[int64]bool, len(ids))
+	for _, id := range ids {
+		set[id] = true
+	}
+	return set, nil
+}
+
+// CreateRegistration files one pending registration. The caller enforces
+// dog ownership and trial eligibility; the (trial_id, dog_id) UNIQUE
+// constraint is the final guard against a duplicate.
+func (s *Store) CreateRegistration(ctx context.Context, trialID, competitorID, dogID, submittedBy int64, notes string) (db.Registration, error) {
+	return s.q.CreateRegistration(ctx, db.CreateRegistrationParams{
+		TrialID:      trialID,
+		CompetitorID: competitorID,
+		DogID:        dogID,
+		SubmittedBy:  submittedBy,
+		Notes:        notes,
+	})
+}
+
+// ListPendingRegistrations returns a competitor's not-yet-accepted
+// registrations (pending or waitlisted), joined to trial, event, and dog.
+func (s *Store) ListPendingRegistrations(ctx context.Context, competitorID int64) ([]db.ListPendingRegistrationsByCompetitorRow, error) {
+	return s.q.ListPendingRegistrationsByCompetitor(ctx, competitorID)
+}
+
 // ListFiledChallenges returns every challenge a competitor has filed,
 // newest first, each joined to the disputed entry's trial and event.
 // Backs the challenges list (A7).

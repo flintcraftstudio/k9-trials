@@ -145,8 +145,9 @@ func main() {
 	mux.Handle("POST /account/challenges", competitor(handler.AccountChallengeSubmit(st)))
 
 	// Event registration (competitor-side) — lives under /events/{slug}/register
-	mux.Handle("GET /events/{slug}/register", competitor(handler.RegisterPage()))
-	mux.Handle("POST /events/{slug}/register", competitor(handler.RegisterSubmit()))
+	mux.Handle("GET /events/{slug}/register", competitor(handler.RegisterPage(st)))
+	mux.Handle("GET /events/{slug}/register/trials", competitor(handler.RegisterTrials(st)))
+	mux.Handle("POST /events/{slug}/register", competitor(handler.RegisterSubmit(st)))
 
 	// Judge-side scoring UI (B1–B6 panels). All routes load real entries
 	// from store + run the scoring engine; access requires the judge or

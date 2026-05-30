@@ -69,7 +69,7 @@ templ EntriesResults(d EntriesListViewData) {
 
 templ entryRow(row EntryRow) {
 	<a
-		href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", row.EntryID)) }
+		href={ templ.SafeURL(row.Href) }
 		class="card event-rail flex items-center justify-between gap-3"
 		data-event={ row.EventKey }
 		style="padding:10px 14px 10px 16px;text-decoration:none;color:inherit;"

@@ -94,9 +94,11 @@ type EntryFilter struct {
 	Active bool
 }
 
-// EntryRow is one entry line on the list (A5).
+// EntryRow is one row on the list (A5) — an entry, or a pending
+// registration that has no entry yet. Href is where the row links: the
+// entry detail for entries, the event page for registrations.
 type EntryRow struct {
-	EntryID     int64
+	Href        string
 	Title       string // "Cedar Creek · Obedience · Level 2"
 	Sub         string // "Vex · entry #17 · Sat 14 Mar" (+ "· scored 182")
 	EventKey    string
@@ -157,6 +159,51 @@ type ChallengeRow struct {
 	Sub     string // "Vex · entry #08 · 12 Jan"
 	Filed   string // "Filed 5 days ago"
 	Status  string // open / under_review / resolved / dismissed
+}
+
+// RegisterViewData backs the event registration form (R1). Exactly one of
+// the form / NoDogs / NotOpen presentations renders.
+type RegisterViewData struct {
+	EventName string
+	EventSlug string
+	DateRange string
+	EventKey  string
+
+	Dogs   []RegDogOption
+	Trials []RegTrialOption
+	Notes  string
+	Err    string
+
+	NoDogs     bool   // competitor owns no dogs yet
+	NotOpen    bool   // event not accepting registrations
+	NotOpenMsg string // reason shown in the not-open state
+}
+
+// RegDogOption is one selectable dog in the registration radio list.
+type RegDogOption struct {
+	ID       int64
+	CallName string
+	Meta     string // "Czech GSD · 4y · K9-3187"
+	Selected bool
+}
+
+// RegTrialOption is one trial checkbox. Disabled is set when the selected
+// dog already holds a registration for that trial.
+type RegTrialOption struct {
+	ID       int64
+	Label    string // "Obedience · Level 2"
+	Date     string // "Sat 14 Mar"
+	EventKey string
+	Disabled bool
+	Checked  bool
+}
+
+// RegisterDoneViewData backs the post-submit confirmation (R1).
+type RegisterDoneViewData struct {
+	EventName string
+	EventSlug string
+	DogName   string
+	Count     int
 }
 
 // ChallengeNewViewData backs the file-a-challenge form (A8).

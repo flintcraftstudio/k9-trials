@@ -1,21 +1,229 @@
 package account
 
 import (
+	"fmt"
+
 	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
 // RegisterPage is the competitor flow for entering a dog in trials at an
-// event. Lives under the /events/{slug}/register URL but requires auth,
-// so the view sits alongside the rest of /account/*.
-templ RegisterPage(slug string) {
-	@view.Base("Register", "Register a dog for this event.", "events", registerBody(slug))
+// event (R1). It lives under /events/{slug}/register but requires auth, so
+// the view sits alongside the rest of /account. It is a focused checkout —
+// the global nav, but no account sub-tabs.
+templ RegisterPage(d RegisterViewData) {
+	@view.Base("Register · "+d.EventName, "Register a dog for this event.", "events", registerBody(d))
 }
 
-templ registerBody(slug string) {
-	@components.StubPage(
-		"Register",
-		"Register for " + slug,
-		"Pick a dog, pick which trials in this event to enter. Submission creates a 'pending' registration for admin review.",
-	)
+templ registerBody(d RegisterViewData) {
+	<section class="section" data-event={ d.EventKey }>
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				<a href={ templ.SafeURL("/events/" + d.EventSlug) } class="body-sm" style="text-decoration:none;">← { d.EventName }</a>
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						Register
+					}
+					<h1 class="h2" style="margin:0;">Enter this event</h1>
+					<div class="body-sm" style="margin:0;">{ d.EventName } · { d.DateRange }</div>
+				</div>
+				if d.NoDogs {
+					@registerNoDogs(d)
+				} else if d.NotOpen {
+					@registerNotOpen(d)
+				} else {
+					@registerForm(d)
+				}
+			</div>
+		}
+	</section>
+}
+
+templ registerForm(d RegisterViewData) {
+	<form method="post" action={ templ.SafeURL("/events/" + d.EventSlug + "/register") } class="flex flex-col gap-6">
+		if d.Err != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+			</div>
+		}
+		<div class="flex-col gap-2">
+			@components.Eyebrow() {
+				Dog
+			}
+			<div class="flex-col gap-2">
+				for _, dog := range d.Dogs {
+					@registerDogRadio(d.EventSlug, dog)
+				}
+			</div>
+			<p class="body-sm" style="margin:0;">
+				<a href="/account/dogs/new" style="color:var(--mist-950);">Add another dog</a> — return here after saving.
+			</p>
+		</div>
+		<div class="flex-col gap-2">
+			@components.Eyebrow() {
+				Trials
+			}
+			@TrialOptions(d)
+		</div>
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "notes"}) {
+				Notes (optional)
+			}
+			@components.Textarea(components.TextareaProps{
+				ID:          "notes",
+				Name:        "notes",
+				Value:       d.Notes,
+				Rows:        3,
+				Placeholder: "Qualification status, accommodations, etc.",
+			})
+		}
+		<div class="card flex-col gap-1" style="padding:14px 16px;background:var(--blue-50);border-color:var(--blue-300);">
+			<span style="font-weight:600;color:var(--mist-950);">Submitting creates a pending registration</span>
+			<span class="body-sm" style="margin:0;">An admin confirms your entry shortly. You will be notified, and it shows on your entries list as pending until then.</span>
+		</div>
+		<div class="flex items-center gap-3">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				Submit registration
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events/" + d.EventSlug}) {
+				Cancel
+			}
+		</div>
+	</form>
+}
+
+// registerDogRadio is one dog choice. Selecting it htmx-swaps the trial
+// list so trials the dog is already entered in show as disabled.
+templ registerDogRadio(slug string, dog RegDogOption) {
+	<label class="card flex items-center gap-3" style="padding:10px 14px;cursor:pointer;">
+		<input
+			type="radio"
+			name="dog"
+			value={ fmt.Sprintf("%d", dog.ID) }
+			checked?={ dog.Selected }
+			hx-get={ "/events/" + slug + "/register/trials" }
+			hx-target="#trial-options"
+			hx-swap="outerHTML"
+		/>
+		<span class="flex-col" style="min-width:0;">
+			<span style="font-weight:600;color:var(--mist-950);">{ dog.CallName }</span>
+			if dog.Meta != "" {
+				<span class="body-sm" style="margin:0;">{ dog.Meta }</span>
+			}
+		</span>
+	</label>
+}
+
+// TrialOptions is the swappable trial checklist for the currently selected
+// dog. Returned alone for the htmx dog-change swap and embedded on first
+// load.
+templ TrialOptions(d RegisterViewData) {
+	<div id="trial-options" class="flex-col gap-2">
+		if len(d.Trials) == 0 {
+			<div class="card flex-col items-start gap-1" style="padding:16px;">
+				<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No open trials</div>
+				<p class="body-sm" style="margin:0;">There are no trials accepting registrations at this event right now.</p>
+			</div>
+		} else {
+			for _, t := range d.Trials {
+				@registerTrialRow(t)
+			}
+		}
+	</div>
+}
+
+templ registerTrialRow(t RegTrialOption) {
+	<label
+		class="card event-rail flex items-center justify-between gap-3"
+		data-event={ t.EventKey }
+		style={ registerTrialStyle(t.Disabled) }
+	>
+		<span class="flex-col" style="min-width:0;">
+			<span style="font-weight:600;color:var(--mist-950);">{ t.Label }</span>
+			<span class="body-sm" style="margin:0;">
+				if t.Disabled {
+					{ t.Date + " · already entered" }
+				} else {
+					{ t.Date }
+				}
+			</span>
+		</span>
+		<input type="checkbox" name="trial" value={ fmt.Sprintf("%d", t.ID) } checked?={ t.Checked } disabled?={ t.Disabled }/>
+	</label>
+}
+
+// registerNoDogs replaces the form when the competitor owns no dogs — a
+// dog is the prerequisite for registering.
+templ registerNoDogs(d RegisterViewData) {
+	<div class="card flex-col items-start gap-3" style="padding:28px;">
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Add a dog first</div>
+			<p class="body-sm" style="margin:0;">You need at least one dog on your roster to register for an event. Add one, then come back here.</p>
+		</div>
+		@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs/new"}) {
+			Add a dog
+		}
+	</div>
+}
+
+// registerNotOpen is the edge state for an event not accepting
+// registrations (unpublished or no open trials).
+templ registerNotOpen(d RegisterViewData) {
+	<div class="card flex-col items-start gap-3" style="padding:28px;">
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Not yet open</div>
+			<p class="body-sm" style="margin:0;">{ d.NotOpenMsg }</p>
+		</div>
+		@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events/" + d.EventSlug}) {
+			← Back to event
+		}
+	</div>
+}
+
+// RegisterDonePage is the post-submit confirmation (R1).
+templ RegisterDonePage(d RegisterDoneViewData) {
+	@view.Base("Registration submitted", "Your registration is pending review.", "events", registerDoneBody(d))
+}
+
+templ registerDoneBody(d RegisterDoneViewData) {
+	<section class="section">
+		@components.Container("") {
+			<div class="max-w-xl flex-col gap-6">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						Registration submitted
+					}
+					<h1 class="h2" style="margin:0;">You are on the list</h1>
+				</div>
+				<div class="card flex-col items-start gap-2" style="padding:24px;background:var(--green-50);border-color:var(--green-300);">
+					<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">{ registerDoneSummary(d) }</div>
+					<p class="body-sm" style="margin:0;">An admin will confirm your entry. Until then it shows as pending on your entries list, and you will be notified when it is accepted.</p>
+				</div>
+				<div class="flex items-center gap-3">
+					@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/entries"}) {
+						View my entries
+					}
+					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events/" + d.EventSlug}) {
+						Back to event
+					}
+				</div>
+			</div>
+		}
+	</section>
+}
+
+// registerTrialStyle dims a trial row the selected dog cannot re-enter.
+func registerTrialStyle(disabled bool) string {
+	base := "padding:10px 12px 10px 16px;cursor:pointer;"
+	if disabled {
+		return base + "opacity:0.55;cursor:not-allowed;"
+	}
+	return base
+}
+
+func registerDoneSummary(d RegisterDoneViewData) string {
+	if d.Count == 1 {
+		return fmt.Sprintf("1 trial registered for %s", d.DogName)
+	}
+	return fmt.Sprintf("%d trials registered for %s", d.Count, d.DogName)
 }
