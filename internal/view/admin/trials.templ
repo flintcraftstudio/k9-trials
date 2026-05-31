@@ -1,35 +1,181 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// TrialsListPage lists trials within an event with admin status.
-templ TrialsListPage(eventID string) {
-	@shell("Trials", "Manage trials in this event.", "event-trials", eventID, trialsListBody(eventID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// TrialsListPage lists trials within an event, grouped by date (D4).
+templ TrialsListPage(d TrialsViewData) {
+	@shell("Trials", "Manage trials in this event.", "event-trials", fmt.Sprintf("%d", d.EventID), trialsListBody(d))
 }
 
-templ trialsListBody(eventID string) {
-	@components.StubPage(
-		"Admin · Trials",
-		"Trials in event #" + eventID,
-		"Discipline + level + date + template version. Add new, edit, change status.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/" + eventID + "/trials/new"}) {
-				New trial
+templ trialsListBody(d TrialsViewData) {
+	@adminPage(
+		d.EventName+" · "+eventStatusLabel(d.EventStatus),
+		"Trials",
+		fmt.Sprintf("%s across %d %s", trialsLabel(d.TrialCount), len(d.Days), daysWord(len(d.Days))),
+		trialsListActions(d),
+		trialsListContent(d),
+	)
+}
+
+templ trialsListActions(d TrialsViewData) {
+	@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events/" + d.EventSlug}) {
+		View public page ↗
+	}
+	@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials/new", d.EventID)}) {
+		+ New trial
+	}
+}
+
+templ trialsListContent(d TrialsViewData) {
+	if len(d.Days) == 0 {
+		<div class="card flex-col items-start gap-2" style="padding:24px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials yet</div>
+			<p class="body-sm" style="margin:0;">Add the disciplines and levels this event will run.</p>
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials/new", d.EventID)}) {
+				+ New trial
+			}
+		</div>
+	} else {
+		<div class="flex-col gap-6">
+			for _, day := range d.Days {
+				@trialDay(d.EventID, day)
 			}
 		</div>
 	}
 }
 
-// TrialsFormPage is the create-trial form for a given event.
-templ TrialsFormPage(eventID string) {
-	@shell("New trial", "Add a trial to this event.", "event-trials", eventID, trialsFormBody(eventID))
+templ trialDay(eventID int64, day TrialDay) {
+	<div class="flex-col gap-2">
+		<div class="flex items-center justify-between" style="padding-bottom:6px;border-bottom:1px solid var(--color-divider);">
+			@components.Eyebrow() {
+				{ day.Label }
+			}
+			<span class="body-sm" style="margin:0;">{ fmt.Sprintf("%d", day.Count) + " · " + trialsWord(day.Count) }</span>
+		</div>
+		for _, t := range day.Trials {
+			@trialRow(eventID, t)
+		}
+	</div>
 }
 
-templ trialsFormBody(eventID string) {
-	@components.StubPage(
-		"Admin · New trial",
-		"Add a trial to event #" + eventID,
-		"Form: discipline (OB/PR/TR/DT), level (1/2/3), date, template version.",
-	)
+templ trialRow(eventID int64, t TrialLine) {
+	<div class="card event-rail flex items-center justify-between gap-3" data-event={ t.EventKey } style="padding:12px 14px 12px 18px;">
+		<div class="flex-col" style="min-width:0;">
+			<span style="font-weight:600;color:var(--mist-950);">{ t.Title }</span>
+			<span class="body-sm" style="margin:0;">{ t.Meta }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if t.Judge != "" {
+				<span class="pill pill-muted">{ t.Judge }</span>
+			} else {
+				<span class="pill pill-closed">no judge</span>
+			}
+			@trialPill(t.Status)
+			<form
+				hx-post={ fmt.Sprintf("/admin/events/%d/trials/%d/delete", eventID, t.ID) }
+				hx-confirm="Delete this trial? Its entries and scores are removed too."
+				style="display:inline;"
+			>
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Class: "text-[var(--color-danger)]"}) {
+					Delete
+				}
+			</form>
+		</div>
+	</div>
+}
+
+// TrialsFormPage is the create-trial form for a given event (D4).
+templ TrialsFormPage(d TrialFormViewData) {
+	@shell("New trial", "Add a trial to this event.", "event-trials", fmt.Sprintf("%d", d.EventID), trialsFormBody(d))
+}
+
+templ trialsFormBody(d TrialFormViewData) {
+	@adminPage("New trial", "Add a trial", d.EventName, nil, trialsFormContent(d))
+}
+
+templ trialsFormContent(d TrialFormViewData) {
+	<div class="max-w-md">
+		<form hx-post={ fmt.Sprintf("/admin/events/%d/trials", d.EventID) } hx-target="this" hx-swap="outerHTML" class="flex flex-col gap-5">
+			if d.Err != "" {
+				<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+					<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+				</div>
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "discipline"}) {
+					Discipline
+				}
+				@disciplineSelect(d.Discipline)
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "level"}) {
+					Level
+				}
+				@levelSelect(d.Level)
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "trial_date"}) {
+					Date
+				}
+				@components.Input(components.InputProps{Type: "date", ID: "trial_date", Name: "trial_date", Value: d.Date, Required: true})
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "template_version"}) {
+					Template version
+				}
+				@components.Input(components.InputProps{ID: "template_version", Name: "template_version", Value: d.TemplateVersion, Required: true})
+				@components.Description(components.FieldProps{}) {
+					The rulebook revision scored against, e.g. 2026.1.
+				}
+			}
+			<div class="flex items-center gap-3">
+				@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+					Add trial
+				}
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials", d.EventID)}) {
+					Cancel
+				}
+			</div>
+		</form>
+	</div>
+}
+
+templ disciplineSelect(current string) {
+	<select id="discipline" name="discipline" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
+		@disciplineOption("OB", "Obedience", current)
+		@disciplineOption("PR", "Protection", current)
+		@disciplineOption("TR", "Tracking", current)
+		@disciplineOption("DT", "Detection", current)
+	</select>
+}
+
+templ disciplineOption(code, label, current string) {
+	<option value={ code } selected?={ code == current }>{ label }</option>
+}
+
+templ levelSelect(current string) {
+	<select id="level" name="level" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
+		for _, lv := range []string{"1", "2", "3"} {
+			<option value={ lv } selected?={ lv == current }>{ "Level " + lv }</option>
+		}
+	</select>
+}
+
+// daysWord / trialsWord render the singular/plural unit words.
+func daysWord(n int) string {
+	if n == 1 {
+		return "day"
+	}
+	return "days"
+}
+
+func trialsWord(n int) string {
+	if n == 1 {
+		return "trial"
+	}
+	return "trials"
 }

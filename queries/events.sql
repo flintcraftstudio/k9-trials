@@ -27,3 +27,9 @@ RETURNING *;
 
 -- name: DeleteEvent :exec
 DELETE FROM events WHERE id = ?;
+
+-- name: CountEventsBySlug :one
+-- Number of events using a slug, excluding one event id. Backs the live
+-- slug-availability check on the event form (pass 0 on create to exclude
+-- nobody).
+SELECT COUNT(*) FROM events WHERE slug = ? AND id != ?;

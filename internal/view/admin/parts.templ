@@ -1,0 +1,43 @@
+package admin
+
+import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+
+// adminPage is the standard admin content wrapper inside the shell main
+// panel: a padded column holding a pagehead and the body.
+templ adminPage(eyebrow, title, sub string, actions, body templ.Component) {
+	<div class="flex-col gap-6" style="padding:24px 28px;max-width:1100px;">
+		<div class="flex items-start justify-between gap-4 flex-wrap">
+			<div class="flex-col gap-1">
+				if eyebrow != "" {
+					@components.Eyebrow() {
+						{ eyebrow }
+					}
+				}
+				<h1 class="h2" style="margin:0;">{ title }</h1>
+				if sub != "" {
+					<div class="body-sm" style="margin:0;">{ sub }</div>
+				}
+			</div>
+			if actions != nil {
+				<div class="flex items-center gap-2 flex-wrap">
+					@actions
+				</div>
+			}
+		</div>
+		@body
+	</div>
+}
+
+// eventPill renders an event-status pill.
+templ eventPill(status string) {
+	@components.Pill(eventStatusKind(status)) {
+		{ eventStatusLabel(status) }
+	}
+}
+
+// trialPill renders a trial-status pill.
+templ trialPill(status string) {
+	@components.Pill(trialStatusKind(status)) {
+		{ trialStatusLabel(status) }
+	}
+}

@@ -30,3 +30,16 @@ JOIN trials t ON t.id = r.trial_id
 JOIN events ev ON ev.id = t.event_id
 WHERE r.competitor_id = ? AND r.status IN ('pending', 'waitlisted')
 ORDER BY t.trial_date DESC, r.id DESC;
+
+-- name: CountPendingRegistrationsByEvent :one
+-- Number of pending registrations across an event trials. Drives the
+-- review badge in the admin sidebar and the dashboard at-a-glance (D1/D3).
+SELECT COUNT(*)
+FROM registrations r
+JOIN trials t ON t.id = r.trial_id
+WHERE t.event_id = ? AND r.status = 'pending';
+
+-- name: CountAllPendingRegistrations :one
+-- Total pending registrations across every event. Drives the admin
+-- dashboard needs-review card (D1).
+SELECT COUNT(*) FROM registrations WHERE status = 'pending';

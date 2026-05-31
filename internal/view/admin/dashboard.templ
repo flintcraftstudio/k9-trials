@@ -1,28 +1,89 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// DashboardPage is the admin landing page.
-templ DashboardPage() {
-	@shell("Admin", "Organize events, trials, registrations.", "dashboard", "", dashboardBody())
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// DashboardPage is the admin landing page (D1): what needs attention —
+// pending registrations and open challenges up top, then the live events
+// and unpublished drafts.
+templ DashboardPage(d DashboardViewData) {
+	@shell("Admin", "Organize events, trials, registrations.", "dashboard", "", dashboardBody(d))
 }
 
-templ dashboardBody() {
-	@components.StubPage(
-		"Admin",
-		"Operate the trials.",
-		"Manage events, trials, registrations, judge assignments, and challenges.",
-	) {
-		<div class="mt-4 flex gap-3 flex-wrap">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events"}) {
-				Events
+templ dashboardBody(d DashboardViewData) {
+	@adminPage("Operations", "Dashboard", dashboardSub(d), dashboardActions(), dashboardContent(d))
+}
+
+templ dashboardActions() {
+	@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/new"}) {
+		+ New event
+	}
+	@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/events"}) {
+		All events
+	}
+}
+
+templ dashboardContent(d DashboardViewData) {
+	<div class="flex-col gap-6">
+		<div class="grid grid-cols-2 gap-3">
+			@needsReviewCard("Pending registrations", "Awaiting your review", d.PendingRegs, "/admin/events")
+			@needsReviewCard("Open challenges", "Open or under review", d.OpenChallenges, "/admin/challenges")
+		</div>
+		<div class="flex-col gap-3">
+			@components.Eyebrow() {
+				{ fmt.Sprintf("Live · %d", len(d.Published)) }
 			}
-			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/challenges"}) {
-				Challenges
+			@eventLineList(d.Published, "No published events yet.")
+		</div>
+		<div class="flex-col gap-3">
+			@components.Eyebrow() {
+				{ fmt.Sprintf("Drafts · not yet published · %d", len(d.Drafts)) }
 			}
-			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/users"}) {
-				Users
+			@eventLineList(d.Drafts, "No drafts.")
+		</div>
+	</div>
+}
+
+// needsReviewCard is one attention counter linking to its queue.
+templ needsReviewCard(title, sub string, count int, href string) {
+	<a href={ templ.SafeURL(href) } class="card flex items-center justify-between gap-3" style="padding:16px;text-decoration:none;color:inherit;border-color:var(--orange-300);background:var(--orange-50);">
+		<div class="flex-col">
+			<span style="font-weight:600;color:var(--mist-950);">{ title }</span>
+			<span class="body-sm" style="margin:0;">{ sub }</span>
+		</div>
+		<span class="serif" style="font-size:28px;line-height:1;font-variant-numeric:tabular-nums;color:var(--orange-800);">{ fmt.Sprintf("%d", count) }</span>
+	</a>
+}
+
+// eventLineList renders a compact event list, or an empty-state line.
+templ eventLineList(lines []EventLine, empty string) {
+	if len(lines) == 0 {
+		<div class="card" style="padding:16px;">
+			<p class="body-sm" style="margin:0;">{ empty }</p>
+		</div>
+	} else {
+		<div class="card" style="padding:0;overflow:hidden;">
+			for _, e := range lines {
+				@eventLineRow(e)
 			}
 		</div>
 	}
+}
+
+templ eventLineRow(e EventLine) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/edit", e.ID)) } class="flex items-center justify-between gap-3" style="padding:12px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;">
+		<div class="flex-col" style="min-width:0;">
+			<span style="font-weight:600;color:var(--mist-950);">{ e.Name }</span>
+			<span class="body-sm" style="margin:0;">{ e.Meta }</span>
+		</div>
+		@eventPill(e.Status)
+	</a>
+}
+
+// dashboardSub renders the at-a-glance summary line under the title.
+func dashboardSub(d DashboardViewData) string {
+	return fmt.Sprintf("%d events · %d published · %d drafts", d.Counts.Total, d.Counts.Published, d.Counts.Draft)
 }

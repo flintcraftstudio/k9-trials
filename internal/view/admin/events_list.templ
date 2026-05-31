@@ -1,22 +1,104 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// EventsListPage lists every event with admin status, including drafts.
-templ EventsListPage() {
-	@shell("Events", "Manage events.", "events", "", eventsListBody())
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// EventsListPage lists every event with admin status, drafts included (D2).
+// Status chips filter the list via htmx, swapping just the table fragment.
+templ EventsListPage(d EventsListViewData) {
+	@shell("Events", "Manage events.", "events", "", eventsListBody(d))
 }
 
-templ eventsListBody() {
-	@components.StubPage(
-		"Admin · Events",
-		"All events.",
-		"Draft, published, and closed events. Bulk edit status, create new.",
-	) {
-		<div class="mt-4 flex gap-3">
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/new"}) {
-				New event
+templ eventsListBody(d EventsListViewData) {
+	@adminPage("Operations", "Events", fmt.Sprintf("%d total", d.Total), eventsListActions(), eventsListContent(d))
+}
+
+templ eventsListActions() {
+	@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/admin/events/new"}) {
+		+ New event
+	}
+}
+
+templ eventsListContent(d EventsListViewData) {
+	<div class="flex-col gap-4">
+		<div class="flex gap-2 flex-wrap">
+			for _, f := range d.Filters {
+				@eventFilterChip(f)
 			}
 		</div>
+		@EventsTable(d)
+	</div>
+}
+
+templ eventFilterChip(f EventFilter) {
+	<a
+		href={ templ.SafeURL(f.Href) }
+		hx-get={ f.Href }
+		hx-target="#events-table"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+		style="text-decoration:none;"
+	>
+		{ fmt.Sprintf("%s · %d", f.Label, f.Count) }
+	</a>
+}
+
+// EventsTable is the filterable event list, returned alone for htmx filter
+// swaps and embedded on first load.
+templ EventsTable(d EventsListViewData) {
+	<div id="events-table" class="flex-col gap-2">
+		if len(d.Rows) == 0 {
+			<div class="card" style="padding:20px;">
+				<p class="body-sm" style="margin:0;">No events match this filter.</p>
+			</div>
+		} else {
+			for _, e := range d.Rows {
+				@eventRow(e)
+			}
+		}
+	</div>
+}
+
+templ eventRow(e EventRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/edit", e.ID)) } class="card flex items-center justify-between gap-3" style="padding:12px 16px;text-decoration:none;color:inherit;">
+		<div class="flex-col" style="min-width:0;flex:1;">
+			<span style="font-weight:600;color:var(--mist-950);">{ e.Name }</span>
+			<span class="body-sm" style="margin:0;">{ eventRowMeta(e) }</span>
+		</div>
+		<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ trialsLabel(e.Trials) }</span>
+		@eventPill(e.Status)
+	</a>
+}
+
+// eventRowMeta composes the "location · /events/slug · dates" sub-line.
+func eventRowMeta(e EventRow) string {
+	parts := []string{}
+	if e.Location != "" {
+		parts = append(parts, e.Location)
+	}
+	parts = append(parts, "/events/"+e.Slug)
+	if e.Dates != "" {
+		parts = append(parts, e.Dates)
+	}
+	out := parts[0]
+	for _, p := range parts[1:] {
+		out += " · " + p
+	}
+	return out
+}
+
+// trialsLabel renders "4 trials" / "1 trial" / "no trials".
+func trialsLabel(n int) string {
+	switch n {
+	case 0:
+		return "no trials"
+	case 1:
+		return "1 trial"
+	default:
+		return fmt.Sprintf("%d trials", n)
 	}
 }

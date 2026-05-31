@@ -34,3 +34,8 @@ SELECT * FROM challenges
 WHERE entry_id = ? AND filed_by = ?
 ORDER BY filed_at DESC
 LIMIT 1;
+
+-- name: CountOpenChallengesGlobal :one
+-- Total unresolved challenges (open or under review) across all
+-- competitors. Drives the admin dashboard needs-review card (D1).
+SELECT COUNT(*) FROM challenges WHERE status IN ('open', 'under_review');

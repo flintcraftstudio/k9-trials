@@ -1,28 +1,227 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// EventsFormPage is the create/edit event form. eventID is empty for "new".
-templ EventsFormPage(eventID string) {
-	if eventID == "" {
-		@shell("New event", "Create an event.", "events", "", eventsFormBody(eventID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// EventsFormPage is the create/edit event form (D3). Metadata only — trials,
+// registrations, and judge assignments live on their own pages within the
+// "This event" sidebar group.
+templ EventsFormPage(d EventFormViewData) {
+	if d.IsEdit {
+		@shell("Edit event", "Edit an event.", "event-edit", fmt.Sprintf("%d", d.EventID), eventsFormBody(d))
 	} else {
-		@shell("Edit event", "Edit an event.", "event-edit", eventID, eventsFormBody(eventID))
+		@shell("New event", "Create an event.", "events", "", eventsFormBody(d))
 	}
 }
 
-templ eventsFormBody(eventID string) {
-	if eventID == "" {
-		@components.StubPage(
-			"Admin · New event",
-			"Create an event.",
-			"Form: name, slug, location, start/end dates, status.",
-		)
-	} else {
-		@components.StubPage(
-			"Admin · Edit event",
-			"Edit event #" + eventID,
-			"Form: name, slug, location, dates, status. Manage trials, registrations, judge assignments from here.",
-		)
+templ eventsFormBody(d EventFormViewData) {
+	@adminPage(eventFormEyebrow(d), eventFormTitle(d), eventFormSub(d), eventsFormActions(d), eventsFormContent(d))
+}
+
+templ eventsFormActions(d EventFormViewData) {
+	if d.IsEdit {
+		@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: d.PublicURL}) {
+			View public page ↗
+		}
 	}
+}
+
+templ eventsFormContent(d EventFormViewData) {
+	<div class="grid grid-cols-2 gap-6" style="align-items:start;">
+		@EventForm(d)
+		if d.IsEdit {
+			@eventGlance(d)
+		}
+	</div>
+}
+
+// EventForm is the swappable form body — returned on validation error (and
+// on edit-save success with a confirmation) so the message swaps in place.
+// On create-success the handler issues an HX-Redirect to the new event.
+templ EventForm(d EventFormViewData) {
+	<form
+		hx-post={ eventFormAction(d) }
+		hx-target="this"
+		hx-swap="outerHTML"
+		class="flex flex-col gap-5"
+	>
+		if d.Err != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+			</div>
+		}
+		if d.Saved {
+			<div class="rounded-md border border-[var(--green-300)] bg-[var(--green-50)] p-3">
+				<p class="text-sm" style="color:var(--green-800);">Event saved.</p>
+			</div>
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "name"}) {
+				Name
+			}
+			@components.Input(components.InputProps{ID: "name", Name: "name", Value: d.Name, Required: true})
+		}
+		if d.IsEdit {
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "slug"}) {
+					Slug
+				}
+				<div class="flex items-center gap-2">
+					<span class="body-sm" style="margin:0;">/events/</span>
+					<span style="font-variant-numeric:tabular-nums;font-weight:600;color:var(--mist-950);">{ d.Slug }</span>
+				</div>
+				@components.Description(components.FieldProps{}) {
+					The slug is the public URL and cannot be changed after creation.
+				}
+			}
+		} else {
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{For: "slug"}) {
+					Slug
+				}
+				<div class="flex items-center gap-2">
+					<span class="body-sm" style="margin:0;">/events/</span>
+					@components.Input(components.InputProps{
+						ID:    "slug",
+						Name:  "slug",
+						Value: d.Slug,
+						Class: "flex-1",
+						Attrs: templ.Attributes{
+							"hx-get":     "/admin/events/slug-check",
+							"hx-trigger": "input changed delay:300ms",
+							"hx-target":  "#slug-status",
+							"hx-swap":    "innerHTML",
+							"pattern":    "[a-z0-9-]+",
+						},
+					})
+				</div>
+				<div id="slug-status">
+					@SlugStatus(d.Slug, false, false)
+				</div>
+			}
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "location"}) {
+				Location
+			}
+			@components.Input(components.InputProps{ID: "location", Name: "location", Value: d.Location})
+		}
+		<div class="flex gap-3">
+			@components.Field(components.FieldProps{Class: "flex-1"}) {
+				@components.Label(components.LabelProps{For: "start_date"}) {
+					Start date
+				}
+				@components.Input(components.InputProps{Type: "date", ID: "start_date", Name: "start_date", Value: d.StartDate, Required: true})
+			}
+			@components.Field(components.FieldProps{Class: "flex-1"}) {
+				@components.Label(components.LabelProps{For: "end_date"}) {
+					End date
+				}
+				@components.Input(components.InputProps{Type: "date", ID: "end_date", Name: "end_date", Value: d.EndDate, Required: true})
+			}
+		</div>
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "status"}) {
+				Status
+			}
+			@statusSelect(d.Status)
+			@components.Description(components.FieldProps{}) {
+				Published opens registration. Closed locks scoring.
+			}
+		}
+		<div>
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				if d.IsEdit {
+					Save changes
+				} else {
+					Create event
+				}
+			}
+		</div>
+	</form>
+}
+
+// statusSelect renders the event-status dropdown with current selected.
+templ statusSelect(current string) {
+	<select name="status" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
+		for _, opt := range []string{"draft", "published", "closed"} {
+			<option value={ opt } selected?={ opt == current }>{ eventStatusLabel(opt) }</option>
+		}
+	</select>
+}
+
+// SlugStatus is the live slug-availability hint, returned by the
+// slug-check endpoint. checked is false on first render (no probe yet).
+templ SlugStatus(slug string, available, checked bool) {
+	if slug == "" {
+		<p class="body-sm" style="margin:0;">Lowercase letters, digits, and hyphens. This becomes the public URL.</p>
+	} else {
+		<div class="flex items-center gap-2 flex-wrap">
+			<span class="body-sm" style="margin:0;">Public URL: <code style="background:var(--mist-100);padding:1px 5px;border-radius:3px;">/events/{ slug }</code></span>
+			if checked && available {
+				<span class="pill pill-qual">available</span>
+			} else if checked {
+				<span class="pill pill-closed">taken</span>
+			}
+		</div>
+	}
+}
+
+// eventGlance is the edit-only at-a-glance panel linking to the within-event
+// management pages.
+templ eventGlance(d EventFormViewData) {
+	<div class="flex-col gap-3">
+		<div class="card flex-col gap-2" style="padding:16px;background:var(--mist-100);">
+			@components.Eyebrow() {
+				At a glance
+			}
+			<div class="body-sm flex-col gap-1" style="margin:0;line-height:1.7;">
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/trials", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">{ trialsLabel(d.TrialCount) } · manage →</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/registrations", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">{ pendingLabel(d.PendingRegs) } · review →</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/assignments", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">Judge assignments →</a>
+			</div>
+		</div>
+	</div>
+}
+
+func eventFormEyebrow(d EventFormViewData) string {
+	if d.IsEdit {
+		return "Editing event"
+	}
+	return "New event"
+}
+
+func eventFormTitle(d EventFormViewData) string {
+	if d.IsEdit && d.Name != "" {
+		return d.Name
+	}
+	if d.IsEdit {
+		return "Edit event"
+	}
+	return "Create an event"
+}
+
+func eventFormSub(d EventFormViewData) string {
+	if d.IsEdit {
+		return eventStatusLabel(d.Status) + " · " + trialsLabel(d.TrialCount)
+	}
+	return ""
+}
+
+func eventFormAction(d EventFormViewData) string {
+	if d.IsEdit {
+		return fmt.Sprintf("/admin/events/%d", d.EventID)
+	}
+	return "/admin/events"
+}
+
+// pendingLabel renders "N pending registrations" with correct pluralization.
+func pendingLabel(n int) string {
+	if n == 1 {
+		return "1 pending registration"
+	}
+	return fmt.Sprintf("%d pending registrations", n)
 }
