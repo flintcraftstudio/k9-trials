@@ -1,16 +1,169 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// ChallengesPage is the admin review queue for score challenges.
-templ ChallengesPage() {
-	@shell("Challenges", "Review filed challenges.", "challenges", "", challengesBody())
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// ChallengesPage is the admin challenge review queue (D7): a cross-event
+// list on the left, the selected dispute on the right. Resolving here only
+// closes the dispute — re-scoring happens through the judge flow.
+templ ChallengesPage(d ChallengesViewData) {
+	@shell("Challenges", "Review filed challenges.", "challenges", "", challengesBody(d))
 }
 
-templ challengesBody() {
-	@components.StubPage(
-		"Admin · Challenges",
-		"Review queue.",
-		"Open and under-review challenges across all events. Resolve (re-score via judge flow) or dismiss with notes.",
-	)
+templ challengesBody(d ChallengesViewData) {
+	@adminPage("Operations", "Challenges", challengesSub(d), nil, challengesContent(d))
+}
+
+templ challengesContent(d ChallengesViewData) {
+	<div class="grid gap-4" style="grid-template-columns:320px 1fr;align-items:start;">
+		<div class="card" style="padding:0;overflow:hidden;">
+			if len(d.Rows) == 0 {
+				<div style="padding:20px;">
+					<p class="body-sm" style="margin:0;">No challenges filed yet.</p>
+				</div>
+			} else {
+				for _, row := range d.Rows {
+					@chalQueueRow(row)
+				}
+			}
+		</div>
+		if d.Selected != nil {
+			@chalDetail(*d.Selected)
+		} else {
+			<div class="card" style="padding:24px;">
+				<p class="body-sm" style="margin:0;">Select a challenge to review it.</p>
+			</div>
+		}
+	</div>
+}
+
+templ chalQueueRow(row ChalRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/admin/challenges/%d", row.ID)) } class="flex items-center justify-between gap-2" style={ chalQueueStyle(row.Selected) }>
+		<div class="flex-col" style="min-width:0;">
+			<span style="color:var(--mist-950);font-weight:600;">{ row.Title }</span>
+			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
+		</div>
+		@components.Pill(chalKind(row.Status)) {
+			{ chalLabel(row.Status) }
+		}
+	</a>
+}
+
+templ chalDetail(d ChalDetail) {
+	<div class="flex-col gap-4">
+		<div class="flex-col gap-1">
+			@components.Eyebrow() {
+				{ "Challenge · " + chalLabel(d.Status) }
+			}
+			<h2 class="h2" style="margin:0;font-size:20px;">{ d.Title }</h2>
+			<div class="body-sm" style="margin:0;">{ d.Filed }</div>
+		</div>
+		<a href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", d.EntryID)) } class="card event-rail flex-col gap-1" data-event={ d.EventKey } style="padding:12px 14px 12px 18px;text-decoration:none;color:inherit;">
+			@components.Eyebrow() {
+				Entry being disputed
+			}
+			<span style="font-weight:600;color:var(--mist-950);">{ d.EntryTitle }</span>
+			<span class="body-sm" style="margin:0;">{ d.EntrySub }</span>
+		</a>
+		<div class="card flex-col gap-1" style="padding:12px 14px;background:var(--mist-100);">
+			@components.Eyebrow() {
+				Competitor reason
+			}
+			<p class="body-sm" style="margin:0;white-space:pre-wrap;">{ d.Reason }</p>
+		</div>
+		if d.ResolutionNotes != "" {
+			<div class="card flex-col gap-1" style="padding:12px 14px;">
+				@components.Eyebrow() {
+					Resolution notes
+				}
+				<p class="body-sm" style="margin:0;white-space:pre-wrap;">{ d.ResolutionNotes }</p>
+			</div>
+		}
+		if d.CanClose {
+			@chalWorkflow(d)
+		} else {
+			<div class="body-sm" style="margin:0;">This challenge is { chalLabel(d.Status) } and closed.</div>
+		}
+	</div>
+}
+
+// chalWorkflow renders the admin actions: start review (open only), resolve,
+// dismiss. Resolve/dismiss take an optional note.
+templ chalWorkflow(d ChalDetail) {
+	<div class="card flex-col gap-3" style="padding:14px 16px;">
+		@components.Eyebrow() {
+			Workflow
+		}
+		if d.CanStart {
+			<form hx-post={ fmt.Sprintf("/admin/challenges/%d/status", d.ID) } style="display:inline;">
+				<input type="hidden" name="status" value="under_review"/>
+				@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Type: "submit"}) {
+					Start review
+				}
+			</form>
+		}
+		<form hx-post={ fmt.Sprintf("/admin/challenges/%d/status", d.ID) } class="flex-col gap-2">
+			@components.Textarea(components.TextareaProps{
+				Name:        "notes",
+				Value:       d.ResolutionNotes,
+				Rows:        3,
+				Placeholder: "Resolution notes (optional) — the competitor and judge can read these.",
+			})
+			<div class="flex items-center gap-2">
+				@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit", Attrs: templ.Attributes{"name": "status", "value": "resolved"}}) {
+					Resolve
+				}
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Attrs: templ.Attributes{"name": "status", "value": "dismissed"}}) {
+					Dismiss
+				}
+			</div>
+		</form>
+		<p class="body-sm" style="margin:0;">Closing the dispute does not change the score. To re-score, reopen the entry through the judge flow.</p>
+	</div>
+}
+
+func challengesSub(d ChallengesViewData) string {
+	c := d.Counts
+	active := c.Open + c.UnderReview
+	return fmt.Sprintf("%d active · %d open · %d under review", active, c.Open, c.UnderReview)
+}
+
+func chalQueueStyle(selected bool) string {
+	base := "padding:12px 14px;border-top:1px solid var(--color-divider);text-decoration:none;"
+	if selected {
+		return base + "background:var(--mist-100);"
+	}
+	return base
+}
+
+// chalLabel / chalKind map a challenge status to display.
+func chalLabel(status string) string {
+	switch status {
+	case "open":
+		return "Open"
+	case "under_review":
+		return "Under review"
+	case "resolved":
+		return "Resolved"
+	case "dismissed":
+		return "Dismissed"
+	}
+	return status
+}
+
+func chalKind(status string) string {
+	switch status {
+	case "open":
+		return "wait"
+	case "under_review":
+		return "scoring"
+	case "resolved":
+		return "qual"
+	case "dismissed":
+		return "muted"
+	}
+	return "muted"
 }

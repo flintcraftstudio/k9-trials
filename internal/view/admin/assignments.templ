@@ -1,16 +1,111 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// AssignmentsPage manages judge-to-trial assignments for an event.
-templ AssignmentsPage(eventID string) {
-	@shell("Judge assignments", "Assign judges to trials.", "event-assignments", eventID, assignmentsBody(eventID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// AssignmentsPage manages judge-to-trial assignments (D6). One section per
+// trial; picking a judge bulk-updates that trial entries. Trials without a
+// judge get a warning — they cannot be scored.
+templ AssignmentsPage(d AssignmentsViewData) {
+	@shell("Judge assignments", "Assign judges to trials.", "event-assignments", fmt.Sprintf("%d", d.EventID), assignmentsBody(d))
 }
 
-templ assignmentsBody(eventID string) {
-	@components.StubPage(
-		"Admin · Assignments",
-		"Judges for event #" + eventID,
-		"Assign a judge to each trial. Drives /judge queue visibility per user.",
-	)
+templ assignmentsBody(d AssignmentsViewData) {
+	@adminPage(d.EventName, "Judge assignments", assignmentsSub(d), nil, assignmentsContent(d))
+}
+
+templ assignmentsContent(d AssignmentsViewData) {
+	if len(d.Trials) == 0 {
+		<div class="card flex-col items-start gap-2" style="padding:24px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials to assign</div>
+			<p class="body-sm" style="margin:0;">Add trials to this event first, then assign a judge to each.</p>
+		</div>
+	} else {
+		<div class="flex-col gap-3">
+			if d.Unassigned > 0 {
+				<div class="card" style="padding:12px 16px;border-color:var(--orange-300);background:var(--orange-50);">
+					<p class="body-sm" style="margin:0;">{ assignmentsWarn(d.Unassigned) }</p>
+				</div>
+			}
+			for _, t := range d.Trials {
+				@assignTrialRow(d.EventID, t, d.Judges)
+			}
+		</div>
+	}
+}
+
+templ assignTrialRow(eventID int64, t AssignTrial, judges []JudgeOption) {
+	<div class="card event-rail flex items-center justify-between gap-3" data-event={ t.EventKey } style={ assignRowStyle(t.Assigned) }>
+		<div class="flex-col">
+			@components.Eyebrow() {
+				{ t.Title }
+			}
+			<span class="body-sm" style="margin:0;">{ assignTrialMeta(t) }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if !t.Assigned {
+				<span class="pill pill-closed">no judge</span>
+			}
+			<form hx-post={ fmt.Sprintf("/admin/events/%d/trials/%d/judge", eventID, t.ID) } hx-trigger="change" style="display:inline;">
+				@judgeSelect(t.JudgeID, judges)
+			</form>
+		</div>
+	</div>
+}
+
+// judgeSelect is the per-trial judge dropdown. Changing it posts the
+// assignment immediately (htmx change trigger).
+templ judgeSelect(current int64, judges []JudgeOption) {
+	<select name="judge" class="rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950" style="min-width:200px;">
+		<option value="0" selected?={ current == 0 }>Pick a judge…</option>
+		for _, j := range judges {
+			<option value={ fmt.Sprintf("%d", j.ID) } selected?={ j.ID == current }>{ j.Name }</option>
+		}
+	</select>
+}
+
+func assignmentsSub(d AssignmentsViewData) string {
+	assigned := len(d.Trials) - d.Unassigned
+	if d.Unassigned > 0 {
+		return fmt.Sprintf("%d / %d trials assigned · %d blocking", assigned, len(d.Trials), d.Unassigned)
+	}
+	return fmt.Sprintf("%d / %d trials assigned", assigned, len(d.Trials))
+}
+
+func assignmentsWarn(n int) string {
+	if n == 1 {
+		return "1 trial has no judge yet. Scoring cannot open for it until you assign one."
+	}
+	return fmt.Sprintf("%d trials have no judge yet. Scoring cannot open for them until you assign one.", n)
+}
+
+func assignTrialMeta(t AssignTrial) string {
+	state := "ready"
+	if !t.Assigned {
+		state = "blocked"
+	}
+	return fmt.Sprintf("%s · %s", entriesWord(t.Entries), state)
+}
+
+func assignRowStyle(assigned bool) string {
+	base := "padding:14px 14px 14px 18px;"
+	if !assigned {
+		return base + "border:1px dashed var(--orange-400);background:var(--orange-50);"
+	}
+	return base
+}
+
+// entriesWord renders "12 entries" / "1 entry" / "no entries".
+func entriesWord(n int) string {
+	switch n {
+	case 0:
+		return "no entries"
+	case 1:
+		return "1 entry"
+	default:
+		return fmt.Sprintf("%d entries", n)
+	}
 }

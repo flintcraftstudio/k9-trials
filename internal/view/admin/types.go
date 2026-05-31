@@ -112,3 +112,143 @@ type TrialFormViewData struct {
 	TemplateVersion string
 	Err             string
 }
+
+// --- D5 Registrations review ---
+
+// RegistrationsViewData backs the registration review screen (D5).
+type RegistrationsViewData struct {
+	EventID   int64
+	EventName string
+	Counts    RegStatusCounts
+	Trials    []RegTrialGroup
+}
+
+// RegStatusCounts is the registration tally by status.
+type RegStatusCounts struct {
+	Total      int
+	Pending    int
+	Accepted   int
+	Waitlisted int
+	Rejected   int
+	Withdrawn  int
+}
+
+// RegTrialGroup is a trial accordion section with its registration rows.
+type RegTrialGroup struct {
+	Title    string
+	EventKey string
+	Pending  int
+	Rows     []RegRow
+}
+
+// RegRow is one registration in the review list.
+type RegRow struct {
+	ID          int64
+	DogName     string
+	DogMeta     string // "K9-3187 · Czech GSD"
+	Owner       string // "owner @ltanaka"
+	SubmittedBy string // "Submitted by ... · 3 hours ago"
+	Status      string
+	EntryNumber string // "entry #17" once accepted, else ""
+	Pending     bool
+}
+
+// --- D6 Judge assignments ---
+
+// AssignmentsViewData backs the judge assignment screen (D6).
+type AssignmentsViewData struct {
+	EventID    int64
+	EventName  string
+	Unassigned int
+	Trials     []AssignTrial
+	Judges     []JudgeOption
+}
+
+// AssignTrial is one trial's assignment row.
+type AssignTrial struct {
+	ID       int64
+	Title    string
+	EventKey string
+	Entries  int
+	JudgeID  int64 // current judge, 0 when none
+	Assigned bool
+}
+
+// JudgeOption is one selectable judge.
+type JudgeOption struct {
+	ID   int64
+	Name string
+}
+
+// --- D7 Challenge review ---
+
+// ChallengesViewData backs the admin challenge queue (D7). Selected is nil
+// when no challenge is open in the detail panel.
+type ChallengesViewData struct {
+	Counts   ChalStatusCounts
+	Rows     []ChalRow
+	Selected *ChalDetail
+}
+
+// ChalStatusCounts is the challenge tally by status.
+type ChalStatusCounts struct {
+	Open        int
+	UnderReview int
+	Resolved    int
+	Dismissed   int
+}
+
+// ChalRow is one challenge in the queue.
+type ChalRow struct {
+	ID       int64
+	Title    string // "Vex · Obedience L2"
+	Sub      string // "Cedar Creek · @ltanaka · 5 days ago"
+	Status   string
+	Selected bool
+}
+
+// ChalDetail is the selected challenge in the detail panel.
+type ChalDetail struct {
+	ID              int64
+	Title           string // "Vex · Obedience · Level 2"
+	Status          string
+	Filed           string // "Filed by @ltanaka · 5 days ago"
+	EntryID         int64
+	EntryTitle      string // "Cedar Creek · Obedience · Level 2 · Entry 08"
+	EntrySub        string // "result NQ" / entry status
+	EventKey        string
+	Reason          string
+	ResolutionNotes string
+	CanStart        bool // status is open
+	CanClose        bool // status is open or under_review
+}
+
+// --- D8 Users and roles ---
+
+// UsersViewData backs the users and roles admin (D8).
+type UsersViewData struct {
+	Total   int
+	Filters []UserFilter
+	Rows    []UserRow
+}
+
+// UserFilter is one role filter chip.
+type UserFilter struct {
+	Key    string
+	Label  string
+	Count  int
+	Href   string
+	Active bool
+}
+
+// UserRow is one user line with an inline role control.
+type UserRow struct {
+	ID      int64
+	Name    string // display name, or email local part
+	Sub     string // "@handle" or role note
+	Email   string
+	Created string
+	Role    string
+	Handle  string // public-profile handle, empty when none
+	IsSelf  bool   // the logged-in admin cannot change their own role
+}

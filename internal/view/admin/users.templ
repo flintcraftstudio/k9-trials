@@ -1,16 +1,93 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import "fmt"
 
-// UsersPage manages user accounts and roles.
-templ UsersPage() {
-	@shell("Users", "Manage accounts and roles.", "users", "", usersBody())
+// UsersPage manages user accounts and roles (D8). Role changes apply
+// inline via an htmx dropdown. Competitor rows link to their public
+// profile. An admin cannot change their own role (lockout guard).
+templ UsersPage(d UsersViewData) {
+	@shell("Users", "Manage accounts and roles.", "users", "", usersBody(d))
 }
 
-templ usersBody() {
-	@components.StubPage(
-		"Admin · Users",
-		"All accounts.",
-		"List users; change role (admin / judge / competitor); link to competitor identity.",
-	)
+templ usersBody(d UsersViewData) {
+	@adminPage("Operations", "Users", fmt.Sprintf("%d total", d.Total), nil, usersContent(d))
+}
+
+templ usersContent(d UsersViewData) {
+	<div class="flex-col gap-4">
+		<div class="flex gap-2 flex-wrap">
+			for _, f := range d.Filters {
+				@userFilterChip(f)
+			}
+		</div>
+		@UsersTable(d)
+	</div>
+}
+
+templ userFilterChip(f UserFilter) {
+	<a
+		href={ templ.SafeURL(f.Href) }
+		hx-get={ f.Href }
+		hx-target="#users-table"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+		style="text-decoration:none;"
+	>
+		{ fmt.Sprintf("%s · %d", f.Label, f.Count) }
+	</a>
+}
+
+// UsersTable is the filterable user list, returned alone for htmx filter
+// swaps and embedded on first load.
+templ UsersTable(d UsersViewData) {
+	<div id="users-table" class="card" style="padding:0;overflow:hidden;">
+		if len(d.Rows) == 0 {
+			<div style="padding:20px;">
+				<p class="body-sm" style="margin:0;">No users match this filter.</p>
+			</div>
+		} else {
+			for _, u := range d.Rows {
+				@userRow(u)
+			}
+		}
+	</div>
+}
+
+templ userRow(u UserRow) {
+	<div class="flex items-center justify-between gap-3" style="padding:12px 16px;border-top:1px solid var(--color-divider);">
+		<div class="flex-col" style="min-width:0;flex:1;">
+			<span style="font-weight:600;color:var(--mist-950);">{ u.Name }</span>
+			<span class="body-sm" style="margin:0;">{ userRowSub(u) }</span>
+		</div>
+		if u.Handle != "" {
+			<a href={ templ.SafeURL("/competitors/" + u.Handle) } class="body-sm" style="margin:0;color:var(--blue-700);text-decoration:none;">↗ public</a>
+		}
+		@UserRoleControl(u)
+	</div>
+}
+
+// UserRoleControl is the swappable role cell: a dropdown that posts on
+// change, or static text for the logged-in admin (no self-demotion).
+templ UserRoleControl(u UserRow) {
+	<div id={ fmt.Sprintf("role-%d", u.ID) } class="flex items-center gap-2">
+		if u.IsSelf {
+			<span class="pill pill-muted">{ u.Role } · you</span>
+		} else {
+			<form hx-post={ fmt.Sprintf("/admin/users/%d/role", u.ID) } hx-trigger="change" hx-target={ fmt.Sprintf("#role-%d", u.ID) } hx-swap="outerHTML" style="display:inline;">
+				<select name="role" class="rounded-md border border-mist-200 bg-white px-2 py-1 text-sm text-mist-950">
+					for _, role := range []string{"competitor", "judge", "admin"} {
+						<option value={ role } selected?={ role == u.Role }>{ role }</option>
+					}
+				</select>
+			</form>
+		}
+	</div>
+}
+
+func userRowSub(u UserRow) string {
+	if u.Sub != "" {
+		return u.Email + " · " + u.Sub
+	}
+	return u.Email
 }

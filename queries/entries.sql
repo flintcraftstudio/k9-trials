@@ -58,3 +58,30 @@ JOIN trials t ON t.id = e.trial_id
 JOIN events ev ON ev.id = t.event_id
 WHERE e.handler_id = ?
 ORDER BY t.trial_date DESC, e.id DESC;
+
+-- name: MaxEntryNumberByTrial :one
+-- Highest entry number used in a trial, or 0 when it has no entries. The
+-- accept flow assigns the next number.
+SELECT CAST(COALESCE(MAX(entry_number), 0) AS INTEGER) AS max_number FROM entries WHERE trial_id = ?;
+
+-- name: CreateEntryForRegistration :one
+-- Creates the entry an accepted registration produces, carrying the
+-- competitor and dog foreign keys plus the print-program name snapshot.
+INSERT INTO entries (
+    trial_id, judge_id, entry_number, handler_name, dog_name, dog_breed,
+    status, dog_id, handler_id
+)
+VALUES (?, ?, ?, ?, ?, ?, 'registered', ?, ?)
+RETURNING *;
+
+-- name: TrialJudgeID :one
+-- The judge id assigned to a trial, resolved through any of its entries.
+-- Returns sql.ErrNoRows when no judge is assigned yet.
+SELECT judge_id FROM entries
+WHERE trial_id = ? AND judge_id IS NOT NULL
+LIMIT 1;
+
+-- name: AssignTrialJudge :exec
+-- Sets the judge on every entry in a trial. Judge assignment is per-entry
+-- in this schema, so assigning a trial judge bulk-updates its entries.
+UPDATE entries SET judge_id = ?, updated_at = CURRENT_TIMESTAMP WHERE trial_id = ?;

@@ -1,0 +1,174 @@
+package store
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"time"
+
+	"github.com/flintcraftstudio/k9-trials/internal/db"
+)
+
+// ListRegistrationsByEvent returns every registration in an event for the
+// review screen (D5), joined to dog, competitor, submitter, and trial.
+func (s *Store) ListRegistrationsByEvent(ctx context.Context, eventID int64) ([]db.ListRegistrationsByEventRow, error) {
+	return s.q.ListRegistrationsByEvent(ctx, eventID)
+}
+
+// AcceptRegistration is the bridge from competitor self-service to the
+// scoring pipeline: it creates the entry an accepted registration produces
+// (assigning the next entry number and inheriting any judge already on the
+// trial) and links it back to the registration — all in one transaction.
+// Returns the new entry number. Errors if the registration is not pending.
+func (s *Store) AcceptRegistration(ctx context.Context, regID, reviewerUserID int64) (int64, error) {
+	reg, err := s.q.GetRegistrationDetail(ctx, regID)
+	if err != nil {
+		return 0, err
+	}
+	if reg.Status != "pending" {
+		return 0, fmt.Errorf("registration %d is %s, not pending", regID, reg.Status)
+	}
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+	qtx := s.q.WithTx(tx)
+
+	maxNum, err := qtx.MaxEntryNumberByTrial(ctx, reg.TrialID)
+	if err != nil {
+		return 0, fmt.Errorf("max entry number: %w", err)
+	}
+	entryNumber := maxNum + 1
+
+	// Inherit the judge already assigned to the trial, if any, so a late
+	// accept stays consistent with the rest of the trial.
+	judge, err := qtx.TrialJudgeID(ctx, reg.TrialID)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return 0, fmt.Errorf("trial judge: %w", err)
+	}
+
+	entry, err := qtx.CreateEntryForRegistration(ctx, db.CreateEntryForRegistrationParams{
+		TrialID:     reg.TrialID,
+		JudgeID:     judge,
+		EntryNumber: entryNumber,
+		HandlerName: reg.CompetitorName,
+		DogName:     reg.DogName,
+		DogBreed:    reg.DogBreed,
+		DogID:       sql.NullInt64{Int64: reg.DogID, Valid: true},
+		HandlerID:   sql.NullInt64{Int64: reg.CompetitorID, Valid: true},
+	})
+	if err != nil {
+		return 0, fmt.Errorf("create entry: %w", err)
+	}
+
+	if err := qtx.AcceptRegistration(ctx, db.AcceptRegistrationParams{
+		EntryID:    sql.NullInt64{Int64: entry.ID, Valid: true},
+		ReviewedBy: sql.NullInt64{Int64: reviewerUserID, Valid: true},
+		ID:         regID,
+	}); err != nil {
+		return 0, fmt.Errorf("accept registration: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, err
+	}
+	return entryNumber, nil
+}
+
+// SetRegistrationStatus sets a registration to waitlisted or rejected and
+// stamps the reviewer. The handler validates the target status and that the
+// registration belongs to the event being reviewed.
+func (s *Store) SetRegistrationStatus(ctx context.Context, regID, reviewerUserID int64, status string) error {
+	return s.q.SetRegistrationStatus(ctx, db.SetRegistrationStatusParams{
+		Status:     status,
+		ReviewedBy: sql.NullInt64{Int64: reviewerUserID, Valid: true},
+		ID:         regID,
+	})
+}
+
+// RegistrationRef is the minimal registration identity the review handlers
+// pass around: the row id and its owning event for the redirect target.
+type RegistrationRef struct {
+	ID      int64
+	EventID int64
+}
+
+// GetRegistrationDetail returns the registration fields the review actions
+// need (including the owning event id for the URL guard).
+func (s *Store) GetRegistrationDetail(ctx context.Context, regID int64) (db.GetRegistrationDetailRow, error) {
+	return s.q.GetRegistrationDetail(ctx, regID)
+}
+
+// AssignableJudges lists users who can judge a trial (judges and admins).
+func (s *Store) AssignableJudges(ctx context.Context) ([]db.ListAssignableJudgesRow, error) {
+	return s.q.ListAssignableJudges(ctx)
+}
+
+// TrialJudgeID returns the judge id assigned to a trial (via its entries),
+// or ok=false when none is assigned.
+func (s *Store) TrialJudgeID(ctx context.Context, trialID int64) (int64, bool, error) {
+	id, err := s.q.TrialJudgeID(ctx, trialID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return 0, false, nil
+	}
+	if err != nil {
+		return 0, false, err
+	}
+	if !id.Valid {
+		return 0, false, nil
+	}
+	return id.Int64, true, nil
+}
+
+// AssignTrialJudge sets the judge on every entry in a trial.
+func (s *Store) AssignTrialJudge(ctx context.Context, trialID, judgeID int64) error {
+	return s.q.AssignTrialJudge(ctx, db.AssignTrialJudgeParams{
+		JudgeID: sql.NullInt64{Int64: judgeID, Valid: true},
+		TrialID: trialID,
+	})
+}
+
+// ListAllChallenges returns the cross-event challenge queue (D7).
+func (s *Store) ListAllChallenges(ctx context.Context) ([]db.ListAllChallengesRow, error) {
+	return s.q.ListAllChallenges(ctx)
+}
+
+// GetChallengeDetail returns one challenge with its disputed entry context.
+func (s *Store) GetChallengeDetail(ctx context.Context, id int64) (db.GetChallengeDetailRow, error) {
+	return s.q.GetChallengeDetail(ctx, id)
+}
+
+// UpdateChallengeStatus advances a challenge. resolvedBy is the acting
+// admin user when resolving or dismissing; pass 0 (and a zero time) while
+// only starting review.
+func (s *Store) UpdateChallengeStatus(ctx context.Context, id int64, status, notes string, resolvedBy int64, resolvedAt time.Time) error {
+	by := sql.NullInt64{}
+	at := sql.NullTime{}
+	if resolvedBy != 0 {
+		by = sql.NullInt64{Int64: resolvedBy, Valid: true}
+	}
+	if !resolvedAt.IsZero() {
+		at = sql.NullTime{Time: resolvedAt, Valid: true}
+	}
+	return s.q.UpdateChallengeStatus(ctx, db.UpdateChallengeStatusParams{
+		Status:          status,
+		ResolutionNotes: notes,
+		ResolvedBy:      by,
+		ResolvedAt:      at,
+		ID:              id,
+	})
+}
+
+// ListUsers returns every user with their competitor identity (when any),
+// for the users and roles admin (D8).
+func (s *Store) ListUsers(ctx context.Context) ([]db.ListUsersWithCompetitorRow, error) {
+	return s.q.ListUsersWithCompetitor(ctx)
+}
+
+// UpdateUserRole changes a user role.
+func (s *Store) UpdateUserRole(ctx context.Context, userID int64, role string) error {
+	return s.q.UpdateUserRole(ctx, db.UpdateUserRoleParams{Role: role, ID: userID})
+}

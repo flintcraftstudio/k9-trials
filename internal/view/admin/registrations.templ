@@ -1,17 +1,143 @@
 package admin
 
-import "github.com/flintcraftstudio/k9-trials/internal/view/components"
+import (
+	"fmt"
 
-// RegistrationsPage lists all registrations for an event so admins can
-// accept (creating an entries row + entry number), waitlist, or reject.
-templ RegistrationsPage(eventID string) {
-	@shell("Registrations", "Review event registrations.", "event-registrations", eventID, registrationsBody(eventID))
+	"github.com/flintcraftstudio/k9-trials/internal/view/components"
+)
+
+// RegistrationsPage is the registration review screen (D5) — where
+// competitor self-service hands off to the scoring pipeline. Registrations
+// are grouped by trial; pending rows carry accept / waitlist / reject
+// actions. Accept creates the entry (assigning the next entry number).
+templ RegistrationsPage(d RegistrationsViewData) {
+	@shell("Registrations", "Review event registrations.", "event-registrations", fmt.Sprintf("%d", d.EventID), registrationsBody(d))
 }
 
-templ registrationsBody(eventID string) {
-	@components.StubPage(
-		"Admin · Registrations",
-		"Registrations for event #" + eventID,
-		"Pending, accepted, waitlisted, withdrawn, rejected. Accept assigns the next entry number and creates the entries row.",
-	)
+templ registrationsBody(d RegistrationsViewData) {
+	@adminPage(d.EventName, "Registrations", registrationsSub(d), nil, registrationsContent(d))
+}
+
+templ registrationsContent(d RegistrationsViewData) {
+	if len(d.Trials) == 0 {
+		<div class="card flex-col items-start gap-2" style="padding:24px;">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No registrations yet</div>
+			<p class="body-sm" style="margin:0;">Once competitors register dogs for this event trials, they appear here for review.</p>
+		</div>
+	} else {
+		<div class="flex-col gap-5">
+			for _, g := range d.Trials {
+				@regTrialGroup(g)
+			}
+		</div>
+	}
+}
+
+templ regTrialGroup(g RegTrialGroup) {
+	<div class="card" style="padding:0;overflow:hidden;">
+		<div class="flex items-center justify-between gap-2" style="padding:12px 16px;background:var(--mist-100);border-bottom:1px solid var(--color-divider);">
+			<div class="flex-col">
+				@components.Eyebrow() {
+					{ g.Title }
+				}
+				if g.Pending > 0 {
+					<span class="body-sm" style="margin:0;font-weight:600;color:var(--orange-800);">{ fmt.Sprintf("%d pending", g.Pending) }</span>
+				}
+			</div>
+		</div>
+		for _, row := range g.Rows {
+			@regRow(row)
+		}
+	</div>
+}
+
+templ regRow(row RegRow) {
+	<div class="flex items-center justify-between gap-3" style={ regRowStyle(row.Pending) }>
+		<div class="flex-col" style="min-width:0;flex:1;">
+			<span style="color:var(--mist-950);">
+				<span style="font-weight:600;">{ row.DogName }</span>
+				if row.DogMeta != "" {
+					<span class="body-sm" style="margin-left:6px;">{ row.DogMeta }</span>
+				}
+			</span>
+			<span class="body-sm" style="margin:0;">{ row.SubmittedBy }</span>
+		</div>
+		<div class="flex items-center gap-2">
+			if row.EntryNumber != "" {
+				<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ row.EntryNumber }</span>
+			}
+			@components.Pill(regStatusKind(row.Status)) {
+				{ regStatusLabel(row.Status) }
+			}
+			if row.Pending {
+				@regActions(row.ID)
+			}
+		</div>
+	</div>
+}
+
+// regActions renders the accept / waitlist / reject controls for a pending
+// registration. Each is its own POST so it works without JS.
+templ regActions(id int64) {
+	<div class="flex items-center gap-1">
+		<form hx-post={ fmt.Sprintf("/admin/registrations/%d/accept", id) } style="display:inline;">
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				Accept
+			}
+		</form>
+		<form hx-post={ fmt.Sprintf("/admin/registrations/%d/waitlist", id) } style="display:inline;">
+			@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Type: "submit"}) {
+				Waitlist
+			}
+		</form>
+		<form hx-post={ fmt.Sprintf("/admin/registrations/%d/reject", id) } hx-confirm="Reject this registration?" style="display:inline;">
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Class: "text-[var(--color-danger)]"}) {
+				Reject
+			}
+		</form>
+	</div>
+}
+
+func registrationsSub(d RegistrationsViewData) string {
+	c := d.Counts
+	return fmt.Sprintf("%d total · %d pending · %d accepted · %d waitlisted", c.Total, c.Pending, c.Accepted, c.Waitlisted)
+}
+
+func regRowStyle(pending bool) string {
+	base := "padding:12px 16px;border-top:1px solid var(--color-divider);"
+	if pending {
+		return base + "background:var(--orange-50);"
+	}
+	return base
+}
+
+// regStatusLabel / regStatusKind map a registration status to display.
+func regStatusLabel(status string) string {
+	switch status {
+	case "pending":
+		return "Pending"
+	case "accepted":
+		return "Accepted"
+	case "waitlisted":
+		return "Waitlisted"
+	case "withdrawn":
+		return "Withdrawn"
+	case "rejected":
+		return "Rejected"
+	}
+	return status
+}
+
+func regStatusKind(status string) string {
+	switch status {
+	case "pending":
+		return "wait"
+	case "accepted":
+		return "qual"
+	case "waitlisted":
+		return "scoring"
+	case "withdrawn", "rejected":
+		return "closed"
+	}
+	return "muted"
 }
