@@ -90,6 +90,14 @@ func SeedTrial() error {
 	return sh.Run("go", "run", "./cmd/seed-trial")
 }
 
+// SeedDemo resets all application data and reseeds a complete demo world:
+// admin, judges, five competitors with dogs, four events (live / upcoming /
+// closed / draft), trials, scored entries, pending + accepted registrations,
+// and challenges in every state. Run this for a client demo. WIPES data.
+func SeedDemo() error {
+	return sh.Run("go", "run", "./cmd/seed-demo")
+}
+
 func dbPath() string {
 	if p := os.Getenv("DB_PATH"); p != "" {
 		return p
