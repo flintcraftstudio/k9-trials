@@ -56,6 +56,12 @@ func main() {
 		slog.Warn("TURNSTILE_SITE_KEY or TURNSTILE_SECRET_KEY not set, Turnstile disabled")
 	}
 
+	// Session cookie security
+	session.Secure = cfg.CookieSecure
+	if !cfg.CookieSecure {
+		slog.Warn("COOKIE_INSECURE set, session cookie Secure flag disabled (dev only)")
+	}
+
 	// Database
 	if err := os.MkdirAll(filepath.Dir(cfg.DBPath), 0755); err != nil {
 		slog.Error("failed to create database directory", "err", err)
@@ -104,7 +110,8 @@ func main() {
 	mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("web/static"))))
 
 	// Pages
-	mux.Handle("GET /", handler.Home())
+	mux.Handle("GET /{$}", handler.Home())
+	mux.Handle("GET /", handler.Fallback())
 	mux.Handle("GET /contact", handler.Contact())
 	mux.Handle("POST /contact", handler.ContactSubmit(mailer, cfg.TurnstileSecretKey))
 

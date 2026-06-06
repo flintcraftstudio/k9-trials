@@ -14,6 +14,12 @@ const (
 	sessionMaxAge  = 7 * 24 * time.Hour
 )
 
+// Secure controls the Secure flag on the session cookie. It defaults to true
+// (production-safe) and is set once at startup. Set it to false for local
+// development over plain HTTP, where browsers refuse to store a Secure cookie
+// served over http://localhost and the session would never persist.
+var Secure = true
+
 type ctxKey struct{}
 
 // User represents the authenticated user attached to a request context.
@@ -135,7 +141,7 @@ func Create(ctx context.Context, w http.ResponseWriter, store Store, userID int6
 		Value:    token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   Secure,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   int(sessionMaxAge.Seconds()),
 	})
@@ -158,7 +164,7 @@ func Destroy(ctx context.Context, w http.ResponseWriter, r *http.Request, store 
 		Value:    "",
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
+		Secure:   Secure,
 		SameSite: http.SameSiteLaxMode,
 		MaxAge:   -1,
 	})

@@ -129,9 +129,12 @@ func Dev() error {
 	return Run()
 }
 
-// Run starts the server
+// Run starts the server. COOKIE_INSECURE is set so the session cookie omits the
+// Secure flag — browsers won't store a Secure cookie over plain http://localhost,
+// so without this local login wouldn't persist. Production runs the binary
+// directly (not via mage), so this dev-only convenience never reaches it.
 func Run() error {
-	return sh.Run("./bin/server")
+	return sh.RunWith(map[string]string{"COOKIE_INSECURE": "1"}, "./bin/server")
 }
 
 func tailwindBinaryPath() string {

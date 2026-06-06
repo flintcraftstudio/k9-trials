@@ -42,7 +42,7 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		userID, _, passwordHash, _, err := s.GetUserByEmail(r.Context(), email)
+		userID, _, passwordHash, role, err := s.GetUserByEmail(r.Context(), email)
 		if err != nil {
 			if err := view.LoginForm("Invalid email or password.", email).Render(r.Context(), w); err != nil {
 				slog.Error("render error", "err", err)
@@ -65,7 +65,20 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		hxRedirect(w, r, "/")
+		hxRedirect(w, r, landingFor(role))
+	}
+}
+
+// landingFor returns the post-login destination for a user's role. Admins and
+// judges go straight to their work area; everyone else lands on the home page.
+func landingFor(role string) string {
+	switch role {
+	case "admin":
+		return "/admin"
+	case "judge":
+		return "/judge"
+	default:
+		return "/"
 	}
 }
 

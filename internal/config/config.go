@@ -17,6 +17,7 @@ type Config struct {
 	TurnstileSecretKey string
 	DBPath             string
 	SessionSecret      string
+	CookieSecure       bool
 }
 
 // Load reads configuration from environment variables, applying defaults where not set.
@@ -37,6 +38,9 @@ func Load() (*Config, error) {
 		TurnstileSecretKey: os.Getenv("TURNSTILE_SECRET_KEY"),
 		DBPath:             envDefault("DB_PATH", "./data/app.db"),
 		SessionSecret:      os.Getenv("SESSION_SECRET"),
+		// Secure cookies by default; set COOKIE_INSECURE=1 for local HTTP dev,
+		// where browsers won't store a Secure cookie over http://localhost.
+		CookieSecure: os.Getenv("COOKIE_INSECURE") == "",
 	}, nil
 }
 
