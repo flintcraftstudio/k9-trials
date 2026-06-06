@@ -8,6 +8,34 @@ import (
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
+// topNavProps builds the page header props for the current request. Logged-in
+// users get lean app chrome — no center marketing links (their section nav
+// lives in the left sidebar / tabs), and the logo points at their own area.
+// Anonymous visitors get the full marketing nav with the logo on the home page.
+func topNavProps(u *session.User, currentRoute string) components.NavBarProps {
+	anchors := sectionAnchorsFor(u)
+	if u == nil {
+		return components.NavBarProps{
+			Links:          components.DefaultNavBarLinks,
+			CurrentRoute:   currentRoute,
+			LoggedIn:       false,
+			SectionAnchors: anchors,
+		}
+	}
+	// The role's primary section doubles as the logo destination.
+	homeHref := "/"
+	if len(anchors) > 0 {
+		homeHref = anchors[0].Href
+	}
+	return components.NavBarProps{
+		Links:          nil,
+		CurrentRoute:   currentRoute,
+		LoggedIn:       true,
+		SectionAnchors: anchors,
+		HomeHref:       homeHref,
+	}
+}
+
 // sectionAnchorsFor returns the role-aware chips shown in the top bar's
 // actions area. Anonymous visitors get none. Each role currently maps to
 // a single chip pointing at its primary section; if multi-role users

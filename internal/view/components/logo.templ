@@ -3,10 +3,13 @@ package components
 import "strconv"
 
 // Logo renders the K9 Elements wordmark — clickable lockup of the
-// mark + "K9 Elements" text. Used in NavBar and Footer.
-templ Logo(size int) {
+// mark + "K9 Elements" text. Used in NavBar and Footer. href is the link
+// destination; empty defaults to the marketing home ("/"), but the navbar
+// points it at a logged-in user's own area.
+templ Logo(size int, href string) {
 	{{ if size == 0 { size = 32 } }}
-	<a href="/" class="logo">
+	{{ if href == "" { href = "/" } }}
+	<a href={ templ.SafeURL(href) } class="logo">
 		<img
 			src="/static/img/k9-elements-logo.png"
 			alt=""

@@ -30,6 +30,9 @@ type NavBarProps struct {
 	CurrentRoute   string
 	LoggedIn       bool
 	SectionAnchors []NavBarLink
+	// HomeHref is the logo's link destination. Empty defaults to the
+	// marketing home ("/"); logged-in users get their own area (e.g. /admin).
+	HomeHref string
 }
 
 // DefaultNavBarLinks is the trial-app primary nav. Mirrors the marketing
@@ -50,7 +53,7 @@ var DefaultNavBarLinks = []NavBarLink{
 templ NavBar(p NavBarProps) {
 	<header class="navbar">
 		<div class="inner">
-			@Logo(0)
+			@Logo(0, p.HomeHref)
 			<nav class="links flex-1 justify-center">
 				for _, l := range p.Links {
 					if l.ID == p.CurrentRoute {
