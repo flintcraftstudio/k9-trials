@@ -2,7 +2,10 @@ package handler
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"net/url"
+	"strconv"
 	"strings"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
@@ -127,30 +130,120 @@ func toAssignmentsVD(ctx context.Context, st *store.Store, event db.Event, trial
 	}
 }
 
-// toChallengesVD builds the D7 queue with optional selected detail.
-func toChallengesVD(rows []db.ListAllChallengesRow, selectedID int64, detail *admin.ChalDetail) admin.ChallengesViewData {
-	var counts admin.ChalStatusCounts
-	out := make([]admin.ChalRow, 0, len(rows))
-	for _, c := range rows {
-		switch c.Status {
-		case "open":
-			counts.Open++
-		case "under_review":
-			counts.UnderReview++
-		case "resolved":
-			counts.Resolved++
-		case "dismissed":
-			counts.Dismissed++
-		}
+// challengesVDInput carries the queue state into the view-data mapper.
+type challengesVDInput struct {
+	rows       []store.ChallengeListRow
+	counts     map[string]int // global tally by status
+	total      int            // filtered total (for pagination)
+	status     string         // active status filter ("" = all)
+	sort       string         // active sort key
+	page       int            // 1-based
+	offset     int            // (page-1)*pageSize
+	selectedID int64
+	detail     *admin.ChalDetail
+}
+
+// challengesURL builds a queue URL, preserving the active status/sort/page and
+// omitting defaults so canonical links stay clean.
+func challengesURL(base, status, sort string, page int) string {
+	q := url.Values{}
+	if status != "" {
+		q.Set("status", status)
+	}
+	if sort != "" && sort != "newest" {
+		q.Set("sort", sort)
+	}
+	if page > 1 {
+		q.Set("page", strconv.Itoa(page))
+	}
+	if len(q) == 0 {
+		return base
+	}
+	return base + "?" + q.Encode()
+}
+
+// toChallengesVD builds the D7 queue — filter chips, sort links, pagination,
+// and rows — from the current queue state and optional selected detail.
+func toChallengesVD(in challengesVDInput) admin.ChallengesViewData {
+	counts := admin.ChalStatusCounts{
+		Open:        in.counts["open"],
+		UnderReview: in.counts["under_review"],
+		Resolved:    in.counts["resolved"],
+		Dismissed:   in.counts["dismissed"],
+	}
+	allCount := counts.Open + counts.UnderReview + counts.Resolved + counts.Dismissed
+
+	// Status filter chips. Switching filter resets to page 1 and keeps sort.
+	filterDefs := []struct {
+		key, label string
+		count      int
+	}{
+		{"", "All", allCount},
+		{"open", "Open", counts.Open},
+		{"under_review", "Under review", counts.UnderReview},
+		{"resolved", "Resolved", counts.Resolved},
+		{"dismissed", "Dismissed", counts.Dismissed},
+	}
+	filters := make([]admin.ChalFilter, 0, len(filterDefs))
+	for _, f := range filterDefs {
+		filters = append(filters, admin.ChalFilter{
+			Label:  f.label,
+			Count:  f.count,
+			Href:   challengesURL("/admin/challenges", f.key, in.sort, 1),
+			Active: f.key == in.status,
+		})
+	}
+
+	// Sort links. Switching sort keeps the filter and resets to page 1.
+	sortDefs := []struct{ key, label string }{
+		{"newest", "Newest"},
+		{"oldest", "Oldest"},
+		{"status", "By status"},
+	}
+	sorts := make([]admin.ChalSortLink, 0, len(sortDefs))
+	for _, s := range sortDefs {
+		sorts = append(sorts, admin.ChalSortLink{
+			Label:  s.label,
+			Href:   challengesURL("/admin/challenges", in.status, s.key, 1),
+			Active: s.key == in.sort,
+		})
+	}
+
+	out := make([]admin.ChalRow, 0, len(in.rows))
+	for _, c := range in.rows {
 		out = append(out, admin.ChalRow{
 			ID:       c.ID,
 			Title:    c.DogName + " · " + disciplineLevelLabel(c.Discipline, c.Level),
 			Sub:      c.EventName + " · @" + c.FilerHandle + " · " + relativeTime(c.FiledAt),
 			Status:   c.Status,
-			Selected: c.ID == selectedID,
+			Href:     challengesURL(fmt.Sprintf("/admin/challenges/%d", c.ID), in.status, in.sort, in.page),
+			Selected: c.ID == in.selectedID,
 		})
 	}
-	return admin.ChallengesViewData{Counts: counts, Rows: out, Selected: detail}
+
+	from, to := 0, 0
+	if len(in.rows) > 0 {
+		from = in.offset + 1
+		to = in.offset + len(in.rows)
+	}
+	pageVD := admin.ChalPage{
+		From:     from,
+		To:       to,
+		Total:    in.total,
+		HasPrev:  in.page > 1,
+		HasNext:  to < in.total,
+		PrevHref: challengesURL("/admin/challenges", in.status, in.sort, in.page-1),
+		NextHref: challengesURL("/admin/challenges", in.status, in.sort, in.page+1),
+	}
+
+	return admin.ChallengesViewData{
+		Counts:   counts,
+		Filters:  filters,
+		Sorts:    sorts,
+		Rows:     out,
+		Page:     pageVD,
+		Selected: in.detail,
+	}
 }
 
 // chalDetailVD maps a challenge detail row into the view.

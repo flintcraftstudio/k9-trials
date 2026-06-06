@@ -172,17 +172,72 @@ func AdminAssignJudge(st *store.Store) http.HandlerFunc {
 	}
 }
 
+// challengesPageSize is the number of queue rows shown per page (D7).
+const challengesPageSize = 12
+
+// challengeStatusFilters whitelists the status filter values, in chip order.
+// "" means all.
+var challengeStatusFilters = []string{"", "open", "under_review", "resolved", "dismissed"}
+
+func validChallengeFilter(status string) bool {
+	for _, s := range challengeStatusFilters {
+		if s == status {
+			return true
+		}
+	}
+	return false
+}
+
 // AdminChallenges serves GET /admin/challenges and
 // GET /admin/challenges/{id} — the cross-event review queue (D7), with the
-// selected challenge open in the detail panel.
+// selected challenge open in the detail panel. The queue is filtered by
+// status, sorted, and paginated via query params (status, sort, page).
 func AdminChallenges(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := st.ListAllChallenges(r.Context())
+		ctx := r.Context()
+		q := r.URL.Query()
+
+		status := q.Get("status")
+		if !validChallengeFilter(status) {
+			status = ""
+		}
+		sort := q.Get("sort")
+		if !store.ChallengeSortValid(sort) {
+			sort = "newest"
+		}
+		page, _ := strconv.Atoi(q.Get("page"))
+		if page < 1 {
+			page = 1
+		}
+
+		total, err := st.CountChallenges(ctx, status)
+		if err != nil {
+			slog.Error("admin challenges count", "err", err)
+			http.Error(w, "admin unavailable", http.StatusInternalServerError)
+			return
+		}
+		lastPage := int((total + challengesPageSize - 1) / challengesPageSize)
+		if lastPage < 1 {
+			lastPage = 1
+		}
+		if page > lastPage {
+			page = lastPage
+		}
+		offset := int64((page - 1) * challengesPageSize)
+
+		rows, err := st.ListChallengesPage(ctx, status, sort, challengesPageSize, offset)
 		if err != nil {
 			slog.Error("admin challenges", "err", err)
 			http.Error(w, "admin unavailable", http.StatusInternalServerError)
 			return
 		}
+		counts, err := st.ChallengeStatusCounts(ctx)
+		if err != nil {
+			slog.Error("admin challenges counts", "err", err)
+			http.Error(w, "admin unavailable", http.StatusInternalServerError)
+			return
+		}
+
 		var selectedID int64
 		var detail *admin.ChalDetail
 		if idStr := r.PathValue("id"); idStr != "" {
@@ -191,7 +246,7 @@ func AdminChallenges(st *store.Store) http.HandlerFunc {
 				http.NotFound(w, r)
 				return
 			}
-			c, err := st.GetChallengeDetail(r.Context(), id)
+			c, err := st.GetChallengeDetail(ctx, id)
 			if errors.Is(err, sql.ErrNoRows) {
 				http.NotFound(w, r)
 				return
@@ -205,7 +260,19 @@ func AdminChallenges(st *store.Store) http.HandlerFunc {
 			d := chalDetailVD(c)
 			detail = &d
 		}
-		renderPublic(w, r, admin.ChallengesPage(toChallengesVD(rows, selectedID, detail)))
+
+		vd := toChallengesVD(challengesVDInput{
+			rows:       rows,
+			counts:     counts,
+			total:      int(total),
+			status:     status,
+			sort:       sort,
+			page:       page,
+			offset:     int(offset),
+			selectedID: selectedID,
+			detail:     detail,
+		})
+		renderPublic(w, r, admin.ChallengesPage(vd))
 	}
 }
 

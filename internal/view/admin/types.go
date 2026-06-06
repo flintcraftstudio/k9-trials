@@ -183,10 +183,14 @@ type JudgeOption struct {
 // --- D7 Challenge review ---
 
 // ChallengesViewData backs the admin challenge queue (D7). Selected is nil
-// when no challenge is open in the detail panel.
+// when no challenge is open in the detail panel. Filters, Sorts, and Page
+// drive the queue's status filtering, sorting, and pagination controls.
 type ChallengesViewData struct {
 	Counts   ChalStatusCounts
+	Filters  []ChalFilter
+	Sorts    []ChalSortLink
 	Rows     []ChalRow
+	Page     ChalPage
 	Selected *ChalDetail
 }
 
@@ -198,12 +202,40 @@ type ChalStatusCounts struct {
 	Dismissed   int
 }
 
+// ChalFilter is one status filter chip with its match count.
+type ChalFilter struct {
+	Label  string
+	Count  int
+	Href   string
+	Active bool
+}
+
+// ChalSortLink is one sort option in the queue's sort control.
+type ChalSortLink struct {
+	Label  string
+	Href   string
+	Active bool
+}
+
+// ChalPage is the queue's pagination state. From/To are 1-based row indices
+// within the filtered total (both 0 when the page is empty).
+type ChalPage struct {
+	From     int
+	To       int
+	Total    int
+	HasPrev  bool
+	HasNext  bool
+	PrevHref string
+	NextHref string
+}
+
 // ChalRow is one challenge in the queue.
 type ChalRow struct {
 	ID       int64
 	Title    string // "Vex · Obedience L2"
 	Sub      string // "Cedar Creek · @ltanaka · 5 days ago"
 	Status   string
+	Href     string // detail link, preserving the active filter/sort/page
 	Selected bool
 }
 

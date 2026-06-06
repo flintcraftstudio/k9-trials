@@ -18,17 +18,21 @@ templ challengesBody(d ChallengesViewData) {
 }
 
 templ challengesContent(d ChallengesViewData) {
-	<div class="grid gap-4" style="grid-template-columns:320px 1fr;align-items:start;">
-		<div class="card" style="padding:0;overflow:hidden;">
-			if len(d.Rows) == 0 {
-				<div style="padding:20px;">
-					<p class="body-sm" style="margin:0;">No challenges filed yet.</p>
-				</div>
-			} else {
-				for _, row := range d.Rows {
-					@chalQueueRow(row)
+	<div class="grid gap-4" style="grid-template-columns:340px 1fr;align-items:start;">
+		<div class="flex-col gap-3">
+			@chalControls(d)
+			<div class="card" style="padding:0;overflow:hidden;">
+				if len(d.Rows) == 0 {
+					<div style="padding:20px;">
+						<p class="body-sm" style="margin:0;">No challenges match this filter.</p>
+					</div>
+				} else {
+					for _, row := range d.Rows {
+						@chalQueueRow(row)
+					}
 				}
-			}
+			</div>
+			@chalPager(d.Page)
 		</div>
 		if d.Selected != nil {
 			@chalDetail(*d.Selected)
@@ -40,15 +44,71 @@ templ challengesContent(d ChallengesViewData) {
 	</div>
 }
 
+// chalControls renders the status filter chips and the sort selector above
+// the queue. Both are plain links — selecting one reloads the queue page.
+templ chalControls(d ChallengesViewData) {
+	<div class="flex-col gap-2">
+		<div class="flex gap-2 flex-wrap">
+			for _, f := range d.Filters {
+				<a
+					href={ templ.SafeURL(f.Href) }
+					class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+					style="text-decoration:none;"
+				>
+					{ fmt.Sprintf("%s · %d", f.Label, f.Count) }
+				</a>
+			}
+		</div>
+		<div class="flex items-center gap-2 flex-wrap">
+			<span class="body-sm" style="margin:0;color:var(--mist-500);">Sort</span>
+			for _, s := range d.Sorts {
+				if s.Active {
+					<span class="pill pill-active" style="text-transform:none;letter-spacing:0;">{ s.Label }</span>
+				} else {
+					<a href={ templ.SafeURL(s.Href) } class="pill pill-muted" style="text-decoration:none;text-transform:none;letter-spacing:0;">{ s.Label }</a>
+				}
+			}
+		</div>
+	</div>
+}
+
+// chalPager renders the "from–to of total" summary and prev/next controls.
+// Hidden entirely when there are no challenges in the current filter.
+templ chalPager(p ChalPage) {
+	if p.Total > 0 {
+		<div class="flex items-center justify-between gap-2" style="padding:0 2px;">
+			<span class="body-sm" style="margin:0;color:var(--mist-500);">
+				{ fmt.Sprintf("%d–%d of %d", p.From, p.To, p.Total) }
+			</span>
+			<div class="flex items-center gap-2">
+				if p.HasPrev {
+					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.PrevHref}) {
+						← Prev
+					}
+				} else {
+					<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">← Prev</span>
+				}
+				if p.HasNext {
+					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.NextHref}) {
+						Next →
+					}
+				} else {
+					<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">Next →</span>
+				}
+			</div>
+		</div>
+	}
+}
+
 templ chalQueueRow(row ChalRow) {
-	<a href={ templ.SafeURL(fmt.Sprintf("/admin/challenges/%d", row.ID)) } class="flex items-center justify-between gap-2" style={ chalQueueStyle(row.Selected) }>
+	<a href={ templ.SafeURL(row.Href) } class="flex items-start justify-between gap-2" style={ chalQueueStyle(row.Selected) }>
 		<div class="flex-col" style="min-width:0;">
 			<span style="color:var(--mist-950);font-weight:600;">{ row.Title }</span>
 			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
 		</div>
-		@components.Pill(chalKind(row.Status)) {
-			{ chalLabel(row.Status) }
-		}
+		<span class={ "pill", "pill-" + chalKind(row.Status) } style="flex-shrink:0;white-space:nowrap;font-size:10px;padding:2px 8px;">
+			{ chalQueueLabel(row.Status) }
+		</span>
 	</a>
 }
 
@@ -137,6 +197,16 @@ func chalQueueStyle(selected bool) string {
 		return base + "background:var(--mist-100);"
 	}
 	return base
+}
+
+// chalQueueLabel is the compact status label for the dense queue list —
+// "Review" instead of "Under review" so the pill stays on one line. The
+// detail panel still uses the full chalLabel.
+func chalQueueLabel(status string) string {
+	if status == "under_review" {
+		return "Review"
+	}
+	return chalLabel(status)
 }
 
 // chalLabel / chalKind map a challenge status to display.

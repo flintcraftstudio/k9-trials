@@ -40,22 +40,19 @@ LIMIT 1;
 -- competitors. Drives the admin dashboard needs-review card (D1).
 SELECT COUNT(*) FROM challenges WHERE status IN ('open', 'under_review');
 
--- name: ListAllChallenges :many
--- Every challenge across all events, newest first, joined to the disputed
--- entry, its trial and event, and the filer. Backs the admin review queue
--- (D7).
-SELECT
-    ch.id, ch.status, ch.filed_at, ch.entry_id,
-    e.entry_number, e.dog_name,
-    t.discipline, t.level,
-    ev.name AS event_name,
-    c.handle AS filer_handle
-FROM challenges ch
-JOIN entries e ON e.id = ch.entry_id
-JOIN trials t ON t.id = e.trial_id
-JOIN events ev ON ev.id = t.event_id
-JOIN competitors c ON c.id = ch.filed_by
-ORDER BY ch.filed_at DESC;
+-- The cross-event challenge queue (D7) is filtered by status, sorted by a
+-- whitelisted column, and paginated. sqlc does not parameterise a dynamic
+-- ORDER BY, so the list query is hand-written in store.ListChallengesPage;
+-- the count below backs its pagination.
+
+-- name: CountChallenges :one
+-- Total challenges matching the status filter (empty = all). Drives the
+-- admin review queue's pagination.
+SELECT COUNT(*) FROM challenges ch
+WHERE (sqlc.arg(status) = '' OR ch.status = sqlc.arg(status));
+
+-- The global per-status challenge tally (filter-chip counts) is hand-written
+-- in store.ChallengeStatusCounts: sqlc v1.30 mangles "GROUP BY status".
 
 -- name: GetChallengeDetail :one
 -- One challenge with everything the review detail needs: the dispute, the

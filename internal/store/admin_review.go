@@ -131,9 +131,103 @@ func (s *Store) AssignTrialJudge(ctx context.Context, trialID, judgeID int64) er
 	})
 }
 
-// ListAllChallenges returns the cross-event challenge queue (D7).
-func (s *Store) ListAllChallenges(ctx context.Context) ([]db.ListAllChallengesRow, error) {
-	return s.q.ListAllChallenges(ctx)
+// ChallengeListRow is one row of the paginated admin challenge queue (D7).
+type ChallengeListRow struct {
+	ID          int64
+	Status      string
+	FiledAt     time.Time
+	EntryID     int64
+	EntryNumber int64
+	DogName     string
+	Discipline  string
+	Level       int64
+	EventName   string
+	FilerHandle string
+}
+
+// challengeSortOrders whitelists the ORDER BY clause for each sort key. The
+// queue list query is hand-built (sqlc can't parameterise a dynamic ORDER BY),
+// so caller input is mapped through this table and never interpolated.
+var challengeSortOrders = map[string]string{
+	"newest": "ch.filed_at DESC",
+	"oldest": "ch.filed_at ASC",
+	"status": "ch.status ASC, ch.filed_at DESC",
+}
+
+// ChallengeSortValid reports whether sort is a known queue sort key.
+func ChallengeSortValid(sort string) bool {
+	_, ok := challengeSortOrders[sort]
+	return ok
+}
+
+// ListChallengesPage returns one page of the cross-event challenge queue (D7).
+// status filters by exact status when non-empty; sort is a key into
+// challengeSortOrders (unknown keys fall back to newest); limit/offset window
+// the result.
+func (s *Store) ListChallengesPage(ctx context.Context, status, sort string, limit, offset int64) ([]ChallengeListRow, error) {
+	order, ok := challengeSortOrders[sort]
+	if !ok {
+		order = challengeSortOrders["newest"]
+	}
+	query := `
+SELECT
+    ch.id, ch.status, ch.filed_at, ch.entry_id,
+    e.entry_number, e.dog_name,
+    t.discipline, t.level,
+    ev.name, c.handle
+FROM challenges ch
+JOIN entries e ON e.id = ch.entry_id
+JOIN trials t ON t.id = e.trial_id
+JOIN events ev ON ev.id = t.event_id
+JOIN competitors c ON c.id = ch.filed_by
+WHERE (? = '' OR ch.status = ?)
+ORDER BY ` + order + `
+LIMIT ? OFFSET ?`
+	rows, err := s.db.QueryContext(ctx, query, status, status, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []ChallengeListRow
+	for rows.Next() {
+		var r ChallengeListRow
+		if err := rows.Scan(
+			&r.ID, &r.Status, &r.FiledAt, &r.EntryID,
+			&r.EntryNumber, &r.DogName,
+			&r.Discipline, &r.Level,
+			&r.EventName, &r.FilerHandle,
+		); err != nil {
+			return nil, err
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}
+
+// CountChallenges returns the number of challenges matching the status filter
+// (empty = all), for the queue's pagination.
+func (s *Store) CountChallenges(ctx context.Context, status string) (int64, error) {
+	return s.q.CountChallenges(ctx, status)
+}
+
+// ChallengeStatusCounts returns the global challenge tally keyed by status,
+// independent of any filter — drives the filter-chip counts and header summary.
+func (s *Store) ChallengeStatusCounts(ctx context.Context) (map[string]int, error) {
+	rows, err := s.db.QueryContext(ctx, `SELECT status, COUNT(*) FROM challenges GROUP BY status`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := make(map[string]int, 4)
+	for rows.Next() {
+		var status string
+		var n int
+		if err := rows.Scan(&status, &n); err != nil {
+			return nil, err
+		}
+		out[status] = n
+	}
+	return out, rows.Err()
 }
 
 // GetChallengeDetail returns one challenge with its disputed entry context.
