@@ -70,15 +70,16 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 }
 
 // landingFor returns the post-login destination for a user's role. Admins and
-// judges go straight to their work area; everyone else lands on the home page.
+// judges go straight to their work area; competitors land on their account
+// dashboard (U2 spec).
 func landingFor(role string) string {
 	switch role {
 	case "admin":
 		return "/admin"
 	case "judge":
 		return "/judge"
-	default:
-		return "/"
+	default: // competitor
+		return "/account"
 	}
 }
 

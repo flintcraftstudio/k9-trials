@@ -133,15 +133,18 @@ templ HandleStatus(handle string, available, checked bool) {
 	if handle == "" {
 		<p class="body-sm" style="margin:0;">Lowercase letters, digits, and hyphens. Becomes your public URL.</p>
 	} else {
-		<div class="flex items-center gap-2 flex-wrap">
-			<span class="body-sm" style="margin:0;">
-				Your page: <code style="background:var(--mist-100);padding:1px 5px;border-radius:3px;">/competitors/{ handle }</code>
-			</span>
-			if checked && available {
-				<span class="pill pill-qual">available</span>
-			} else if checked {
-				<span class="pill pill-closed">taken</span>
-			}
+		<div class="flex-col gap-1">
+			<div class="flex items-center gap-2 flex-wrap">
+				<span class="body-sm" style="margin:0;">
+					Your public URL will be <code style="background:var(--mist-100);padding:1px 5px;border-radius:3px;">k9elements.com/competitors/{ handle }</code>
+				</span>
+				if checked && available {
+					<span class="pill pill-qual">Available</span>
+				} else if checked {
+					<span class="pill pill-closed">Taken</span>
+				}
+			</div>
+			<p class="body-sm" style="margin:0;">Lowercase letters, digits, and hyphens.</p>
 		</div>
 	}
 }

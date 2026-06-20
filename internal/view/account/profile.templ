@@ -41,7 +41,7 @@ templ ProfileForm(d ProfileViewData) {
 		}
 		if d.Saved {
 			<div class="rounded-md border border-[var(--green-300)] bg-[var(--green-50)] p-3">
-				<p class="text-sm" style="color:var(--green-800);">Profile saved.</p>
+				<p class="text-sm" style="color:var(--green-800);"><strong>Saved.</strong> Your changes are live.</p>
 			</div>
 		}
 		@components.Field(components.FieldProps{}) {
@@ -71,7 +71,7 @@ templ ProfileForm(d ProfileViewData) {
 				})
 			</div>
 			@components.Description(components.FieldProps{}) {
-				Changing this updates your public URL. Lowercase letters, digits, and hyphens.
+				Changing this updates your public URL. Old links redirect for 30 days.
 			}
 		}
 		@components.Field(components.FieldProps{}) {

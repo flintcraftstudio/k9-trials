@@ -11,10 +11,18 @@ templ loginContent(errMsg, email string) {
 		@components.Container("") {
 			<div class="max-w-md flex-col gap-6">
 				@components.Eyebrow() {
-					Members
+					Welcome back
 				}
 				<h1 class="h2">Log in</h1>
 				@LoginForm(errMsg, email)
+				<p class="body-sm" style="margin:0;text-align:center;">
+					New to { SiteName }? <a href="/signup" style="color:var(--mist-950);font-weight:500;">Create an account</a>
+				</p>
+				<div class="card flex-col gap-1" style="padding:14px 16px;">
+					<span class="body-sm" style="margin:0;font-weight:600;color:var(--mist-950);">After you log in</span>
+					<p class="body-sm" style="margin:0;">Competitors land on their account, admins on the admin console, judges in the tablet scoring shell.</p>
+					<p class="body-sm" style="margin:0;">Forgot your password? We email a reset link — that flow is out of scope for v1.</p>
+				</div>
 			</div>
 		}
 	</section>
@@ -36,7 +44,7 @@ templ LoginForm(errMsg, email string) {
 				ID:           "email",
 				Name:         "email",
 				Value:        email,
-				Placeholder:  "you@example.com",
+				Placeholder:  "you@kennel.com",
 				Autocomplete: "email",
 				Required:     true,
 			})
@@ -56,7 +64,7 @@ templ LoginForm(errMsg, email string) {
 		}
 		<div>
 			@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Type: "submit"}) {
-				Sign in
+				Log in
 			}
 		</div>
 	</form>
