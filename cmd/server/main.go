@@ -17,6 +17,7 @@ import (
 	"github.com/flintcraftstudio/k9-trials/internal/handler"
 	"github.com/flintcraftstudio/k9-trials/internal/mail"
 	"github.com/flintcraftstudio/k9-trials/internal/middleware"
+	"github.com/flintcraftstudio/k9-trials/internal/seeddemo"
 	"github.com/flintcraftstudio/k9-trials/internal/session"
 	"github.com/flintcraftstudio/k9-trials/internal/store"
 	"github.com/flintcraftstudio/k9-trials/internal/view"
@@ -62,6 +63,12 @@ func main() {
 		slog.Warn("COOKIE_INSECURE set, session cookie Secure flag disabled (dev only)")
 	}
 
+	// Demo mode — exposes the admin "Reset demo data" endpoint.
+	view.DemoMode = cfg.DemoMode
+	if cfg.DemoMode {
+		slog.Warn("DEMO_MODE enabled, admin can wipe and reseed all data")
+	}
+
 	// Database
 	if err := os.MkdirAll(filepath.Dir(cfg.DBPath), 0755); err != nil {
 		slog.Error("failed to create database directory", "err", err)
@@ -94,6 +101,23 @@ func main() {
 
 	// Store
 	st := store.New(db)
+
+	// Demo bootstrap: a fresh deploy has only the schema and no users, so
+	// nobody could log in to trigger the admin reset. When DEMO_MODE is on,
+	// seed the demo world if the database is empty. Subsequent resets go
+	// through the admin "Reset demo data" button.
+	if cfg.DemoMode {
+		var users int
+		if err := db.QueryRow("SELECT COUNT(*) FROM users").Scan(&users); err != nil {
+			slog.Error("demo bootstrap: count users", "err", err)
+		} else if users == 0 {
+			if _, err := seeddemo.Run(context.Background(), st); err != nil {
+				slog.Error("demo bootstrap: seed", "err", err)
+			} else {
+				slog.Info("demo bootstrap: empty database seeded (admin@example.com / admin1234)")
+			}
+		}
+	}
 
 	// Mail client (nil if Postmark is not configured)
 	var mailer *mail.Client
@@ -189,6 +213,11 @@ func main() {
 	mux.Handle("POST /admin/challenges/{id}/status", session.RequireAdmin(handler.AdminChallengeStatus(st)))
 	mux.Handle("GET /admin/users", session.RequireAdmin(handler.AdminUsers(st)))
 	mux.Handle("POST /admin/users/{id}/role", session.RequireAdmin(handler.AdminUserRole(st)))
+
+	// Demo reset — only registered when DEMO_MODE=1, and still admin-gated.
+	if cfg.DemoMode {
+		mux.Handle("POST /admin/seed-demo", session.RequireAdmin(handler.AdminSeedDemo(st)))
+	}
 
 	// Session + logging middleware
 	srv := session.Middleware(st)(mux)

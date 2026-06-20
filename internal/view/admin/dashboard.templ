@@ -3,6 +3,7 @@ package admin
 import (
 	"fmt"
 
+	"github.com/flintcraftstudio/k9-trials/internal/view"
 	"github.com/flintcraftstudio/k9-trials/internal/view/components"
 )
 
@@ -23,6 +24,20 @@ templ dashboardActions() {
 	}
 	@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/admin/events"}) {
 		All events
+	}
+	if view.DemoMode {
+		@components.Button(components.ButtonProps{
+			Variant: "plain",
+			Size:    "md",
+			Type:    "button",
+			Attrs: templ.Attributes{
+				"hx-post":    "/admin/seed-demo",
+				"hx-confirm": "Reset ALL data to the demo world? This wipes every event, registration, score, and challenge, then reseeds. Logins return to admin@example.com / admin1234.",
+				"title":      "Wipe everything and reseed the demo dataset",
+			},
+		}) {
+			↺ Reset demo data
+		}
 	}
 }
 

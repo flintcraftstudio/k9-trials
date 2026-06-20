@@ -18,6 +18,9 @@ type Config struct {
 	DBPath             string
 	SessionSecret      string
 	CookieSecure       bool
+	// DemoMode enables the admin "Reset demo data" endpoint (DEMO_MODE=1).
+	// Off by default so a real deployment can never wipe its data.
+	DemoMode bool
 }
 
 // Load reads configuration from environment variables, applying defaults where not set.
@@ -41,6 +44,7 @@ func Load() (*Config, error) {
 		// Secure cookies by default; set COOKIE_INSECURE=1 for local HTTP dev,
 		// where browsers won't store a Secure cookie over http://localhost.
 		CookieSecure: os.Getenv("COOKIE_INSECURE") == "",
+		DemoMode:     os.Getenv("DEMO_MODE") == "1",
 	}, nil
 }
 

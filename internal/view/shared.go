@@ -12,6 +12,10 @@ var (
 	TurnstileSiteKey string
 )
 
+// DemoMode mirrors config.DemoMode, set once at startup. When true the admin
+// dashboard shows the "Reset demo data" control.
+var DemoMode bool
+
 // Year returns the current year for copyright notices.
 func Year() int {
 	return time.Now().Year()
