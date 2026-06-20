@@ -7,7 +7,7 @@ COPY . .
 
 # Build CSS
 RUN apk add --no-cache curl && \
-    curl -sL https://github.com/nicolo-ribaudo/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss && \
+    curl -sL https://github.com/tailwindlabs/tailwindcss/releases/download/v3.4.17/tailwindcss-linux-x64 -o /usr/local/bin/tailwindcss && \
     chmod +x /usr/local/bin/tailwindcss && \
     tailwindcss -i tailwind/input.css -o web/static/css/site.css --minify
 
