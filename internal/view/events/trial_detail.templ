@@ -24,24 +24,71 @@ templ trialDetailBody(d TrialDetailViewData) {
 					@components.Eyebrow() {
 						{ d.DisciplineLvl }
 					}
-					<h1 class="h2">{ d.Date } leaderboard</h1>
-					<div class="body-sm" style="margin:0;">{ leaderboardCounts(d) }</div>
+					<h1 class="h2">{ d.Weekday } leaderboard</h1>
 				</div>
-				if len(d.Rows) == 0 {
-					<div class="card flex-col items-start gap-2" style="padding:24px;">
-						<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No entries yet</div>
-						<p class="body-sm" style="margin:0;">Entries appear here once registrations are accepted.</p>
-					</div>
-				} else {
-					<div class="card" style="padding:0;overflow:hidden;">
-						for _, row := range d.Rows {
-							@leaderRow(row)
-						}
-					</div>
-				}
+				@sortToggle(d)
+				@leaderboard(d)
 			</div>
 		}
 	</section>
+}
+
+// sortToggle is the "Leaderboard / Running order" pill switch. Each option is
+// a plain link that reloads the board in the chosen order; the active one is
+// filled. It sits outside the polled region so polling never resets it.
+templ sortToggle(d TrialDetailViewData) {
+	<div class="flex gap-2">
+		<a
+			href={ templ.SafeURL(d.ScoreHref) }
+			class={ "pill", templ.KV("pill-active", d.Order != "running"), templ.KV("pill-muted", d.Order == "running") }
+			style="text-decoration:none;"
+		>Leaderboard</a>
+		<a
+			href={ templ.SafeURL(d.RunningHref) }
+			class={ "pill", templ.KV("pill-active", d.Order == "running"), templ.KV("pill-muted", d.Order != "running") }
+			style="text-decoration:none;"
+		>Running order</a>
+	</div>
+}
+
+// leaderboard is the polled region: the counts line, the ranked rows (with the
+// NQ divider in score order), and the footer note. While the trial is live it
+// re-fetches the page every 15s and swaps just this fragment back in.
+templ leaderboard(d TrialDetailViewData) {
+	<div
+		id="leaderboard"
+		class="flex-col gap-3"
+		if d.Live {
+			hx-get={ d.SelfPath }
+			hx-trigger="every 15s"
+			hx-select="#leaderboard"
+			hx-target="#leaderboard"
+			hx-swap="outerHTML"
+		}
+	>
+		<div class="body-sm flex items-center gap-2" style="margin:0;">
+			if d.Live {
+				<span class="pill pill-scoring"><span class="dot"></span>live</span>
+			}
+			<span>{ leaderboardCounts(d) }</span>
+		</div>
+		if len(d.Rows) == 0 {
+			<div class="card flex-col items-start gap-2" style="padding:24px;">
+				<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No entries yet</div>
+				<p class="body-sm" style="margin:0;">Entries appear here once registrations are accepted.</p>
+			</div>
+		} else {
+			<div class="card" style="padding:0;overflow:hidden;">
+				for i, row := range d.Rows {
+					if i == d.NQDividerAt {
+						<div class="body-sm" style="margin:0;padding:8px 16px;border-top:1px solid var(--color-divider);background:var(--mist-50);text-transform:uppercase;letter-spacing:.04em;font-size:11px;color:var(--mist-500);">Did not qualify</div>
+					}
+					@leaderRow(row)
+				}
+			</div>
+			<p class="body-sm" style="margin:0;">Upcoming entries appear in running order. Scores publish as the judge finalizes each run.</p>
+		}
+	</div>
 }
 
 // leaderRow is one entry line on the leaderboard. Layout: placing · dog +
@@ -74,7 +121,7 @@ templ leaderScore(row LeaderRow) {
 	<div class="flex-col items-end" style="text-align:right;">
 		if row.Finalized && !row.NQ {
 			<span class="serif" style="font-size:18px;color:var(--mist-950);font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
-			<span class="body-sm" style="margin:0;color:var(--green-700);">qualifying</span>
+			<span class="body-sm" style="margin:0;color:var(--green-700);">Q · qualifying</span>
 		} else if row.Finalized && row.NQ {
 			<span class="pill pill-closed">NQ</span>
 		} else if row.Scoring {

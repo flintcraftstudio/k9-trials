@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"sort"
@@ -236,7 +237,11 @@ func TrialDetail(st *store.Store) http.HandlerFunc {
 			http.NotFound(w, r)
 			return
 		}
-		renderPublic(w, r, events.TrialDetailPage(toTrialDetailViewData(r, st, trial, event, entries)))
+		order := "score"
+		if r.URL.Query().Get("order") == "running" {
+			order = "running"
+		}
+		renderPublic(w, r, events.TrialDetailPage(toTrialDetailViewData(r, st, trial, event, entries, order)))
 	}
 }
 
@@ -244,10 +249,12 @@ func TrialDetail(st *store.Store) http.HandlerFunc {
 // leaderboard. Qualifying finalized rows are ranked by points descending;
 // NQ and in-progress rows carry no rank. Entries whose template can't be
 // resolved are shown without a score rather than dropped.
-func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, event db.Event, entries []db.Entry) events.TrialDetailViewData {
+func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, event db.Event, entries []db.Entry, order string) events.TrialDetailViewData {
 	tpl, sheet, tplOK := lookupTemplateForTrial(trial)
 
 	var finalized, scoring_, upcoming int
+	// rows mirrors entries, which the store returns in running (entry-number)
+	// order — so rows itself is the running-order presentation.
 	rows := make([]events.LeaderRow, 0, len(entries))
 	for _, e := range entries {
 		row := events.LeaderRow{
@@ -278,31 +285,51 @@ func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, eve
 		rows = append(rows, row)
 	}
 
-	// Rank: qualifying finalized rows by points desc, then assign 1..n.
+	// Rank qualifying finalized rows by points desc, assigning placings 1..n.
 	// NQ, scoring, and upcoming rows keep Rank 0 (rendered without a placing).
-	ranked := make([]int, 0, len(rows))
+	qual := make([]int, 0, len(rows))
 	for i, row := range rows {
 		if row.Finalized && row.Qualified {
-			ranked = append(ranked, i)
+			qual = append(qual, i)
 		}
 	}
-	sort.SliceStable(ranked, func(a, b int) bool {
-		return rows[ranked[a]].Points > rows[ranked[b]].Points
+	sort.SliceStable(qual, func(a, b int) bool {
+		return rows[qual[a]].Points > rows[qual[b]].Points
 	})
-	for placing, idx := range ranked {
+	for placing, idx := range qual {
 		rows[idx].Rank = placing + 1
 	}
-	// Present qualifying rows first (in placing order), then the rest in
-	// roster order so spectators see the standings up top.
+
 	ordered := make([]events.LeaderRow, 0, len(rows))
-	inRanked := make(map[int]bool, len(ranked))
-	for _, idx := range ranked {
-		ordered = append(ordered, rows[idx])
-		inRanked[idx] = true
-	}
-	for i, row := range rows {
-		if !inRanked[i] {
-			ordered = append(ordered, row)
+	nqDivider := -1
+	if order == "running" {
+		// Roster order: every entry in entry-number sequence, placings intact.
+		ordered = append(ordered, rows...)
+	} else {
+		// Score order: qualifying placings first, then runs still to come (in
+		// roster order), then NQ rows under a divider at the bottom.
+		var nonFinal, nq []int
+		for i, row := range rows {
+			switch {
+			case row.Finalized && row.Qualified:
+				// already placed below via qual
+			case row.Finalized && row.NQ:
+				nq = append(nq, i)
+			default:
+				nonFinal = append(nonFinal, i)
+			}
+		}
+		for _, idx := range qual {
+			ordered = append(ordered, rows[idx])
+		}
+		for _, idx := range nonFinal {
+			ordered = append(ordered, rows[idx])
+		}
+		if len(nq) > 0 {
+			nqDivider = len(ordered)
+			for _, idx := range nq {
+				ordered = append(ordered, rows[idx])
+			}
 		}
 	}
 
@@ -312,11 +339,18 @@ func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, eve
 		DisciplineLvl:  disciplineLevelLabel(trial.Discipline, trial.Level),
 		EventKey:       disciplineKey(trial.Discipline),
 		Date:           fullDate(trial.TrialDate),
+		Weekday:        trial.TrialDate.UTC().Format("Monday"),
 		TotalEntries:   len(entries),
 		FinalizedCount: finalized,
 		ScoringCount:   scoring_,
 		UpcomingCount:  upcoming,
 		Rows:           ordered,
+		Order:          order,
+		NQDividerAt:    nqDivider,
+		Live:           finalized < len(entries),
+		SelfPath:       r.URL.RequestURI(),
+		ScoreHref:      fmt.Sprintf("/events/%s/trials/%d", event.Slug, trial.ID),
+		RunningHref:    fmt.Sprintf("/events/%s/trials/%d?order=running", event.Slug, trial.ID),
 	}
 }
 

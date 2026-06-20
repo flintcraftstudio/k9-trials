@@ -84,15 +84,28 @@ type LeaderRow struct {
 }
 
 // TrialDetailViewData backs the trial leaderboard page (P3).
+//
+// Order is "score" (qualifying placings first, NQ pushed below a divider) or
+// "running" (roster order, no divider). NQDividerAt is the row index where the
+// "did not qualify" divider is drawn in score order, or -1 when there are no
+// NQ rows / in running order. Live marks a trial with runs still to finalize,
+// which turns on the ~15s htmx poll of SelfPath.
 type TrialDetailViewData struct {
 	EventSlug      string
 	EventName      string
 	DisciplineLvl  string // "Obedience · Level 2"
 	EventKey       string
 	Date           string
+	Weekday        string // "Saturday" — drives the "{Weekday} leaderboard" heading
 	TotalEntries   int
 	FinalizedCount int
 	ScoringCount   int
 	UpcomingCount  int
 	Rows           []LeaderRow
+	Order          string // "score" | "running"
+	NQDividerAt    int    // row index of the NQ divider, or -1
+	Live           bool
+	SelfPath       string // current path+query, polled to refresh the board
+	ScoreHref      string // sort toggle target for "Leaderboard"
+	RunningHref    string // sort toggle target for "Running order"
 }
