@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -246,22 +247,119 @@ func toChallengesVD(in challengesVDInput) admin.ChallengesViewData {
 	}
 }
 
-// chalDetailVD maps a challenge detail row into the view.
-func chalDetailVD(c db.GetChallengeDetailRow) admin.ChalDetail {
-	return admin.ChalDetail{
+// chalDetailVD maps a challenge detail row into the view, re-evaluating the
+// disputed entry's score for the result label and excerpt and assembling the
+// audit timeline.
+func chalDetailVD(r *http.Request, st *store.Store, c db.GetChallengeDetailRow) admin.ChalDetail {
+	judge := challengeJudgeName(r, st, db.Trial{ID: c.TrialID})
+
+	result, excerptLabel, excerpt := chalEntryExcerpt(r, st, c)
+	d := admin.ChalDetail{
 		ID:              c.ID,
 		Title:           c.DogName + " · " + disciplineLevelLabel(c.Discipline, c.Level),
 		Status:          c.Status,
-		Filed:           "Filed by @" + c.FilerHandle + " · " + relativeTime(c.FiledAt),
+		Filed:           chalFiledLine(c),
 		EntryID:         c.EntryID,
-		EntryTitle:      c.EventName + " · " + disciplineLevelLabel(c.Discipline, c.Level) + " · " + entryNumberLabel(c.EntryNumber),
-		EntrySub:        "Entry is " + c.EntryStatus,
+		EntryTitle:      c.EventName + " · " + disciplineLevelLabel(c.Discipline, c.Level) + " · " + entryNumberLabel(c.EntryNumber) + " · " + shortDate(c.TrialDate),
+		EntrySub:        chalEntrySub(c, judge, result),
 		EventKey:        disciplineKey(c.Discipline),
+		ExcerptLabel:    excerptLabel,
+		Excerpt:         excerpt,
 		Reason:          c.Reason,
 		ResolutionNotes: c.ResolutionNotes,
 		CanStart:        c.Status == "open",
 		CanClose:        c.Status == "open" || c.Status == "under_review",
+		Timeline:        chalTimeline(c, judge, result),
 	}
+	return d
+}
+
+// chalEntryExcerpt evaluates the disputed entry's score and returns the
+// result label ("NQ"/"Q", empty when unevaluable) plus the excerpt label and
+// text for the disputed-entry card, reusing the competitor-side excerpt.
+func chalEntryExcerpt(r *http.Request, st *store.Store, c db.GetChallengeDetailRow) (result, label, text string) {
+	trial := db.Trial{Discipline: c.Discipline, Level: c.Level, TemplateVersion: c.TemplateVersion}
+	tpl, sheet, _, res, err := loadTemplateAndEvaluate(r, st, trial, c.EntryID)
+	if err != nil {
+		return "", "", ""
+	}
+	result = "NQ"
+	if res.Passed {
+		result = "Q"
+	}
+	label, text = challengeExcerpt(tpl, sheet, res)
+	return result, label, text
+}
+
+// chalEntrySub renders the disputed-entry sub-line: judge, finalized state,
+// and result. Clauses drop out gracefully when their data is unavailable.
+func chalEntrySub(c db.GetChallengeDetailRow, judge, result string) string {
+	parts := []string{}
+	if judge != "" {
+		parts = append(parts, "Judged by "+judge)
+	}
+	parts = append(parts, c.EntryStatus)
+	if result != "" {
+		parts = append(parts, "result "+result)
+	}
+	return strings.Join(parts, " · ")
+}
+
+// chalFiledLine renders the header attribution: who filed it and when, plus
+// the review/resolution clause once the dispute has moved past open.
+func chalFiledLine(c db.GetChallengeDetailRow) string {
+	line := "Filed by @" + c.FilerHandle + " · " + relativeTime(c.FiledAt)
+	switch c.Status {
+	case "under_review":
+		line += " · review started " + relativeTime(c.UpdatedAt)
+	case "resolved":
+		line += " · resolved " + relativeTime(c.UpdatedAt)
+	case "dismissed":
+		line += " · dismissed " + relativeTime(c.UpdatedAt)
+	}
+	return line
+}
+
+// chalTimeline assembles the audit trail. The schema records only the
+// challenge's latest updated_at (not each intermediate transition), so the
+// terminal step carries that timestamp while earlier transitions show their
+// own recorded time.
+func chalTimeline(c db.GetChallengeDetailRow, judge, result string) []admin.ChalAuditStep {
+	finalized := admin.ChalAuditStep{
+		Title: "Entry finalized",
+		Meta:  judge,
+		When:  shortDate(c.TrialDate),
+		Kind:  "lock",
+	}
+	if result != "" {
+		finalized.Title += " · result " + result
+	}
+	filed := admin.ChalAuditStep{
+		Title: "Challenge filed",
+		Meta:  "@" + c.FilerHandle,
+		When:  relativeTime(c.FiledAt),
+		Kind:  "warn",
+	}
+	steps := []admin.ChalAuditStep{finalized, filed}
+
+	switch c.Status {
+	case "open":
+		steps = append(steps, admin.ChalAuditStep{
+			Title: "Awaiting review",
+			Meta:  "with admin",
+			When:  "—",
+		})
+	case "under_review":
+		steps = append(steps,
+			admin.ChalAuditStep{Title: "Review started", When: relativeTime(c.UpdatedAt), Kind: "green"},
+			admin.ChalAuditStep{Title: "Pending — resolve or dismiss", Meta: "awaiting admin decision", When: "—"},
+		)
+	case "resolved":
+		steps = append(steps, admin.ChalAuditStep{Title: "Resolved", Meta: c.ResolutionNotes, When: relativeTime(c.UpdatedAt), Kind: "green"})
+	case "dismissed":
+		steps = append(steps, admin.ChalAuditStep{Title: "Dismissed", Meta: c.ResolutionNotes, When: relativeTime(c.UpdatedAt), Kind: "muted"})
+	}
+	return steps
 }
 
 // validUserFilter reports whether key is a recognized role filter (empty

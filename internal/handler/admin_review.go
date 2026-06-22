@@ -257,7 +257,7 @@ func AdminChallenges(st *store.Store) http.HandlerFunc {
 				return
 			}
 			selectedID = id
-			d := chalDetailVD(c)
+			d := chalDetailVD(r, st, c)
 			detail = &d
 		}
 

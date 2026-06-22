@@ -14,7 +14,8 @@ import (
 )
 
 // AccountChallenges serves GET /account/challenges — every dispute the
-// competitor has filed (A7), newest first.
+// competitor has filed (A7), newest first, with status filter chips. htmx
+// filter requests receive only the results fragment.
 func AccountChallenges(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		c, ok := currentCompetitor(w, r, st)
@@ -27,7 +28,16 @@ func AccountChallenges(st *store.Store) http.HandlerFunc {
 			http.Error(w, "account unavailable", http.StatusInternalServerError)
 			return
 		}
-		renderPublic(w, r, account.ChallengesListPage(toChallengesListVD(rows)))
+		filter := r.URL.Query().Get("status")
+		if !validChallengeFilter(filter) {
+			filter = ""
+		}
+		data := toChallengesListVD(rows, filter)
+		if r.Header.Get("HX-Request") == "true" {
+			renderPublic(w, r, account.ChallengesResults(data))
+			return
+		}
+		renderPublic(w, r, account.ChallengesListPage(data))
 	}
 }
 

@@ -56,11 +56,13 @@ WHERE (sqlc.arg(status) = '' OR ch.status = sqlc.arg(status));
 
 -- name: GetChallengeDetail :one
 -- One challenge with everything the review detail needs: the dispute, the
--- entry under dispute, its trial and event, and the filer identity.
+-- entry under dispute, its trial and event, and the filer identity. The
+-- trial id/template version let the detail re-evaluate the score for the
+-- disputed-entry excerpt; updated_at drives the audit timeline.
 SELECT
-    ch.id, ch.status, ch.reason, ch.resolution_notes, ch.filed_at, ch.entry_id,
+    ch.id, ch.status, ch.reason, ch.resolution_notes, ch.filed_at, ch.updated_at, ch.entry_id,
     e.entry_number, e.dog_name, e.status AS entry_status,
-    t.discipline, t.level, t.trial_date,
+    t.id AS trial_id, t.discipline, t.level, t.template_version, t.trial_date,
     ev.name AS event_name, ev.slug AS event_slug,
     c.handle AS filer_handle, c.display_name AS filer_name
 FROM challenges ch

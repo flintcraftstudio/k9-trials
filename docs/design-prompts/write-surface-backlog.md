@@ -24,34 +24,38 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
 - P4 / A5 / A6 — already at mockup fidelity, untouched.
 - Auth + profile copy/bug pass (commit 60c1095): competitor login → `/account`;
   U2 routing banner + create-account link; U1 URL preview; A2 toast + 30-day note.
+- **Tranche 2 (A7 / A8 / D7)** — done, smoke-tested against the DEMO_MODE seed across all
+  status branches. See "Tranche 2 — DONE" below for what shipped.
 
-## Tranche 2 — unblocked, no schema/migration (do these next)
+## Tranche 2 — DONE
 
-### A7 · Challenges list — `internal/view/account/challenges_list.templ`, `account_challenges_mapper.go:toChallengesListVD`
-- GAP [feature]: no filter-chip strip. Mockup: `All · 2 / Open · 1 / Review · 1 / Resolved · 0 / Dismissed · 0`.
-- Clone A5's pattern: add per-status counts + a `Filters` struct to `ChallengesListViewData`
-  (currently only `Total` + `Rows`), render chips, filter by `?status=` with htmx swap of a
-  `#challenges-results` fragment. Count in-memory from the loaded challenges (like A5).
-- GAP [copy]: header "Last update {relative}" line; per-row "admin started review yesterday" detail.
-- Effort: M.
+### A7 · Challenges list — `challenges_list.templ`, `account_challenges_mapper.go:toChallengesListVD`
+- Added filter-chip strip (`All/Open/Review/Resolved/Dismissed` + counts), `ChallengeFilter`
+  struct, `?status=` htmx swap of `#challenges-results` fragment (cloned A5). Reuses admin's
+  `validChallengeFilter`. Empty-state gates on `Total==0` (teaching state, no chips); a filter
+  with no matches shows "No challenges match this filter."
+- Header "Last update {relative}" (max UpdatedAt across all rows). Per-row detail line is now
+  status-dependent: open→"waiting on admin", under_review→"admin started review {rel}", etc.
 
-### A8 · File a challenge — `internal/view/account/challenges_new.templ`, `account_challenges_mapper.go:toChallengeNewVD`
-- GAP [feature] (headline): the disputing card must show the **scoresheet excerpt** — the NQ
-  reason quote (e.g. "Ring departure during courage test, 1.4s outside the working line") and a
-  **"View full scoresheet →"** link. `ChallengeNewViewData` has no NQ-reason/excerpt/scoresheet-link
-  fields. The mapper already runs `evalFinalizedScore`; extract the NQ reason / per-exercise excerpt
-  from the scoring result and add fields.
-- GAP [copy]: disputing sub should read "{dog} · {date} · judged by {judge} · finalized" — the
-  struct comment already promises "judged by H. Vance" but the mapper never populates judge name.
-- Effort: M.
+### A8 · File a challenge — `challenges_new.templ`, `account_challenges_mapper.go:toChallengeNewVD`
+- Disputing card now shows the **scoresheet excerpt**: a Q/NQ result pill, an adaptive reason
+  line (`challengeExcerpt`: AutoNQ trigger description quote → Insufficient tally → below-threshold
+  summary → Q score summary), and a "View full scoresheet →" link to A6.
+- Sub reads "{dog} · {date} · judged by {judge} · finalized"; judge resolved via
+  `st.TrialJudgeEmail` + `judgeName`, clause dropped when unavailable.
+- New helpers `challengeExcerpt` / `firedTriggerReasons` / `challengeJudgeName` are shared with D7.
 
-### D7 · Challenge review — `internal/view/admin/challenges.templ`, `admin_review_mapper.go:chalDetailVD`
-- Two-pane is already built (and exceeds mockup: has filter+sort+pagination). Gaps only:
-- GAP [feature]: detail has no **audit timeline** (Entry finalized → Challenge filed → Review
-  started → Pending). `ChalDetail` has no timeline data; mapper doesn't load it.
-- GAP [copy]: entry-disputed card omits the NQ-reason line (`EntrySub` is just "Entry is {status}");
-  "Filed by … review started yesterday by {admin}" attribution missing.
-- Effort: M.
+### D7 · Challenge review — `admin/challenges.templ`, `admin_review_mapper.go:chalDetailVD`
+- `GetChallengeDetail` query extended with `ch.updated_at, t.id, t.template_version` (sqlc regen,
+  no migration). `chalDetailVD` now takes `(r, st, c)` and re-evaluates the score.
+- Entry-disputed card: result in sub ("Judged by … · finalized · result NQ"), trial date in title,
+  NQ-reason excerpt line (reuses A8's `challengeExcerpt`), "View full scoresheet →" → `/entries/{id}`
+  (public scoresheet; the old `/account/entries` link would 404 for a non-owner admin).
+- **Audit timeline** (`ChalAuditStep` + `chalAudit`/`chalDotStyle`): finalized→filed→(branch by
+  status). Only one `updated_at` exists, so intermediate transitions aren't reconstructable — the
+  terminal step carries it. Filed line extends with "· review started/resolved/dismissed {rel}".
+- Reviewer/resolver *name* is genuinely not in the schema (UpdateChallengeStatus records
+  resolved_by only on resolve/dismiss, not on start-review) — "by {admin}" clause omitted, not faked.
 
 ### Quick wins
 - D6 assignments (`admin/assignments.templ`): add a "Notify judges" button. [S]

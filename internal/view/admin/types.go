@@ -244,15 +244,34 @@ type ChalDetail struct {
 	ID              int64
 	Title           string // "Vex · Obedience · Level 2"
 	Status          string
-	Filed           string // "Filed by @ltanaka · 5 days ago"
+	Filed           string // "Filed by @ltanaka · 5 days ago · review started yesterday"
 	EntryID         int64
-	EntryTitle      string // "Cedar Creek · Obedience · Level 2 · Entry 08"
-	EntrySub        string // "result NQ" / entry status
+	EntryTitle      string // "Cedar Creek · Obedience · Level 2 · Entry 08 · 12 Jan"
+	EntrySub        string // "Judged by H. Vance · finalized · result NQ"
 	EventKey        string
+
+	// Disputed-entry excerpt: the NQ reason (or score summary) the judge's
+	// result produced, so the admin sees what is being disputed. Empty when
+	// the score could not be evaluated.
+	ExcerptLabel string // "NQ reason —" / "Result —"
+	Excerpt      string // "\"Ring departure during courage test…\""
+
 	Reason          string
 	ResolutionNotes string
 	CanStart        bool // status is open
 	CanClose        bool // status is open or under_review
+
+	// Timeline is the audit trail of the dispute: entry finalized → challenge
+	// filed → review started → terminal/pending state.
+	Timeline []ChalAuditStep
+}
+
+// ChalAuditStep is one entry in the challenge audit timeline.
+type ChalAuditStep struct {
+	Title string // "Entry finalized · result NQ"
+	Meta  string // "H. Vance" / "@ltanaka · re-score request"
+	When  string // "12 Jan" / "5 days ago" / "—"
+	Kind  string // dot color: lock / warn / green / muted / "" (pending)
 }
 
 // --- D8 Users and roles ---

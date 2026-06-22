@@ -121,13 +121,23 @@ templ chalDetail(d ChalDetail) {
 			<h2 class="h2" style="margin:0;font-size:20px;">{ d.Title }</h2>
 			<div class="body-sm" style="margin:0;">{ d.Filed }</div>
 		</div>
-		<a href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", d.EntryID)) } class="card event-rail flex-col gap-1" data-event={ d.EventKey } style="padding:12px 14px 12px 18px;text-decoration:none;color:inherit;">
+		<div class="card event-rail flex-col gap-1" data-event={ d.EventKey } style="padding:12px 14px 12px 18px;">
 			@components.Eyebrow() {
 				Entry being disputed
 			}
-			<span style="font-weight:600;color:var(--mist-950);">{ d.EntryTitle }</span>
-			<span class="body-sm" style="margin:0;">{ d.EntrySub }</span>
-		</a>
+			<div class="flex items-start justify-between gap-3">
+				<div class="flex-col">
+					<span style="font-weight:600;color:var(--mist-950);">{ d.EntryTitle }</span>
+					<span class="body-sm" style="margin:0;">{ d.EntrySub }</span>
+				</div>
+				<a href={ templ.SafeURL(fmt.Sprintf("/entries/%d", d.EntryID)) } class="body-sm" style="text-decoration:none;white-space:nowrap;flex-shrink:0;">View full scoresheet →</a>
+			</div>
+			if d.Excerpt != "" {
+				<div class="body-sm" style="margin:0;padding-top:8px;border-top:1px solid var(--color-divider);line-height:1.5;">
+					<span style="color:var(--mist-500);">{ d.ExcerptLabel }</span> { d.Excerpt }
+				</div>
+			}
+		</div>
 		<div class="card flex-col gap-1" style="padding:12px 14px;background:var(--mist-100);">
 			@components.Eyebrow() {
 				Competitor reason
@@ -147,6 +157,33 @@ templ chalDetail(d ChalDetail) {
 		} else {
 			<div class="body-sm" style="margin:0;">This challenge is { chalLabel(d.Status) } and closed.</div>
 		}
+		if len(d.Timeline) > 0 {
+			@chalAudit(d.Timeline)
+		}
+	</div>
+}
+
+// chalAudit renders the dispute's audit trail as a vertical step list:
+// entry finalized → challenge filed → review started → terminal/pending.
+templ chalAudit(steps []ChalAuditStep) {
+	<div class="flex-col gap-2">
+		@components.Eyebrow() {
+			Audit
+		}
+		<div class="card flex-col gap-3" style="padding:14px 16px;">
+			for _, s := range steps {
+				<div class="flex items-start gap-3">
+					<span style={ chalDotStyle(s.Kind) }></span>
+					<div class="flex-col" style="flex:1;min-width:0;">
+						<span style="font-weight:600;color:var(--mist-950);font-size:13px;">{ s.Title }</span>
+						if s.Meta != "" {
+							<span class="body-sm" style="margin:0;">{ s.Meta }</span>
+						}
+					</div>
+					<span class="body-sm" style="margin:0;color:var(--mist-500);white-space:nowrap;">{ s.When }</span>
+				</div>
+			}
+		</div>
 	</div>
 }
 
@@ -222,6 +259,25 @@ func chalLabel(status string) string {
 		return "Dismissed"
 	}
 	return status
+}
+
+// chalDotStyle returns the inline style for an audit-step dot, colored by
+// step kind: lock (finalized) neutral, warn (filed) amber, green (review or
+// resolved), muted (dismissed), and a hollow grey for a pending step.
+func chalDotStyle(kind string) string {
+	base := "width:8px;height:8px;border-radius:9999px;flex-shrink:0;margin-top:5px;"
+	switch kind {
+	case "lock":
+		return base + "background:var(--mist-500);"
+	case "warn":
+		return base + "background:var(--orange-500);"
+	case "green":
+		return base + "background:var(--green-600);"
+	case "muted":
+		return base + "background:var(--mist-400);"
+	default:
+		return base + "background:transparent;border:1.5px solid var(--mist-300);"
+	}
 }
 
 func chalKind(status string) string {

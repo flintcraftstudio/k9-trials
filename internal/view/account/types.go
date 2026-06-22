@@ -145,10 +145,23 @@ type ExerciseLine struct {
 	Max   int
 }
 
-// ChallengesListViewData backs the challenges list (A7).
+// ChallengesListViewData backs the challenges list (A7). Filters carries the
+// status chip row with per-status counts; LastUpdate is the relative time of
+// the most recently touched challenge, shown in the header when any exist.
 type ChallengesListViewData struct {
-	Total int
-	Rows  []ChallengeRow
+	Total      int
+	LastUpdate string // "1 hour ago" / "today", empty when no challenges
+	Filters    []ChallengeFilter
+	Rows       []ChallengeRow
+}
+
+// ChallengeFilter is one status chip in the challenges filter row.
+type ChallengeFilter struct {
+	Key    string // "" (all) / open / under_review / resolved / dismissed
+	Label  string
+	Count  int
+	Href   string
+	Active bool
 }
 
 // ChallengeRow is one filed dispute on the list. Status is the raw stored
@@ -157,7 +170,7 @@ type ChallengeRow struct {
 	EntryID int64
 	Title   string // "Hopkins Mill · Protection · Level 2"
 	Sub     string // "Vex · entry #08 · 12 Jan"
-	Filed   string // "Filed 5 days ago"
+	Filed   string // "Filed 5 days ago · admin started review yesterday"
 	Status  string // open / under_review / resolved / dismissed
 }
 
@@ -206,14 +219,26 @@ type RegisterDoneViewData struct {
 	Count     int
 }
 
-// ChallengeNewViewData backs the file-a-challenge form (A8).
+// ChallengeNewViewData backs the file-a-challenge form (A8). The disputing
+// card carries a scoresheet excerpt — the result pill plus the NQ reason (or
+// score summary) — so the competitor has the data in front of them while
+// writing, with a link through to the full scoresheet (A6).
 type ChallengeNewViewData struct {
 	EntryID      int64
 	DisputeTitle string // "Hopkins Mill · Protection · Level 2 · Entry 08"
-	DisputeSub   string // "Vex · 12 Jan · judged by H. Vance · result NQ"
+	DisputeSub   string // "Vex · 12 Jan · judged by H. Vance · finalized"
 	EventKey     string
 	Reason       string
 	Err          string
+
+	// Scoresheet excerpt. ResultLabel/ResultKind drive the Q/NQ pill;
+	// ExcerptLabel/Excerpt are the reason quote or score summary. All empty
+	// when the score could not be evaluated. ScoresheetHref links to A6.
+	ResultLabel    string // "NQ" / "Q"
+	ResultKind     string // pill variant: closed (NQ) / qual (Q)
+	ExcerptLabel   string // "NQ reason —" / "Result —"
+	Excerpt        string // "\"Ring departure during courage test…\""
+	ScoresheetHref string // /account/entries/{id}
 
 	// When the entry already has a challenge from this filer, the form is
 	// replaced with this notice.
