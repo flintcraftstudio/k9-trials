@@ -276,6 +276,7 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 	days := make([]admin.TrialDay, 0)
 	var cur *admin.TrialDay
 	curKey := ""
+	unjudged := 0
 	for _, t := range trials {
 		key := t.TrialDate.UTC().Format("2006-01-02")
 		if key != curKey {
@@ -283,7 +284,11 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 			cur = &days[len(days)-1]
 			curKey = key
 		}
-		cur.Trials = append(cur.Trials, trialLine(ctx, st, t))
+		line := trialLine(ctx, st, t)
+		if line.Judge == "" {
+			unjudged++
+		}
+		cur.Trials = append(cur.Trials, line)
 		cur.Count++
 	}
 	return admin.TrialsViewData{
@@ -292,6 +297,7 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 		EventStatus: e.Status,
 		EventSlug:   e.Slug,
 		TrialCount:  len(trials),
+		Unjudged:    unjudged,
 		Days:        days,
 	}
 }

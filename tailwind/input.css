@@ -11,3 +11,27 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+  Pill-chip radio for admin selectors (D4 new-trial discipline/level). The
+  native radio is visually hidden; the wrapping .pill label reflects the
+  selected state via :has(input:checked), so it needs no JS — and so it works
+  inside htmx-swapped drawer content where Alpine would not auto-initialize.
+*/
+.pill-choice {
+  cursor: pointer;
+  padding: 9px 16px;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+  background: #fff;
+  color: var(--mist-700);
+  border: 1px solid var(--mist-300);
+}
+.pill-choice input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.pill-choice:has(input:checked) {
+  background: var(--mist-950);
+  color: #fff;
+  border-color: var(--mist-950);
+}
+.pill-choice:has(input:focus-visible) { outline: 2px solid var(--blue-600); outline-offset: 1px; }

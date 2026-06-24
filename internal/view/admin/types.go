@@ -103,6 +103,7 @@ type TrialsViewData struct {
 	EventStatus string
 	EventSlug   string
 	TrialCount  int
+	Unjudged    int // trials with no judge assigned (can't be scored)
 	Days        []TrialDay
 }
 

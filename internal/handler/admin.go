@@ -265,13 +265,20 @@ func AdminTrialsNew(st *store.Store) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		renderPublic(w, r, admin.TrialsFormPage(admin.TrialFormViewData{
+		vd := admin.TrialFormViewData{
 			EventID:         event.ID,
 			EventName:       event.Name,
 			Discipline:      "OB",
 			Level:           "1",
 			TemplateVersion: "2026.1",
-		}))
+		}
+		// htmx opens the form as a slide-over over the list; a direct visit
+		// gets the full page.
+		if r.Header.Get("HX-Request") == "true" {
+			renderPublic(w, r, admin.TrialDrawer(vd))
+			return
+		}
+		renderPublic(w, r, admin.TrialsFormPage(vd))
 	}
 }
 
@@ -289,18 +296,18 @@ func AdminTrialsCreate(st *store.Store) http.HandlerFunc {
 		}
 		in, vd, ok := parseTrialForm(r, event.ID, event.Name)
 		if !ok {
-			renderPublic(w, r, admin.TrialsFormPage(vd))
+			renderPublic(w, r, admin.TrialForm(vd))
 			return
 		}
 		if _, err := st.CreateTrial(r.Context(), event.ID, in); err != nil {
 			if isUniqueViolation(err) {
 				vd.Err = "A trial with that discipline, level, and date already exists."
-				renderPublic(w, r, admin.TrialsFormPage(vd))
+				renderPublic(w, r, admin.TrialForm(vd))
 				return
 			}
 			slog.Error("create trial", "event", event.ID, "err", err)
 			vd.Err = "Something went wrong. Please try again."
-			renderPublic(w, r, admin.TrialsFormPage(vd))
+			renderPublic(w, r, admin.TrialForm(vd))
 			return
 		}
 		hxRedirect(w, r, "/admin/events/"+strconv.FormatInt(event.ID, 10)+"/trials")
