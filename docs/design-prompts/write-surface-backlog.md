@@ -72,7 +72,32 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
   `draft/published/closed`; `archived` needs a migration, which belongs with **D3's archive
   lifecycle** (Tranche 3). Add the chip when that status lands.
 
-## Tranche 3 — bigger (all three blockers now resolved; see "Decisions" below)
+## Tranche 3 — DONE so far (branch `write-surface-tranche2`)
+
+### A4 · Dog form sex field — `commit fc3aab9`
+- Migration 014 adds `dogs.sex` (TEXT, CHECK in `male/female/''`, default `''`).
+- Wired `DogInput.Sex`, `CreateDog`/`UpdateDog`, `parseDogForm` (validates the set),
+  `dogFormVD` prefill, and a paired DOB+Sex 2-col row with a native `<select>` on A4.
+- Breed autocomplete still deferred.
+
+### D3 · Event form + D2 Archived chip — `commit 91f82aa`
+- Migration 015 rebuilds `events` (FK-safe, NO TRANSACTION): adds `archived` status to
+  the CHECK + a nullable `published_at`.
+- Audit card: Created {date} by {creator email} (resolved via GetUserByID), Published
+  {date} (stamped on first publish transition only — seeded events show no line),
+  Last edited {relative}. Publisher name not tracked → no "by" clause (D7 precedent).
+- Archive lifecycle: "Archive this event…" (hx-confirm) → POST `.../archive` (status=archived);
+  "Restore to draft" → POST `.../unarchive` (status=draft). `SetEventStatus` preserves
+  metadata + stamps published_at on first publish. New `setEventStatusHandler`.
+- Fuller at-a-glance: judge-coverage ("N / M trials have a judge") + total entries, via
+  new `CountTrialsWithJudgeByEvent` / `CountEntriesByEvent` queries.
+- Status selector is now pill-radio toggles (incl. archived) w/ live Alpine outline.
+- **D2 Archived filter chip — DONE** (was deferred): `validEventFilter`/`validEventStatus`/
+  `eventFilters` now include `archived`; archived events excluded from public lists
+  (`ListPublishedEvents` already filters to published/closed). Smoke-tested archive →
+  chip count → filter → restore → publish-stamp round-trip on the demo seed.
+
+## Tranche 3 — remaining (bigger; all blockers resolved — see "Decisions" below)
 - **D1 dashboard** — recent-activity feed (needs a new query/data source) + quick-actions card +
   2-col board layout. [L, unblocked but needs new data]
 - **D5 registrations** — accordion + lifecycle strip + Export CSV + "Add manual entry" +
