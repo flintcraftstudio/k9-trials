@@ -42,24 +42,106 @@ templ dashboardActions() {
 }
 
 templ dashboardContent(d DashboardViewData) {
-	<div class="flex-col gap-6">
-		<div class="grid grid-cols-2 gap-3">
-			@needsReviewCard("Pending registrations", "Awaiting your review", d.PendingRegs, "/admin/events")
-			@needsReviewCard("Open challenges", "Open or under review", d.OpenChallenges, "/admin/challenges")
+	<div class="dash-board" style="display:grid;grid-template-columns:1.45fr 1fr;gap:18px;align-items:start;">
+		<div class="flex-col gap-5">
+			<div class="flex-col gap-3">
+				@components.Eyebrow() {
+					{ fmt.Sprintf("Live · %d", len(d.Published)) }
+				}
+				@eventLineList(d.Published, "No published events yet.")
+			</div>
+			<div class="flex-col gap-3">
+				@components.Eyebrow() {
+					{ fmt.Sprintf("Drafts · not yet published · %d", len(d.Drafts)) }
+				}
+				@eventLineList(d.Drafts, "No drafts.")
+			</div>
 		</div>
-		<div class="flex-col gap-3">
-			@components.Eyebrow() {
-				{ fmt.Sprintf("Live · %d", len(d.Published)) }
-			}
-			@eventLineList(d.Published, "No published events yet.")
-		</div>
-		<div class="flex-col gap-3">
-			@components.Eyebrow() {
-				{ fmt.Sprintf("Drafts · not yet published · %d", len(d.Drafts)) }
-			}
-			@eventLineList(d.Drafts, "No drafts.")
+		<div class="flex-col gap-5">
+			<div class="flex-col gap-3">
+				@components.Eyebrow() {
+					Needs review
+				}
+				@needsReviewCard("Pending registrations", "Awaiting your review", d.PendingRegs, "/admin/events")
+				@needsReviewCard("Open challenges", "Open or under review", d.OpenChallenges, "/admin/challenges")
+			</div>
+			@quickActionsCard()
+			@recentActivityCard(d.Activity)
 		</div>
 	</div>
+}
+
+// quickActionsCard is the shortcut block on the dashboard right rail.
+templ quickActionsCard() {
+	<div class="card flex-col gap-3" style="padding:16px;">
+		@components.Eyebrow() {
+			Quick actions
+		}
+		<div class="flex-col gap-2">
+			@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Href: "/admin/events/new", Class: "w-full justify-start"}) {
+				+ Create event
+			}
+			@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Href: "/admin/challenges", Class: "w-full justify-start"}) {
+				Review challenges →
+			}
+			@components.Button(components.ButtonProps{Variant: "soft", Size: "md", Href: "/admin/users", Class: "w-full justify-start"}) {
+				Manage users →
+			}
+		</div>
+	</div>
+}
+
+// recentActivityCard is the cross-event feed of the latest finalized entries,
+// accepted registrations, filed challenges, and published events.
+templ recentActivityCard(items []ActivityLine) {
+	<div class="card flex-col gap-3" style="padding:16px;">
+		@components.Eyebrow() {
+			Recent activity
+		}
+		if len(items) == 0 {
+			<p class="body-sm" style="margin:0;">No activity yet. As entries finalize, registrations clear, and challenges land, they show here.</p>
+		} else {
+			<div class="flex-col gap-2">
+				for _, a := range items {
+					@activityRow(a)
+				}
+			</div>
+		}
+	</div>
+}
+
+templ activityRow(a ActivityLine) {
+	<div class="flex items-start gap-2">
+		<span style={ "margin-top:6px;width:7px;height:7px;border-radius:50%;flex:none;background:" + activityDotColor(a.Kind) + ";" }></span>
+		<div class="flex-col" style="min-width:0;">
+			<span class="body-sm" style="margin:0;color:var(--mist-950);">{ a.Text }</span>
+			<span class="body-sm" style="margin:0;">{ activityMeta(a) }</span>
+		</div>
+	</div>
+}
+
+// activityMeta appends the owning event after the relative time.
+func activityMeta(a ActivityLine) string {
+	if a.Event != "" {
+		return a.When + " · " + a.Event
+	}
+	return a.When
+}
+
+// activityDotColor maps an activity kind to its timeline dot color (never
+// color alone — the text carries the meaning).
+func activityDotColor(kind string) string {
+	switch kind {
+	case "finalized":
+		return "var(--green-600)"
+	case "accepted":
+		return "var(--blue-600)"
+	case "challenge":
+		return "var(--orange-600)"
+	case "published":
+		return "var(--mist-400)"
+	}
+	return "var(--mist-400)"
 }
 
 // needsReviewCard is one attention counter linking to its queue.

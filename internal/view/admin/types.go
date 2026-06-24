@@ -10,6 +10,15 @@ type DashboardViewData struct {
 	Counts         EventStatusCounts
 	Published      []EventLine
 	Drafts         []EventLine
+	Activity       []ActivityLine
+}
+
+// ActivityLine is one row in the dashboard recent-activity feed (D1).
+type ActivityLine struct {
+	When  string // "2 hours ago" / "yesterday"
+	Kind  string // finalized | accepted | challenge | published — drives the dot
+	Text  string // "Entry #14 (Echo) finalized"
+	Event string // owning event name, "" when not applicable
 }
 
 // EventStatusCounts is the event tally by status for the dashboard and the

@@ -41,14 +41,32 @@ func toAdminDashboardVD(ctx context.Context, st *store.Store, events []db.Event,
 			counts.Closed++
 		}
 	}
+	activity := make([]admin.ActivityLine, 0, dashboardActivityLimit)
+	if items, err := st.RecentActivity(ctx, dashboardActivityLimit); err != nil {
+		slog.Error("dashboard activity", "err", err)
+	} else {
+		for _, it := range items {
+			activity = append(activity, admin.ActivityLine{
+				When:  relativeTime(it.When),
+				Kind:  it.Kind,
+				Text:  it.Text,
+				Event: it.Event,
+			})
+		}
+	}
+
 	return admin.DashboardViewData{
 		PendingRegs:    pendingRegs,
 		OpenChallenges: openCh,
 		Counts:         counts,
 		Published:      published,
 		Drafts:         drafts,
+		Activity:       activity,
 	}
 }
+
+// dashboardActivityLimit caps the recent-activity feed on D1.
+const dashboardActivityLimit = 8
 
 // eventLine builds a compact dashboard event row with its trial count.
 func eventLine(ctx context.Context, st *store.Store, e db.Event) admin.EventLine {

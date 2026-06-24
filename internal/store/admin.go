@@ -3,10 +3,84 @@ package store
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"sort"
 	"time"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
 )
+
+// ActivityItem is one entry in the admin dashboard recent-activity feed (D1).
+type ActivityItem struct {
+	When  time.Time
+	Kind  string // "finalized" | "accepted" | "challenge" | "published"
+	Text  string
+	Event string // owning event name, "" when not applicable
+}
+
+// RecentActivity merges recent finalized entries, accepted registrations,
+// filed challenges, and published events into one newest-first feed capped at
+// limit. Each source is queried separately so its timestamp scans cleanly.
+func (s *Store) RecentActivity(ctx context.Context, limit int) ([]ActivityItem, error) {
+	n := int64(limit)
+	items := make([]ActivityItem, 0, limit*4)
+
+	fin, err := s.q.RecentFinalizedEntries(ctx, n)
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range fin {
+		items = append(items, ActivityItem{
+			When: e.UpdatedAt, Kind: "finalized", Event: e.EventName,
+			Text: fmt.Sprintf("Entry #%02d (%s) finalized", e.EntryNumber, e.DogName),
+		})
+	}
+
+	acc, err := s.q.RecentAcceptedRegistrations(ctx, n)
+	if err != nil {
+		return nil, err
+	}
+	for _, r := range acc {
+		if !r.ReviewedAt.Valid {
+			continue
+		}
+		items = append(items, ActivityItem{
+			When: r.ReviewedAt.Time, Kind: "accepted", Event: r.EventName,
+			Text: fmt.Sprintf("Registration accepted — %s", r.DogName),
+		})
+	}
+
+	ch, err := s.q.RecentChallengesFiled(ctx, n)
+	if err != nil {
+		return nil, err
+	}
+	for _, c := range ch {
+		items = append(items, ActivityItem{
+			When: c.FiledAt, Kind: "challenge", Event: c.EventName,
+			Text: fmt.Sprintf("@%s filed a challenge on entry #%02d (%s)", c.Handle, c.EntryNumber, c.DogName),
+		})
+	}
+
+	pub, err := s.q.RecentPublishedEvents(ctx, n)
+	if err != nil {
+		return nil, err
+	}
+	for _, e := range pub {
+		if !e.PublishedAt.Valid {
+			continue
+		}
+		items = append(items, ActivityItem{
+			When: e.PublishedAt.Time, Kind: "published",
+			Text: fmt.Sprintf("Published %s", e.Name),
+		})
+	}
+
+	sort.Slice(items, func(i, j int) bool { return items[i].When.After(items[j].When) })
+	if len(items) > limit {
+		items = items[:limit]
+	}
+	return items, nil
+}
 
 // ListEvents returns every event (all statuses, newest start date first)
 // for the admin events list (D2) and dashboard (D1).
