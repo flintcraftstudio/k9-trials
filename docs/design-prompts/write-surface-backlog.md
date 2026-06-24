@@ -97,29 +97,47 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
   (`ListPublishedEvents` already filters to published/closed). Smoke-tested archive →
   chip count → filter → restore → publish-stamp round-trip on the demo seed.
 
-## Tranche 3 — remaining (bigger; all blockers resolved — see "Decisions" below)
-- **D1 dashboard** — recent-activity feed (needs a new query/data source) + quick-actions card +
-  2-col board layout. [L, unblocked but needs new data]
-- **D5 registrations** — accordion + lifecycle strip + Export CSV + "Add manual entry" +
-  **club-secretary badge** when `submitted_by ≠ handler`. *Withdraw* (Q1 decided): a competitor's
-  Withdraw on an **accepted** entry **routes to admin for confirmation** (a request, not an
-  immediate action); on confirm the entry becomes `status = withdrawn` with the **entry_number and
-  row retained** for audit (number is NOT freed). Needs a `withdrawn` entry status + an
-  admin-confirm step on D5; A6 shows "withdrawal requested / pending admin". [L]
-- **R1 register** — stepped-checkout chrome (step indicator, selected-dog 2px discipline border,
-  avatars), live "N trials selected for {dog}" count, per-trial entry-count/judge metadata. R1c
-  "Notify me" (Q4 decided): **requires login**; a logged-in competitor subscribes to the **event**
-  and is emailed when it opens registration (`status → published`). Needs a subscriptions table +
-  a hook on the event publish transition (email delivery itself is still unwired — log like D6). [L]
-- **A4 dog form** (A4 decided: **add `sex` now**) — migration `ALTER TABLE dogs ADD COLUMN sex TEXT`
-  with a CHECK in `('male','female','')`; wire store insert/update + handler parse + the form Sex
-  select. Also breed autocomplete (separate, can defer). [M]
-- **D3 event form** — audit block (created/published/last-edited), Archive lifecycle action,
-  fuller at-a-glance (judge-coverage + total entries), `archived` status. [L, needs timestamps].
-  Adding the `archived` status here **unblocks the deferred D2 Archived filter chip** — do them
-  together.
-- **D4 trials** — new-trial as slide-over (currently full page), pill-chip discipline/level
-  selectors, "1 trial without a judge" summary. [M]
+### D5 · Withdrawal — `commit 180b238`
+- **Registration-based**, NOT entry-status (registrations already had `withdrawn`; avoided a risky
+  6-FK entries-table rebuild). Migration 016 adds `registrations.withdraw_requested_at`.
+- A6 not-yet-run entry → "Request withdrawal" (gated `entry.status=registered`) → POST
+  `/account/entries/{id}/withdraw` (RequestEntryWithdrawal, idempotent SQL guard on accepted+no-prior).
+  After request: "Withdrawal requested · pending admin"; after confirm: "Withdrawn".
+- D5 admin: accepted+requested rows show a "Withdrawal requested" badge + "Confirm withdrawal" → POST
+  `/admin/registrations/{rid}/confirm-withdrawal` → status=withdrawn, entry+number RETAINED.
+- A5 LEFT JOINs registrations for per-row withdrawal pills + a Withdrawn filter chip (shown only >0).
+- NOTE: club-secretary badge / Export CSV / Add-manual-entry from the original D5 line were NOT in
+  scope for this tranche (only the Q1 withdrawal was decided) — still open if wanted.
+
+### R1c · Notify-me — `commit b8b3d24`
+- Migration 017 `event_subscriptions`. **Entry point decision (user-chosen): draft events reachable on
+  `/events/{slug}/register` by DIRECT LINK ONLY** — lists + the detail page still 404 drafts.
+  `loadEventForRegister` allows drafts; the page shows R1c "Not yet open" + Notify-me.
+- POST `/events/{slug}/register/notify` (SubscribeToEvent, idempotent). Publish transition
+  (draft/closed→published) in AdminEventsUpdate fires `notifyEventSubscribers`: logs recipients
+  ("delivery pending mail setup", D6-style stub) + stamps `notified_at` (no re-notify).
+- NOTE: the broader R1a/R1b stepped-checkout chrome (step indicator, dog border, live count) from the
+  original R1 line was NOT in scope — only R1c notify-me was decided. Still open if wanted.
+
+### D1 · Dashboard — `commit d2b3036`
+- 1.45fr/1fr board: left = Live + Drafts; right = Needs-review + Quick-actions card + Recent-activity.
+- Feed merges 4 typed sources (`queries/activity.sql`: finalized entries, accepted regs, filed
+  challenges, published events) in Go (`Store.RecentActivity`), newest-first, capped 8. Separate
+  queries (not a UNION) so timestamps scan into time.Time. Kind-colored dot + "{rel} · {event}" meta.
+
+### D4 · Trials — `commit 39e19fa`
+- New-trial form opens as an htmx **slide-over** (`TrialDrawer`) over the list (#trial-drawer mount);
+  href is the no-JS fallback to the full page (both share the `TrialForm` fragment). Scrim/×/Cancel
+  are anchors to the list (close without JS).
+- Discipline/level are now **pill-chip radios** styled via CSS `:has(input:checked)` (new
+  `.pill-choice` in tailwind/input.css) — no JS, works in the htmx-swapped drawer where Alpine
+  wouldn't auto-init.
+- Sub line flags "N trial(s) without a judge" (`toAdminTrialsVD`).
+
+## Tranche 3 — COMPLETE
+All decided behavior shipped (A4, D3+D2-archived, D5 withdrawal, R1c notify-me, D1, D4). Branch
+`write-surface-tranche2` holds the work, NOT merged to main. Deferred/not-in-scope extras noted
+above per item (D5 secretary-badge/CSV/manual-entry; R1a/R1b checkout chrome; breed autocomplete).
 
 ## Decisions (resolved 2026-06-24 — were the Tranche 3 blockers)
 - **Q1** (D5/A6) — withdrawal after accept: **retain for audit, admin-confirmed**. Withdraw is a
