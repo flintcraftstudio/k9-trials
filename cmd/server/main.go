@@ -198,6 +198,8 @@ func main() {
 	mux.Handle("GET /admin/events/slug-check", session.RequireAdmin(handler.AdminEventsSlugCheck(st)))
 	mux.Handle("GET /admin/events/{id}/edit", session.RequireAdmin(handler.AdminEventsEdit(st)))
 	mux.Handle("POST /admin/events/{id}", session.RequireAdmin(handler.AdminEventsUpdate(st)))
+	mux.Handle("POST /admin/events/{id}/archive", session.RequireAdmin(handler.AdminEventsArchive(st)))
+	mux.Handle("POST /admin/events/{id}/unarchive", session.RequireAdmin(handler.AdminEventsRestore(st)))
 	mux.Handle("GET /admin/events/{id}/trials", session.RequireAdmin(handler.AdminTrials(st)))
 	mux.Handle("POST /admin/events/{id}/trials", session.RequireAdmin(handler.AdminTrialsCreate(st)))
 	mux.Handle("GET /admin/events/{id}/trials/new", session.RequireAdmin(handler.AdminTrialsNew(st)))

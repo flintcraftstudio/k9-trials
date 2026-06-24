@@ -158,6 +158,36 @@ func AdminEventsUpdate(st *store.Store) http.HandlerFunc {
 	}
 }
 
+// AdminEventsArchive serves POST /admin/events/{id}/archive — the D3 archive
+// lifecycle action. Archiving files the event away (hidden from public lists,
+// excluded from the default admin view) while retaining its row and history.
+func AdminEventsArchive(st *store.Store) http.HandlerFunc {
+	return setEventStatusHandler(st, "archived")
+}
+
+// AdminEventsRestore serves POST /admin/events/{id}/unarchive — returns an
+// archived event to draft so it can be edited and re-published.
+func AdminEventsRestore(st *store.Store) http.HandlerFunc {
+	return setEventStatusHandler(st, "draft")
+}
+
+// setEventStatusHandler builds a handler that transitions an event to the
+// given status and reloads its editor.
+func setEventStatusHandler(st *store.Store, status string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		event, ok := loadAdminEvent(w, r, st)
+		if !ok {
+			return
+		}
+		if _, err := st.SetEventStatus(r.Context(), event.ID, status); err != nil {
+			slog.Error("set event status", "event", event.ID, "status", status, "err", err)
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
+			return
+		}
+		hxRedirect(w, r, "/admin/events/"+strconv.FormatInt(event.ID, 10)+"/edit")
+	}
+}
+
 // AdminEventsSlugCheck serves GET /admin/events/slug-check — the live
 // availability probe for the create form.
 func AdminEventsSlugCheck(st *store.Store) http.HandlerFunc {
@@ -411,7 +441,7 @@ func parseTrialForm(r *http.Request, eventID int64, eventName string) (store.Tri
 // validEventStatus reports whether status is a recognized event status.
 func validEventStatus(status string) bool {
 	switch status {
-	case "draft", "published", "closed":
+	case "draft", "published", "closed", "archived":
 		return true
 	}
 	return false

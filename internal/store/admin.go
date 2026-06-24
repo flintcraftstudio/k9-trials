@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
@@ -28,30 +29,81 @@ type EventInput struct {
 	Status    string
 }
 
-// CreateEvent inserts a new event owned by createdBy and returns it.
+// CreateEvent inserts a new event owned by createdBy and returns it. An
+// event created directly as published is stamped with published_at now.
 func (s *Store) CreateEvent(ctx context.Context, in EventInput, createdBy int64) (db.Event, error) {
+	var published sql.NullTime
+	if in.Status == "published" {
+		published = sql.NullTime{Time: time.Now().UTC(), Valid: true}
+	}
 	return s.q.CreateEvent(ctx, db.CreateEventParams{
-		Slug:      in.Slug,
-		Name:      in.Name,
-		Location:  in.Location,
-		StartDate: in.StartDate,
-		EndDate:   in.EndDate,
-		Status:    in.Status,
-		CreatedBy: createdBy,
+		Slug:        in.Slug,
+		Name:        in.Name,
+		Location:    in.Location,
+		StartDate:   in.StartDate,
+		EndDate:     in.EndDate,
+		Status:      in.Status,
+		CreatedBy:   createdBy,
+		PublishedAt: published,
 	})
 }
 
 // UpdateEvent saves edits to an event. The slug is immutable after
 // creation (it is the public URL), so it is not part of the update.
+// published_at is stamped the first time the event becomes published and
+// retained thereafter, so the audit record survives a later status change.
 func (s *Store) UpdateEvent(ctx context.Context, id int64, in EventInput) (db.Event, error) {
+	cur, err := s.q.GetEventByID(ctx, id)
+	if err != nil {
+		return db.Event{}, err
+	}
 	return s.q.UpdateEvent(ctx, db.UpdateEventParams{
-		Name:      in.Name,
-		Location:  in.Location,
-		StartDate: in.StartDate,
-		EndDate:   in.EndDate,
-		Status:    in.Status,
-		ID:        id,
+		Name:        in.Name,
+		Location:    in.Location,
+		StartDate:   in.StartDate,
+		EndDate:     in.EndDate,
+		Status:      in.Status,
+		PublishedAt: stampPublished(cur.PublishedAt, in.Status),
+		ID:          id,
 	})
+}
+
+// SetEventStatus transitions only the status (D3 Archive / Restore actions),
+// preserving the rest of the metadata. published_at is stamped on the first
+// transition into 'published'.
+func (s *Store) SetEventStatus(ctx context.Context, id int64, status string) (db.Event, error) {
+	cur, err := s.q.GetEventByID(ctx, id)
+	if err != nil {
+		return db.Event{}, err
+	}
+	return s.q.SetEventStatus(ctx, db.SetEventStatusParams{
+		Status:      status,
+		PublishedAt: stampPublished(cur.PublishedAt, status),
+		ID:          id,
+	})
+}
+
+// stampPublished keeps an existing published_at, or stamps now the first time
+// an event enters the published status.
+func stampPublished(cur sql.NullTime, newStatus string) sql.NullTime {
+	if cur.Valid {
+		return cur
+	}
+	if newStatus == "published" {
+		return sql.NullTime{Time: time.Now().UTC(), Valid: true}
+	}
+	return cur
+}
+
+// CountEntriesByEvent returns the total entries across all trials of an event.
+func (s *Store) CountEntriesByEvent(ctx context.Context, eventID int64) (int64, error) {
+	return s.q.CountEntriesByEvent(ctx, eventID)
+}
+
+// CountTrialsWithJudgeByEvent returns how many of an event's trials have a
+// judge assigned.
+func (s *Store) CountTrialsWithJudgeByEvent(ctx context.Context, eventID int64) (int64, error) {
+	return s.q.CountTrialsWithJudgeByEvent(ctx, eventID)
 }
 
 // EventSlugAvailable reports whether a slug is free, ignoring the event

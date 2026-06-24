@@ -74,9 +74,17 @@ type EventFormViewData struct {
 	Saved     bool
 
 	// Edit-only at-a-glance.
-	TrialCount  int
-	PendingRegs int
-	PublicURL   string
+	TrialCount   int
+	PendingRegs  int
+	JudgedTrials int // trials with a judge assigned
+	TotalEntries int // entries across all trials
+	PublicURL    string
+
+	// Edit-only audit block. Lines are pre-rendered ("Created 4 Jan 2026 by
+	// admin@…"); a line is empty when its timestamp is not recorded.
+	AuditCreated   string
+	AuditPublished string
+	AuditEdited    string
 }
 
 // TrialsViewData backs the admin trials list for an event (D4).
@@ -246,14 +254,14 @@ type ChalRow struct {
 
 // ChalDetail is the selected challenge in the detail panel.
 type ChalDetail struct {
-	ID              int64
-	Title           string // "Vex · Obedience · Level 2"
-	Status          string
-	Filed           string // "Filed by @ltanaka · 5 days ago · review started yesterday"
-	EntryID         int64
-	EntryTitle      string // "Cedar Creek · Obedience · Level 2 · Entry 08 · 12 Jan"
-	EntrySub        string // "Judged by H. Vance · finalized · result NQ"
-	EventKey        string
+	ID         int64
+	Title      string // "Vex · Obedience · Level 2"
+	Status     string
+	Filed      string // "Filed by @ltanaka · 5 days ago · review started yesterday"
+	EntryID    int64
+	EntryTitle string // "Cedar Creek · Obedience · Level 2 · Entry 08 · 12 Jan"
+	EntrySub   string // "Judged by H. Vance · finalized · result NQ"
+	EventKey   string
 
 	// Disputed-entry excerpt: the NQ reason (or score summary) the judge's
 	// result produced, so the admin sees what is being disputed. Empty when

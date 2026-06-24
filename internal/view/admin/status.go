@@ -9,12 +9,15 @@ func eventStatusLabel(status string) string {
 		return "Published"
 	case "closed":
 		return "Closed"
+	case "archived":
+		return "Archived"
 	}
 	return status
 }
 
 // eventStatusKind maps an event status to a status-pill variant: a draft is
-// muted, a published event reads as open, a closed event reads as closed.
+// muted, a published event reads as open, a closed event reads as closed, an
+// archived event is muted (filed away).
 func eventStatusKind(status string) string {
 	switch status {
 	case "draft":
@@ -23,6 +26,8 @@ func eventStatusKind(status string) string {
 		return "open"
 	case "closed":
 		return "closed"
+	case "archived":
+		return "muted"
 	}
 	return "muted"
 }
