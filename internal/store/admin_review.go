@@ -89,6 +89,17 @@ func (s *Store) SetRegistrationStatus(ctx context.Context, regID, reviewerUserID
 	})
 }
 
+// ConfirmRegistrationWithdrawal grants a pending withdrawal request (Q1):
+// the registration becomes withdrawn and the reviewer is stamped. The linked
+// entry row and its entry_number are retained for audit (the number is not
+// freed). No-op unless the registration is accepted with a pending request.
+func (s *Store) ConfirmRegistrationWithdrawal(ctx context.Context, regID, reviewerUserID int64) error {
+	return s.q.ConfirmRegistrationWithdrawal(ctx, db.ConfirmRegistrationWithdrawalParams{
+		ReviewedBy: sql.NullInt64{Int64: reviewerUserID, Valid: true},
+		ID:         regID,
+	})
+}
+
 // RegistrationRef is the minimal registration identity the review handlers
 // pass around: the row id and its owning event for the redirect target.
 type RegistrationRef struct {

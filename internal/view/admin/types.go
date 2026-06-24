@@ -155,14 +155,15 @@ type RegTrialGroup struct {
 
 // RegRow is one registration in the review list.
 type RegRow struct {
-	ID          int64
-	DogName     string
-	DogMeta     string // "K9-3187 · Czech GSD"
-	Owner       string // "owner @ltanaka"
-	SubmittedBy string // "Submitted by ... · 3 hours ago"
-	Status      string
-	EntryNumber string // "entry #17" once accepted, else ""
-	Pending     bool
+	ID                int64
+	DogName           string
+	DogMeta           string // "K9-3187 · Czech GSD"
+	Owner             string // "owner @ltanaka"
+	SubmittedBy       string // "Submitted by ... · 3 hours ago"
+	Status            string
+	EntryNumber       string // "entry #17" once accepted, else ""
+	Pending           bool
+	WithdrawRequested bool // accepted entry with a pending withdrawal request (Q1)
 }
 
 // --- D6 Judge assignments ---

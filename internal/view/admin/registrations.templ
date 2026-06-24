@@ -66,11 +66,17 @@ templ regRow(row RegRow) {
 			if row.EntryNumber != "" {
 				<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ row.EntryNumber }</span>
 			}
-			@components.Pill(regStatusKind(row.Status)) {
-				{ regStatusLabel(row.Status) }
+			if row.WithdrawRequested {
+				<span class="pill pill-wait">Withdrawal requested</span>
+			} else {
+				@components.Pill(regStatusKind(row.Status)) {
+					{ regStatusLabel(row.Status) }
+				}
 			}
 			if row.Pending {
 				@regActions(row.ID)
+			} else if row.WithdrawRequested {
+				@regWithdrawAction(row.ID)
 			}
 		</div>
 	</div>
@@ -98,9 +104,27 @@ templ regActions(id int64) {
 	</div>
 }
 
+// regWithdrawAction renders the admin Confirm-withdrawal control for an
+// accepted registration whose handler has requested withdrawal (Q1).
+templ regWithdrawAction(id int64) {
+	<form
+		hx-post={ fmt.Sprintf("/admin/registrations/%d/confirm-withdrawal", id) }
+		hx-confirm="Confirm this withdrawal? The registration is marked withdrawn; the entry number is retained on the record."
+		style="display:inline;"
+	>
+		@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+			Confirm withdrawal
+		}
+	</form>
+}
+
 func registrationsSub(d RegistrationsViewData) string {
 	c := d.Counts
-	return fmt.Sprintf("%d total · %d pending · %d accepted · %d waitlisted", c.Total, c.Pending, c.Accepted, c.Waitlisted)
+	s := fmt.Sprintf("%d total · %d pending · %d accepted · %d waitlisted", c.Total, c.Pending, c.Accepted, c.Waitlisted)
+	if c.Withdrawn > 0 {
+		s += fmt.Sprintf(" · %d withdrawn", c.Withdrawn)
+	}
+	return s
 }
 
 func regRowStyle(pending bool) string {

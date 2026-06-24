@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sort"
 	"time"
@@ -50,7 +51,12 @@ func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesB
 	all := make([]listRow, 0, len(entries)+len(regs))
 	for _, e := range entries {
 		group := entryGroup(e.Status)
-		all = append(all, listRow{row: entryRowVD(r, st, e, group), group: group, date: e.TrialDate})
+		withdrawn := e.RegStatus.Valid && e.RegStatus.String == "withdrawn"
+		requested := !withdrawn && e.RegStatus.Valid && e.RegStatus.String == "accepted" && e.WithdrawRequestedAt.Valid
+		if withdrawn {
+			group = "withdrawn"
+		}
+		all = append(all, listRow{row: entryRowVD(r, st, e, group, requested), group: group, date: e.TrialDate})
 	}
 	for _, rg := range regs {
 		all = append(all, listRow{row: registrationRowVD(rg), group: "upcoming", date: rg.TrialDate})
@@ -59,7 +65,7 @@ func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesB
 	// Newest trial date first; stable so same-date rows keep insertion order.
 	sort.SliceStable(all, func(i, j int) bool { return all[i].date.After(all[j].date) })
 
-	var upcoming, scoring, finalized int
+	var upcoming, scoring, finalized, withdrawn int
 	rows := make([]account.EntryRow, 0, len(all))
 	for _, lr := range all {
 		switch lr.group {
@@ -69,6 +75,8 @@ func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesB
 			scoring++
 		case "finalized":
 			finalized++
+		case "withdrawn":
+			withdrawn++
 		}
 		if active == "" || lr.group == active {
 			rows = append(rows, lr.row)
@@ -77,7 +85,7 @@ func toEntriesListVD(r *http.Request, st *store.Store, entries []db.ListEntriesB
 
 	return account.EntriesListViewData{
 		Total:   len(all),
-		Filters: entryFilters(active, len(all), upcoming, scoring, finalized),
+		Filters: entryFilters(active, len(all), upcoming, scoring, finalized, withdrawn),
 		Rows:    rows,
 	}
 }
@@ -100,8 +108,10 @@ func registrationRowVD(rg db.ListPendingRegistrationsByCompetitorRow) account.En
 	}
 }
 
-// entryFilters builds the status chip row with per-group counts.
-func entryFilters(active string, total, upcoming, scoring, finalized int) []account.EntryFilter {
+// entryFilters builds the status chip row with per-group counts. The
+// Withdrawn chip only appears once at least one entry is withdrawn, so the
+// common case stays uncluttered.
+func entryFilters(active string, total, upcoming, scoring, finalized, withdrawn int) []account.EntryFilter {
 	defs := []struct {
 		key, label string
 		count      int
@@ -110,6 +120,12 @@ func entryFilters(active string, total, upcoming, scoring, finalized int) []acco
 		{"upcoming", "Upcoming", upcoming},
 		{"scoring", "In progress", scoring},
 		{"finalized", "Finalized", finalized},
+	}
+	if withdrawn > 0 {
+		defs = append(defs, struct {
+			key, label string
+			count      int
+		}{"withdrawn", "Withdrawn", withdrawn})
 	}
 	out := make([]account.EntryFilter, 0, len(defs))
 	for _, d := range defs {
@@ -129,7 +145,8 @@ func entryFilters(active string, total, upcoming, scoring, finalized int) []acco
 }
 
 // entryRowVD builds one A5 row, evaluating the score for finalized entries.
-func entryRowVD(r *http.Request, st *store.Store, e db.ListEntriesByHandlerRow, group string) account.EntryRow {
+// requested marks an upcoming entry with a pending withdrawal request.
+func entryRowVD(r *http.Request, st *store.Store, e db.ListEntriesByHandlerRow, group string, requested bool) account.EntryRow {
 	row := account.EntryRow{
 		Href:     fmt.Sprintf("/account/entries/%d", e.ID),
 		Title:    e.EventName + " · " + disciplineLevelLabel(e.Discipline, e.Level),
@@ -149,8 +166,14 @@ func entryRowVD(r *http.Request, st *store.Store, e db.ListEntriesByHandlerRow, 
 		if ok {
 			sub += fmt.Sprintf(" · scored %d", pts)
 		}
+	case "withdrawn":
+		row.StatusLabel, row.StatusKind = "Withdrawn", "closed"
 	default:
-		row.StatusLabel, row.StatusKind = "Upcoming", "wait"
+		if requested {
+			row.StatusLabel, row.StatusKind = "Withdrawal requested", "wait"
+		} else {
+			row.StatusLabel, row.StatusKind = "Upcoming", "wait"
+		}
 	}
 	row.Sub = sub
 	return row
@@ -167,6 +190,27 @@ func toEntryDetailVD(r *http.Request, st *store.Store, entry db.Entry, trial db.
 		EventName: event.Name,
 		EventKey:  disciplineKey(trial.Discipline),
 		DogMeta:   ownedEntryMeta(entry, trial),
+	}
+
+	// Withdrawal state from the linked registration (none for entries created
+	// outside the registration flow). A withdrawn registration overrides the
+	// entry-status branch below; a pending request or a withdrawable entry
+	// surfaces an action in the not-yet-run state.
+	if reg, ok, err := st.RegistrationForEntry(r.Context(), entry.ID); err != nil {
+		slog.Error("entry registration lookup", "entry", entry.ID, "err", err)
+	} else if ok {
+		switch {
+		case reg.Status == "withdrawn":
+			d.Withdrawn = true
+		case reg.Status == "accepted" && reg.WithdrawRequestedAt.Valid:
+			d.WithdrawRequested = true
+		case reg.Status == "accepted" && entry.Status == "registered":
+			d.CanWithdraw = true
+		}
+	}
+
+	if d.Withdrawn {
+		return d
 	}
 
 	switch entry.Status {

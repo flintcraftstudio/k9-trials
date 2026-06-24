@@ -28,10 +28,13 @@ templ entryDetailBody(d EntryDetailViewData) {
 				</div>
 				if d.Finalized {
 					@entryFinalized(d)
+				} else if d.Withdrawn {
+					@entryNotice("Withdrawn", "This entry was withdrawn from the trial. Its entry number is retained on the event record for the audit history.")
 				} else if d.Scoring {
 					@entryNotice("Scoring in progress", "Results appear here when the judge finalizes this run. No partial scores are shown.")
 				} else {
 					@entryNotice("Not yet run", "This entry is registered and waiting to run. The scoresheet appears once judging is complete.")
+					@entryWithdrawBlock(d)
 				}
 			</div>
 		}
@@ -97,6 +100,31 @@ templ entryChallengeBlock(d EntryDetailViewData) {
 		</div>
 	} else if d.WindowClosed {
 		<div class="body-sm" style="margin:0;">The 7-day window to challenge this score has closed.</div>
+	}
+}
+
+// entryWithdrawBlock shows the withdrawal affordance for a not-yet-run entry:
+// a pending-request note, or the request button. Withdrawal routes to an admin
+// for confirmation rather than voiding the entry immediately (Q1).
+templ entryWithdrawBlock(d EntryDetailViewData) {
+	if d.WithdrawRequested {
+		<div class="card flex-col items-start gap-1" style="padding:16px;border-color:var(--orange-300);background:var(--orange-50);">
+			<div class="body-sm" style="margin:0;">
+				<strong style="color:var(--mist-950);">Withdrawal requested.</strong> An admin will confirm your withdrawal. Your entry number is retained on the event record.
+			</div>
+		</div>
+	} else if d.CanWithdraw {
+		<div class="card flex-col items-start gap-2" style="padding:16px;">
+			<div class="body-sm" style="margin:0;">Can't make it? Request to withdraw this entry. An admin confirms the withdrawal; your entry number stays on the record.</div>
+			<form
+				hx-post={ fmt.Sprintf("/account/entries/%d/withdraw", d.EntryID) }
+				hx-confirm="Request to withdraw this entry? An admin will confirm the withdrawal."
+			>
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Class: "text-[var(--color-danger)]"}) {
+					Request withdrawal
+				}
+			</form>
+		</div>
 	}
 }
 

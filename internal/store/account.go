@@ -97,6 +97,30 @@ func (s *Store) ListHandlerEntries(ctx context.Context, competitorID int64) ([]d
 	return s.q.ListEntriesByHandler(ctx, sql.NullInt64{Int64: competitorID, Valid: true})
 }
 
+// RegistrationForEntry returns the registration linked to an entry, or
+// ok=false when the entry was created outside the registration flow (no
+// withdrawal is offered there). Backs the A6 withdrawal affordance.
+func (s *Store) RegistrationForEntry(ctx context.Context, entryID int64) (db.GetRegistrationForEntryRow, bool, error) {
+	reg, err := s.q.GetRegistrationForEntry(ctx, sql.NullInt64{Int64: entryID, Valid: true})
+	if errors.Is(err, sql.ErrNoRows) {
+		return db.GetRegistrationForEntryRow{}, false, nil
+	}
+	if err != nil {
+		return db.GetRegistrationForEntryRow{}, false, err
+	}
+	return reg, true, nil
+}
+
+// RequestEntryWithdrawal records a competitor's withdrawal request on their
+// own accepted entry (Q1). It is a no-op when the registration is not
+// accepted or a request is already pending, so a double-submit is harmless.
+func (s *Store) RequestEntryWithdrawal(ctx context.Context, entryID, competitorID int64) error {
+	return s.q.RequestRegistrationWithdrawal(ctx, db.RequestRegistrationWithdrawalParams{
+		EntryID:      sql.NullInt64{Int64: entryID, Valid: true},
+		CompetitorID: competitorID,
+	})
+}
+
 // CountOpenChallenges returns how many unresolved challenges a competitor
 // has filed (open or under review). Drives the dashboard banner (A1).
 func (s *Store) CountOpenChallenges(ctx context.Context, competitorID int64) (int64, error) {

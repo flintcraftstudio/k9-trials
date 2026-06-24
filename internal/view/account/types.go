@@ -120,6 +120,12 @@ type EntryDetailViewData struct {
 	Finalized bool
 	Scoring   bool
 	Pending   bool
+	Withdrawn bool // registration was withdrawn; entry retained for the record
+
+	// Withdrawal affordance (pending/registered entries only). CanWithdraw and
+	// WithdrawRequested are mutually exclusive.
+	CanWithdraw       bool // accepted, registered, no request yet
+	WithdrawRequested bool // request filed, awaiting admin confirmation
 
 	// Finalized payload.
 	Points        int

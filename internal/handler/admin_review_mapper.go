@@ -55,13 +55,14 @@ func toRegistrationsVD(event db.Event, rows []db.ListRegistrationsByEventRow) ad
 			cur.Pending++
 		}
 		cur.Rows = append(cur.Rows, admin.RegRow{
-			ID:          r.ID,
-			DogName:     r.DogName,
-			DogMeta:     regDogDetail(r.DogRegno, r.DogBreed),
-			SubmittedBy: regSubmittedLine(r),
-			Status:      r.Status,
-			EntryNumber: entryNum,
-			Pending:     pending,
+			ID:                r.ID,
+			DogName:           r.DogName,
+			DogMeta:           regDogDetail(r.DogRegno, r.DogBreed),
+			SubmittedBy:       regSubmittedLine(r),
+			Status:            r.Status,
+			EntryNumber:       entryNum,
+			Pending:           pending,
+			WithdrawRequested: r.Status == "accepted" && r.WithdrawRequestedAt.Valid,
 		})
 	}
 

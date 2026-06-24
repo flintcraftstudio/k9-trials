@@ -50,6 +50,7 @@ SELECT COUNT(*) FROM registrations WHERE status = 'pending';
 -- review view (D5).
 SELECT
     r.id, r.status, r.notes, r.submitted_at, r.entry_id, r.trial_id,
+    r.withdraw_requested_at,
     d.call_name AS dog_name, d.breed AS dog_breed, d.registration_number AS dog_regno,
     c.handle AS competitor_handle, c.display_name AS competitor_name,
     su.email AS submitted_by_email,
@@ -90,3 +91,28 @@ WHERE id = ?;
 UPDATE registrations
 SET status = ?, reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
 WHERE id = ?;
+
+-- name: GetRegistrationForEntry :one
+-- The registration linked to an entry, for the competitor's withdrawal
+-- affordance (A6) and request handler. Returns sql.ErrNoRows for entries
+-- created outside the registration flow (no withdrawal is offered there).
+SELECT id, competitor_id, status, withdraw_requested_at, entry_id
+FROM registrations
+WHERE entry_id = ?;
+
+-- name: RequestRegistrationWithdrawal :exec
+-- A competitor's withdrawal request on their own accepted entry: stamps
+-- withdraw_requested_at without changing status, so the entry stays valid
+-- until an admin confirms (Q1). No-op if already requested or not accepted.
+UPDATE registrations
+SET withdraw_requested_at = CURRENT_TIMESTAMP
+WHERE entry_id = ? AND competitor_id = ? AND status = 'accepted'
+    AND withdraw_requested_at IS NULL;
+
+-- name: ConfirmRegistrationWithdrawal :exec
+-- Admin confirmation of a pending withdrawal request: marks the registration
+-- withdrawn and stamps the reviewer. entry_id is retained so the entry row
+-- and its entry_number survive for the audit record (the number is not freed).
+UPDATE registrations
+SET status = 'withdrawn', reviewed_by = ?, reviewed_at = CURRENT_TIMESTAMP
+WHERE id = ? AND status = 'accepted' AND withdraw_requested_at IS NOT NULL;
