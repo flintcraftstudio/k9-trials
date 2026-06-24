@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log/slog"
@@ -152,9 +153,38 @@ func AdminEventsUpdate(st *store.Store) http.HandlerFunc {
 			renderPublic(w, r, admin.EventForm(vd))
 			return
 		}
+		// Opening registration (draft/closed → published) fires the notify-me
+		// hook for subscribers (Q4 / R1c).
+		if event.Status != "published" && in.Status == "published" {
+			notifyEventSubscribers(r.Context(), st, event.ID, event.Name)
+		}
 		vd.Saved = true
 		vd.Err = ""
 		renderPublic(w, r, admin.EventForm(vd))
+	}
+}
+
+// notifyEventSubscribers logs the recipients who asked to be notified when an
+// event opens registration, then marks them notified so a later re-publish
+// does not re-notify. Email delivery is not wired (the mail client only
+// targets the contact-form recipient), mirroring the D6 notify-judges stub.
+func notifyEventSubscribers(ctx context.Context, st *store.Store, eventID int64, eventName string) {
+	subs, err := st.ListEventSubscribers(ctx, eventID)
+	if err != nil {
+		slog.Error("list event subscribers", "event", eventID, "err", err)
+		return
+	}
+	if len(subs) == 0 {
+		return
+	}
+	emails := make([]string, 0, len(subs))
+	for _, s := range subs {
+		emails = append(emails, s.Email)
+	}
+	slog.Info("event registration opened — notifying subscribers (delivery pending mail setup)",
+		"event", eventID, "name", eventName, "count", len(emails), "recipients", emails)
+	if err := st.MarkEventSubscribersNotified(ctx, eventID); err != nil {
+		slog.Error("mark subscribers notified", "event", eventID, "err", err)
 	}
 }
 

@@ -95,6 +95,37 @@ func stampPublished(cur sql.NullTime, newStatus string) sql.NullTime {
 	return cur
 }
 
+// SubscribeToEvent records a competitor's notify-me request for an event
+// (Q4 / R1c). Idempotent — a repeat subscribe is a no-op.
+func (s *Store) SubscribeToEvent(ctx context.Context, eventID, competitorID int64) error {
+	return s.q.SubscribeToEvent(ctx, db.SubscribeToEventParams{
+		EventID:      eventID,
+		CompetitorID: competitorID,
+	})
+}
+
+// HasEventSubscription reports whether a competitor is already subscribed to
+// an event, for the R1c notify-me state.
+func (s *Store) HasEventSubscription(ctx context.Context, eventID, competitorID int64) (bool, error) {
+	n, err := s.q.HasEventSubscription(ctx, db.HasEventSubscriptionParams{
+		EventID:      eventID,
+		CompetitorID: competitorID,
+	})
+	return n > 0, err
+}
+
+// ListEventSubscribers returns an event's un-notified subscribers (with their
+// email) for the publish-transition hook.
+func (s *Store) ListEventSubscribers(ctx context.Context, eventID int64) ([]db.ListEventSubscribersRow, error) {
+	return s.q.ListEventSubscribers(ctx, eventID)
+}
+
+// MarkEventSubscribersNotified stamps notified_at on an event's un-notified
+// subscribers so a later re-publish does not notify them twice.
+func (s *Store) MarkEventSubscribersNotified(ctx context.Context, eventID int64) error {
+	return s.q.MarkEventSubscribersNotified(ctx, eventID)
+}
+
 // CountEntriesByEvent returns the total entries across all trials of an event.
 func (s *Store) CountEntriesByEvent(ctx context.Context, eventID int64) (int64, error) {
 	return s.q.CountEntriesByEvent(ctx, eventID)

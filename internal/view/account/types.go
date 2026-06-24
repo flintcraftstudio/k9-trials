@@ -197,6 +197,9 @@ type RegisterViewData struct {
 	NoDogs     bool   // competitor owns no dogs yet
 	NotOpen    bool   // event not accepting registrations
 	NotOpenMsg string // reason shown in the not-open state
+
+	ComingSoon bool // draft event, not yet open — show notify-me (R1c)
+	Subscribed bool // competitor already subscribed to be notified
 }
 
 // RegDogOption is one selectable dog in the registration radio list.
