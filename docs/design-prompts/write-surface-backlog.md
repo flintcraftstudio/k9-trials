@@ -72,23 +72,34 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
   `draft/published/closed`; `archived` needs a migration, which belongs with **D3's archive
   lifecycle** (Tranche 3). Add the chip when that status lands.
 
-## Tranche 3 — bigger; three blocked on product decisions
+## Tranche 3 — bigger (all three blockers now resolved; see "Decisions" below)
 - **D1 dashboard** — recent-activity feed (needs a new query/data source) + quick-actions card +
   2-col board layout. [L, unblocked but needs new data]
 - **D5 registrations** — accordion + lifecycle strip + Export CSV + "Add manual entry" +
-  **club-secretary badge** when `submitted_by ≠ handler`. ⛔ *Withdraw* action blocked on **open
-  question Q1** (void-and-free-number vs. retain-for-audit). [L]
+  **club-secretary badge** when `submitted_by ≠ handler`. *Withdraw* (Q1 decided): a competitor's
+  Withdraw on an **accepted** entry **routes to admin for confirmation** (a request, not an
+  immediate action); on confirm the entry becomes `status = withdrawn` with the **entry_number and
+  row retained** for audit (number is NOT freed). Needs a `withdrawn` entry status + an
+  admin-confirm step on D5; A6 shows "withdrawal requested / pending admin". [L]
 - **R1 register** — stepped-checkout chrome (step indicator, selected-dog 2px discipline border,
   avatars), live "N trials selected for {dog}" count, per-trial entry-count/judge metadata. R1c
-  ⛔ "Notify me" + open-date email promise blocked on **open question Q4** (what it subscribes to). [L]
-- **A4 dog form** — missing **Sex** field. ⛔ Needs a migration + a decision to add it now. Also
-  breed autocomplete. [M]
+  "Notify me" (Q4 decided): **requires login**; a logged-in competitor subscribes to the **event**
+  and is emailed when it opens registration (`status → published`). Needs a subscriptions table +
+  a hook on the event publish transition (email delivery itself is still unwired — log like D6). [L]
+- **A4 dog form** (A4 decided: **add `sex` now**) — migration `ALTER TABLE dogs ADD COLUMN sex TEXT`
+  with a CHECK in `('male','female','')`; wire store insert/update + handler parse + the form Sex
+  select. Also breed autocomplete (separate, can defer). [M]
 - **D3 event form** — audit block (created/published/last-edited), Archive lifecycle action,
-  fuller at-a-glance (judge-coverage + total entries), `archived` status. [L, needs timestamps]
+  fuller at-a-glance (judge-coverage + total entries), `archived` status. [L, needs timestamps].
+  Adding the `archived` status here **unblocks the deferred D2 Archived filter chip** — do them
+  together.
 - **D4 trials** — new-trial as slide-over (currently full page), pill-chip discipline/level
   selectors, "1 trial without a judge" summary. [M]
 
-## Open questions to resolve before Tranche 3's blocked items
-- **Q1** (D5/A6): withdrawal semantics after accept — void+free entry number, or retain for audit?
-- **Q4** (R1c): what does "Notify me" subscribe to, and does it require login?
-- **A4**: add a `sex` column to dogs now? (migration + store/parse/view wiring.)
+## Decisions (resolved 2026-06-24 — were the Tranche 3 blockers)
+- **Q1** (D5/A6) — withdrawal after accept: **retain for audit, admin-confirmed**. Withdraw is a
+  request that routes to admin; on confirm, entry → `withdrawn`, entry_number + row retained, number
+  NOT freed.
+- **Q4** (R1c) — "Notify me": subscribes to **event registration opening**, **requires login**;
+  emailed when the event publishes.
+- **A4** — dogs `sex` column: **add it now** (migration + store/parse/form wiring).
