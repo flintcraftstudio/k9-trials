@@ -57,10 +57,20 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
 - Reviewer/resolver *name* is genuinely not in the schema (UpdateChallengeStatus records
   resolved_by only on resolve/dismiss, not on start-review) — "by {admin}" clause omitted, not faked.
 
-### Quick wins
-- D6 assignments (`admin/assignments.templ`): add a "Notify judges" button. [S]
-- D2 events / D8 users: add a search box (`?q=`) + render as a true table with header; D8 already
-  has an unrendered `UserRow.Created` field. Also D2 missing an Archived filter chip. [M]
+### Quick wins — DONE
+- **D6 assignments** (`admin/assignments.templ`): "Notify judges" header button → POST
+  `/admin/events/{id}/notify-judges` → htmx confirmation into `#notify-result`. Disabled until a
+  judge is assigned (`AssignedJudges` count); singular/plural copy. **No email backend yet** (mail
+  client only targets the contact-form recipient) — recipients are logged and the banner says
+  "Delivery pending mail setup." Real per-judge delivery is a later task.
+- **D2 events** + **D8 users**: in-memory `?q=` search box (events: name/slug; users:
+  email/name/handle) + rendered as true tables with header rows. D8 surfaces the `Created` column.
+  Chips + search compose: the whole `#events-results`/`#users-results` block swaps so active
+  status/role + query stay consistent; status counts span all rows (search only narrows visible).
+  Shared `orDash` helper; `eventsListURL`/`usersListURL` (handler) bake `q` into chip hrefs.
+- ⛔ **D2 Archived filter chip — DEFERRED**: the events CHECK constraint only allows
+  `draft/published/closed`; `archived` needs a migration, which belongs with **D3's archive
+  lifecycle** (Tranche 3). Add the chip when that status lands.
 
 ## Tranche 3 — bigger; three blocked on product decisions
 - **D1 dashboard** — recent-activity feed (needs a new query/data source) + quick-actions card +

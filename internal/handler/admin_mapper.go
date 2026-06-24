@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strings"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
@@ -97,9 +98,11 @@ func validEventFilter(key string) bool {
 	return false
 }
 
-// toAdminEventsVD builds the D2 list: status filter chips with counts and
-// the rows matching the active filter, each with its trial count.
-func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, active string) admin.EventsListViewData {
+// toAdminEventsVD builds the D2 list: status filter chips with counts and the
+// rows matching the active status filter and search term, each with its trial
+// count. Status counts span all events (independent of the search), so the
+// chips stay stable; the search narrows the visible rows by name or slug.
+func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, active, q string) admin.EventsListViewData {
 	var draft, published, closed int
 	for _, e := range events {
 		switch e.Status {
@@ -112,9 +115,13 @@ func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, ac
 		}
 	}
 
+	needle := strings.ToLower(strings.TrimSpace(q))
 	rows := make([]admin.EventRow, 0, len(events))
 	for _, e := range events {
 		if active != "" && e.Status != active {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(e.Name), needle) && !strings.Contains(strings.ToLower(e.Slug), needle) {
 			continue
 		}
 		n, err := st.CountTrialsByEvent(ctx, e.ID)
@@ -134,13 +141,32 @@ func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, ac
 
 	return admin.EventsListViewData{
 		Total:   len(events),
-		Filters: eventFilters(active, len(events), draft, published, closed),
+		Active:  active,
+		Query:   q,
+		Filters: eventFilters(active, q, len(events), draft, published, closed),
 		Rows:    rows,
 	}
 }
 
-// eventFilters builds the status chip row with per-status counts.
-func eventFilters(active string, total, draft, published, closed int) []admin.EventFilter {
+// eventsListURL composes an events-list URL preserving the status filter and
+// search term, omitting whichever is empty.
+func eventsListURL(status, q string) string {
+	v := url.Values{}
+	if status != "" {
+		v.Set("status", status)
+	}
+	if q != "" {
+		v.Set("q", q)
+	}
+	if len(v) == 0 {
+		return "/admin/events"
+	}
+	return "/admin/events?" + v.Encode()
+}
+
+// eventFilters builds the status chip row with per-status counts, preserving
+// the active search term in each chip's href.
+func eventFilters(active, q string, total, draft, published, closed int) []admin.EventFilter {
 	defs := []struct {
 		key, label string
 		count      int
@@ -152,15 +178,11 @@ func eventFilters(active string, total, draft, published, closed int) []admin.Ev
 	}
 	out := make([]admin.EventFilter, 0, len(defs))
 	for _, d := range defs {
-		href := "/admin/events"
-		if d.key != "" {
-			href += "?status=" + d.key
-		}
 		out = append(out, admin.EventFilter{
 			Key:    d.key,
 			Label:  d.label,
 			Count:  d.count,
-			Href:   href,
+			Href:   eventsListURL(d.key, q),
 			Active: active == d.key,
 		})
 	}

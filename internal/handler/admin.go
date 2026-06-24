@@ -54,9 +54,10 @@ func AdminEvents(st *store.Store) http.HandlerFunc {
 		if !validEventFilter(filter) {
 			filter = ""
 		}
-		data := toAdminEventsVD(r.Context(), st, events, filter)
+		q := r.URL.Query().Get("q")
+		data := toAdminEventsVD(r.Context(), st, events, filter, q)
 		if r.Header.Get("HX-Request") == "true" {
-			renderPublic(w, r, admin.EventsTable(data))
+			renderPublic(w, r, admin.EventsResults(data))
 			return
 		}
 		renderPublic(w, r, admin.EventsListPage(data))

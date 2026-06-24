@@ -205,6 +205,7 @@ func main() {
 	mux.Handle("GET /admin/events/{id}/registrations", session.RequireAdmin(handler.AdminRegistrations(st)))
 	mux.Handle("GET /admin/events/{id}/assignments", session.RequireAdmin(handler.AdminAssignments(st)))
 	mux.Handle("POST /admin/events/{id}/trials/{tid}/judge", session.RequireAdmin(handler.AdminAssignJudge(st)))
+	mux.Handle("POST /admin/events/{id}/notify-judges", session.RequireAdmin(handler.AdminNotifyJudges(st)))
 	mux.Handle("POST /admin/registrations/{rid}/accept", session.RequireAdmin(handler.AdminRegistrationAccept(st)))
 	mux.Handle("POST /admin/registrations/{rid}/waitlist", session.RequireAdmin(handler.AdminRegistrationWaitlist(st)))
 	mux.Handle("POST /admin/registrations/{rid}/reject", session.RequireAdmin(handler.AdminRegistrationReject(st)))

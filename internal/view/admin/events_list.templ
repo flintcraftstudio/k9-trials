@@ -23,13 +23,35 @@ templ eventsListActions() {
 }
 
 templ eventsListContent(d EventsListViewData) {
-	<div class="flex-col gap-4">
-		<div class="flex gap-2 flex-wrap">
+	@EventsResults(d)
+}
+
+// EventsResults wraps the filter chips, the search box, and the table — the
+// whole block swaps on a chip click or a search keystroke so the active
+// status and search term stay consistent across both controls.
+templ EventsResults(d EventsListViewData) {
+	<div id="events-results" class="flex-col gap-4">
+		<div class="flex items-center gap-2 flex-wrap">
 			for _, f := range d.Filters {
 				@eventFilterChip(f)
 			}
+			<div style="flex:1;"></div>
+			<input
+				type="search"
+				name="q"
+				value={ d.Query }
+				placeholder="Search by name or slug…"
+				autocomplete="off"
+				hx-get={ eventsSearchURL(d.Active) }
+				hx-target="#events-results"
+				hx-swap="outerHTML"
+				hx-trigger="input changed delay:300ms, search"
+				hx-push-url="true"
+				class="rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950"
+				style="min-width:240px;"
+			/>
 		</div>
-		@EventsTable(d)
+		@eventsTable(d)
 	</div>
 }
 
@@ -37,7 +59,7 @@ templ eventFilterChip(f EventFilter) {
 	<a
 		href={ templ.SafeURL(f.Href) }
 		hx-get={ f.Href }
-		hx-target="#events-table"
+		hx-target="#events-results"
 		hx-swap="outerHTML"
 		hx-push-url="true"
 		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
@@ -47,51 +69,86 @@ templ eventFilterChip(f EventFilter) {
 	</a>
 }
 
-// EventsTable is the filterable event list, returned alone for htmx filter
-// swaps and embedded on first load.
-templ EventsTable(d EventsListViewData) {
-	<div id="events-table" class="flex-col gap-2">
+// eventsTable renders the event rows as a true table with a header row.
+templ eventsTable(d EventsListViewData) {
+	<div class="card" style="padding:0;overflow:hidden;">
+		<div class="body-sm" style={ eventsGridStyle() + "padding:10px 16px;background:var(--mist-100);color:var(--mist-500);text-transform:uppercase;letter-spacing:.04em;font-size:11px;" }>
+			<span>Event</span>
+			<span>Location</span>
+			<span>Dates</span>
+			<span style="text-align:right;">Trials</span>
+			<span>Status</span>
+			<span></span>
+		</div>
 		if len(d.Rows) == 0 {
-			<div class="card" style="padding:20px;">
-				<p class="body-sm" style="margin:0;">No events match this filter.</p>
+			<div style="padding:20px;">
+				<p class="body-sm" style="margin:0;">{ eventsEmptyMsg(d) }</p>
 			</div>
 		} else {
 			for _, e := range d.Rows {
-				@eventRow(e)
+				@eventTableRow(e)
 			}
 		}
 	</div>
 }
 
-templ eventRow(e EventRow) {
-	<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/edit", e.ID)) } class="card flex items-center justify-between gap-3" style="padding:12px 16px;text-decoration:none;color:inherit;">
-		<div class="flex-col" style="min-width:0;flex:1;">
+templ eventTableRow(e EventRow) {
+	<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/edit", e.ID)) } style={ eventsGridStyle() + "padding:12px 16px;border-top:1px solid var(--color-divider);text-decoration:none;color:inherit;align-items:center;" }>
+		<div class="flex-col" style="min-width:0;">
 			<span style="font-weight:600;color:var(--mist-950);">{ e.Name }</span>
-			<span class="body-sm" style="margin:0;">{ eventRowMeta(e) }</span>
+			<span class="body-sm" style="margin:0;">{ "/events/" + e.Slug }</span>
 		</div>
-		<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ trialsLabel(e.Trials) }</span>
+		<span class="body-sm" style="margin:0;">{ orDash(e.Location) }</span>
+		<span class="body-sm" style="margin:0;font-variant-numeric:tabular-nums;">{ orDash(e.Dates) }</span>
+		<span class="body-sm" style="margin:0;text-align:right;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", e.Trials) }</span>
 		@eventPill(e.Status)
+		<span class="body-sm" style="margin:0;color:var(--blue-700);white-space:nowrap;">{ eventRowAction(e.Status) }</span>
 	</a>
 }
 
-// eventRowMeta composes the "location · /events/slug · dates" sub-line.
-func eventRowMeta(e EventRow) string {
-	parts := []string{}
-	if e.Location != "" {
-		parts = append(parts, e.Location)
+// eventsSearchURL is the base hx-get target for the search box; htmx appends
+// the q parameter from the input. It carries the active status so search and
+// status filter compose.
+func eventsSearchURL(status string) string {
+	if status == "" {
+		return "/admin/events"
 	}
-	parts = append(parts, "/events/"+e.Slug)
-	if e.Dates != "" {
-		parts = append(parts, e.Dates)
-	}
-	out := parts[0]
-	for _, p := range parts[1:] {
-		out += " · " + p
-	}
-	return out
+	return "/admin/events?status=" + status
 }
 
-// trialsLabel renders "4 trials" / "1 trial" / "no trials".
+// eventsGridStyle is the shared grid template for the events table header and
+// rows so columns line up.
+func eventsGridStyle() string {
+	return "display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.4fr) minmax(0,1fr) 64px 96px 64px;gap:12px;"
+}
+
+// eventRowAction is the trailing row affordance: drafts open straight to the
+// editor, everything else opens the event.
+func eventRowAction(status string) string {
+	if status == "draft" {
+		return "Edit →"
+	}
+	return "Open →"
+}
+
+// eventsEmptyMsg distinguishes "no search matches" from "no events here".
+func eventsEmptyMsg(d EventsListViewData) string {
+	if d.Query != "" {
+		return "No events match \"" + d.Query + "\"."
+	}
+	return "No events match this filter."
+}
+
+// orDash returns s, or an em dash when s is empty.
+func orDash(s string) string {
+	if s == "" {
+		return "—"
+	}
+	return s
+}
+
+// trialsLabel renders "4 trials" / "1 trial" / "no trials". Shared by the
+// event form and trials views.
 func trialsLabel(n int) string {
 	switch n {
 	case 0:

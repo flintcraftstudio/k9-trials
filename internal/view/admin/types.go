@@ -29,9 +29,13 @@ type EventLine struct {
 	Status string
 }
 
-// EventsListViewData backs the admin events list (D2).
+// EventsListViewData backs the admin events list (D2). Active is the current
+// status filter ("" = all) and Query the current search term; both feed the
+// chip hrefs and the search box so filter + search compose.
 type EventsListViewData struct {
 	Total   int
+	Active  string
+	Query   string
 	Filters []EventFilter
 	Rows    []EventRow
 }
@@ -157,11 +161,12 @@ type RegRow struct {
 
 // AssignmentsViewData backs the judge assignment screen (D6).
 type AssignmentsViewData struct {
-	EventID    int64
-	EventName  string
-	Unassigned int
-	Trials     []AssignTrial
-	Judges     []JudgeOption
+	EventID        int64
+	EventName      string
+	Unassigned     int
+	AssignedJudges int // distinct judges currently assigned (drives Notify)
+	Trials         []AssignTrial
+	Judges         []JudgeOption
 }
 
 // AssignTrial is one trial's assignment row.
@@ -276,9 +281,13 @@ type ChalAuditStep struct {
 
 // --- D8 Users and roles ---
 
-// UsersViewData backs the users and roles admin (D8).
+// UsersViewData backs the users and roles admin (D8). Active is the current
+// role filter ("" = all) and Query the current search term; both feed the
+// chip hrefs and the search box so role filter + search compose.
 type UsersViewData struct {
 	Total   int
+	Active  string
+	Query   string
 	Filters []UserFilter
 	Rows    []UserRow
 }
