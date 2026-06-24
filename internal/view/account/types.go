@@ -74,6 +74,7 @@ type DogFormViewData struct {
 	Breed          string
 	DOB            string // ISO yyyy-mm-dd for the date input
 	RegNo          string
+	Sex            string // "male", "female", or "" when unrecorded
 	PublicURL      string // dog public page, edit only
 	Err            string
 }

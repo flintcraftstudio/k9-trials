@@ -174,6 +174,7 @@ func dogFormVD(dog db.Dog) account.DogFormViewData {
 		Breed:          dog.Breed,
 		DOB:            dob,
 		RegNo:          dog.RegistrationNumber,
+		Sex:            dog.Sex,
 		PublicURL:      dogPublicURL(dog.ID),
 	}
 }
@@ -193,15 +194,22 @@ func parseDogForm(r *http.Request, base account.DogFormViewData) (store.DogInput
 	breed := strings.TrimSpace(r.FormValue("breed"))
 	regNo := strings.TrimSpace(r.FormValue("registration_number"))
 	dobStr := strings.TrimSpace(r.FormValue("date_of_birth"))
+	sex := strings.TrimSpace(r.FormValue("sex"))
 
 	vd.CallName = callName
 	vd.RegisteredName = registered
 	vd.Breed = breed
 	vd.RegNo = regNo
 	vd.DOB = dobStr
+	vd.Sex = sex
 
 	if callName == "" {
 		vd.Err = "Call name is required."
+		return store.DogInput{}, vd, false
+	}
+
+	if sex != "" && sex != "male" && sex != "female" {
+		vd.Err = "Sex must be male or female."
 		return store.DogInput{}, vd, false
 	}
 
@@ -221,6 +229,7 @@ func parseDogForm(r *http.Request, base account.DogFormViewData) (store.DogInput
 		Breed:              breed,
 		DateOfBirth:        dob,
 		RegistrationNumber: regNo,
+		Sex:                sex,
 	}, vd, true
 }
 

@@ -229,6 +229,7 @@ type DogInput struct {
 	Breed              string
 	DateOfBirth        *time.Time
 	RegistrationNumber string
+	Sex                string // "male", "female", or "" when unrecorded
 }
 
 // CreateDog inserts a dog under an owner and returns the new row.
@@ -240,6 +241,7 @@ func (s *Store) CreateDog(ctx context.Context, ownerID int64, in DogInput) (db.D
 		Breed:              in.Breed,
 		DateOfBirth:        nullTime(in.DateOfBirth),
 		RegistrationNumber: in.RegistrationNumber,
+		Sex:                in.Sex,
 	})
 }
 
@@ -252,6 +254,7 @@ func (s *Store) UpdateDog(ctx context.Context, dogID, ownerID int64, in DogInput
 		Breed:              in.Breed,
 		DateOfBirth:        nullTime(in.DateOfBirth),
 		RegistrationNumber: in.RegistrationNumber,
+		Sex:                in.Sex,
 		ID:                 dogID,
 		OwnerID:            ownerID,
 	})

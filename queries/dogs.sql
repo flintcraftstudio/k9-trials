@@ -26,8 +26,8 @@ ORDER BY t.trial_date DESC, e.id DESC;
 -- Inserts a dog under an owner. Only call_name is required; the rest
 -- default empty/null so a dog can exist in the registry before competing.
 -- date_of_birth is passed as a nullable param. Returns the new row.
-INSERT INTO dogs (owner_id, call_name, registered_name, breed, date_of_birth, registration_number)
-VALUES (?, ?, ?, ?, ?, ?)
+INSERT INTO dogs (owner_id, call_name, registered_name, breed, date_of_birth, registration_number, sex)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: UpdateDog :exec
@@ -35,7 +35,7 @@ RETURNING *;
 -- cannot edit a dog they do not own even with a guessed id.
 UPDATE dogs
 SET call_name = ?, registered_name = ?, breed = ?, date_of_birth = ?,
-    registration_number = ?, updated_at = CURRENT_TIMESTAMP
+    registration_number = ?, sex = ?, updated_at = CURRENT_TIMESTAMP
 WHERE id = ? AND owner_id = ?;
 
 -- name: DeleteDog :exec
