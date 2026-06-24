@@ -17,6 +17,7 @@ import (
 	"github.com/flintcraftstudio/k9-trials/internal/handler"
 	"github.com/flintcraftstudio/k9-trials/internal/mail"
 	"github.com/flintcraftstudio/k9-trials/internal/middleware"
+	"github.com/flintcraftstudio/k9-trials/internal/playbook"
 	"github.com/flintcraftstudio/k9-trials/internal/seeddemo"
 	"github.com/flintcraftstudio/k9-trials/internal/session"
 	"github.com/flintcraftstudio/k9-trials/internal/store"
@@ -220,9 +221,12 @@ func main() {
 	mux.Handle("GET /admin/users", session.RequireAdmin(handler.AdminUsers(st)))
 	mux.Handle("POST /admin/users/{id}/role", session.RequireAdmin(handler.AdminUserRole(st)))
 
-	// Demo reset — only registered when DEMO_MODE=1, and still admin-gated.
+	// Demo-only routes — registered when DEMO_MODE=1. The seed reset stays
+	// admin-gated; the demo playbook is a read-only dev/demo walkthrough served
+	// in-app for convenience (open without auth so it's reachable pre-login).
 	if cfg.DemoMode {
 		mux.Handle("POST /admin/seed-demo", session.RequireAdmin(handler.AdminSeedDemo(st)))
+		mux.Handle("GET /playbook", playbook.Handler())
 	}
 
 	// Session + logging middleware

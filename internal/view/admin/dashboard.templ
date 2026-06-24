@@ -29,6 +29,18 @@ templ dashboardActions() {
 		@components.Button(components.ButtonProps{
 			Variant: "plain",
 			Size:    "md",
+			Href:    "/playbook",
+			Attrs: templ.Attributes{
+				"target": "_blank",
+				"rel":    "noopener",
+				"title":  "Open the demo playbook & feature walkthrough in a new tab",
+			},
+		}) {
+			Demo playbook ↗
+		}
+		@components.Button(components.ButtonProps{
+			Variant: "plain",
+			Size:    "md",
 			Type:    "button",
 			Attrs: templ.Attributes{
 				"hx-post":    "/admin/seed-demo",

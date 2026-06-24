@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K9 Elements — Demo Playbook &amp; Feature Walkthrough</title>
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap");
+
+  /* ---- K9 Elements design tokens (from the product design system) ---- */
+  :root {
+    --mist-50:  oklch(98.7% 0.002 197.1);
+    --mist-100: oklch(96.3% 0.002 197.1);
+    --mist-200: oklch(92.5% 0.005 214.3);
+    --mist-300: oklch(87.2% 0.007 219.6);
+    --mist-400: oklch(72.3% 0.014 214.4);
+    --mist-500: oklch(56.0% 0.021 213.5);
+    --mist-600: oklch(45.0% 0.017 213.2);
+    --mist-700: oklch(37.8% 0.015 216.0);
+    --mist-800: oklch(27.5% 0.011 216.9);
+    --mist-950: oklch(14.8% 0.004 228.8);
+
+    --blue-50:  oklch(97.5% 0.015 235);
+    --blue-100: oklch(94.2% 0.030 232);
+    --blue-300: oklch(80.0% 0.090 228);
+    --blue-600: oklch(49.5% 0.122 227);
+    --blue-700: oklch(41.5% 0.106 228);
+
+    --green-50:  oklch(97.8% 0.020 145);
+    --green-100: oklch(94.5% 0.045 144);
+    --green-300: oklch(80.5% 0.130 144);
+    --green-600: oklch(55.0% 0.165 144);
+    --green-700: oklch(46.0% 0.142 144);
+
+    --orange-50:  oklch(98.0% 0.018 60);
+    --orange-100: oklch(95.0% 0.040 58);
+    --orange-300: oklch(81.0% 0.115 53);
+    --orange-600: oklch(56.0% 0.150 48);
+    --orange-700: oklch(46.5% 0.130 48);
+
+    --border:        rgb(from var(--mist-950) r g b / 0.10);
+    --border-strong: rgb(from var(--mist-950) r g b / 0.20);
+    --divider:       rgb(from var(--mist-950) r g b / 0.08);
+
+    --font-display: "Instrument Serif", ui-serif, Georgia, "Times New Roman", serif;
+    --font-sans:    "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono:    ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--mist-100);
+    color: var(--mist-950);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 40px 28px 64px;
+  }
+
+  /* ---- Masthead ---- */
+  .masthead {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .stripes { display: inline-flex; gap: 3px; }
+  .brand .stripes span { width: 6px; height: 26px; border-radius: 2px; display: block; }
+  .brand .wordmark {
+    font-family: var(--font-display);
+    font-size: 30px;
+    letter-spacing: -0.01em;
+    color: var(--mist-950);
+  }
+  .masthead h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 42px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    margin: 22px 0 6px;
+  }
+  .masthead .lede {
+    color: var(--mist-700);
+    font-size: 16px;
+    max-width: 60ch;
+    margin: 0 0 18px;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 16px;
+    border-top: 1px solid var(--divider);
+    padding-top: 16px;
+    font-size: 13px; color: var(--mist-600);
+  }
+  .meta b { color: var(--mist-950); font-weight: 600; }
+
+  /* ---- Sections ---- */
+  section.block {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 22px;
+  }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--mist-500);
+    margin-bottom: 10px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 400; font-size: 28px; letter-spacing: -0.01em;
+    margin: 0 0 6px;
+  }
+  h3 {
+    font-size: 14px; font-weight: 700; letter-spacing: 0.02em;
+    color: var(--mist-950);
+    margin: 22px 0 8px;
+  }
+  p { margin: 0 0 12px; }
+  a { color: var(--blue-700); }
+  strong { color: var(--mist-950); font-weight: 600; }
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    background: var(--mist-100);
+    border: 1px solid var(--divider);
+    padding: 1px 5px; border-radius: 5px;
+    color: var(--mist-800);
+    white-space: nowrap;
+  }
+  pre {
+    font-family: var(--font-mono);
+    font-size: 13px; line-height: 1.5;
+    background: var(--mist-950); color: var(--mist-50);
+    padding: 14px 16px; border-radius: 10px;
+    overflow-x: auto; margin: 0 0 14px;
+  }
+  pre .c { color: var(--mist-400); }
+  ul.feat { list-style: none; margin: 0; padding: 0; }
+  ul.feat li { padding: 7px 0 7px 18px; position: relative; border-top: 1px solid var(--divider); }
+  ul.feat li:first-child { border-top: 0; }
+  ul.feat li::before { content: ""; position: absolute; left: 2px; top: 15px; width: 6px; height: 6px; border-radius: 50%; background: var(--blue-600); }
+  ul.feat em { color: var(--mist-500); font-style: italic; }
+
+  /* ---- Tables ---- */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 4px 0 6px; }
+  th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--divider); vertical-align: top; }
+  thead th {
+    background: var(--mist-100);
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--mist-600);
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:first-child { border-top-left-radius: 8px; }
+  thead th:last-child  { border-top-right-radius: 8px; }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  /* ---- Pills ---- */
+  .pill {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.03em;
+    padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  }
+  .pill-blue   { background: var(--blue-100);   color: var(--blue-700); }
+  .pill-green  { background: var(--green-100);  color: var(--green-700); }
+  .pill-orange { background: var(--orange-100); color: var(--orange-700); }
+  .pill-mute   { background: rgb(from var(--mist-950) r g b / 0.06); color: var(--mist-700); }
+
+  /* ---- Callouts ---- */
+  .note {
+    border: 1px solid var(--orange-300);
+    background: var(--orange-50);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    margin: 16px 0 0;
+  }
+  .note b { color: var(--orange-700); }
+  .tip {
+    border: 1px solid var(--blue-300);
+    background: var(--blue-50);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 13px;
+    margin: 12px 0 0;
+    color: var(--mist-700);
+  }
+
+  /* ---- Stories ---- */
+  .story {
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue-600);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin: 0 0 16px;
+    background: #fff;
+    break-inside: avoid;
+  }
+  .story-head { display: flex; align-items: baseline; gap: 12px; }
+  .story-num {
+    font-family: var(--font-display);
+    font-size: 30px; line-height: 1; color: var(--blue-600);
+    min-width: 30px;
+  }
+  .story-title { font-size: 17px; font-weight: 700; letter-spacing: -0.005em; }
+  .story .pg { font-size: 13px; color: var(--mist-600); margin: 4px 0 12px; }
+  .story .pg b { color: var(--mist-950); }
+  .story ol { margin: 0; padding-left: 20px; }
+  .story ol li { margin: 5px 0; }
+  .demonstrates {
+    margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--divider);
+    font-size: 13px; color: var(--mist-700);
+  }
+  .demonstrates b { color: var(--green-700); font-weight: 700; }
+
+  /* ---- Footer ---- */
+  footer {
+    margin-top: 30px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px;
+    font-size: 12.5px; color: var(--mist-500);
+  }
+  footer .fb { display: flex; align-items: center; gap: 8px; color: var(--mist-700); }
+  footer .stripes { display: inline-flex; gap: 2px; }
+  footer .stripes span { width: 4px; height: 14px; border-radius: 1px; display: block; }
+
+  /* ---- Print ---- */
+  @media print {
+    body { background: #fff; font-size: 11pt; }
+    .page { max-width: none; padding: 0; }
+    section.block, .masthead { border-radius: 0; border: 0; border-bottom: 1px solid var(--border); padding: 18px 0; margin: 0 0 8px; }
+    .story { break-inside: avoid; }
+    pre { background: var(--mist-100); color: var(--mist-950); border: 1px solid var(--border); }
+    a { color: var(--mist-950); text-decoration: none; }
+    @page { margin: 16mm 14mm; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="brand">
+      <span class="stripes" aria-hidden="true">
+        <span style="background:var(--blue-600)"></span>
+        <span style="background:var(--green-600)"></span>
+        <span style="background:var(--orange-600)"></span>
+      </span>
+      <span class="wordmark">K9&nbsp;Elements</span>
+    </div>
+    <h1>Demo Playbook &amp; Feature Walkthrough</h1>
+    <p class="lede">A guided tour of the K9 Elements trial-scoring platform: what it does, and a set of
+      scripted user stories you can click through live to demonstrate the capabilities and flow. Every
+      story is grounded in the built-in demo dataset, so the names, dogs, events, and scores below are
+      exactly what appears on screen.</p>
+    <div class="meta">
+      <span><b>Product</b> &nbsp;K9 Elements · k9elements.com</span>
+      <span><b>Built by</b> &nbsp;Flintcraft Studio</span>
+      <span><b>Document</b> &nbsp;Demo playbook for client review</span>
+    </div>
+  </header>
+
+  <!-- ============ RUNNING THE DEMO ============ -->
+  <section class="block">
+    <div class="eyebrow">Getting started</div>
+    <h2>Running the demo</h2>
+    <p><strong>1. Start the app</strong> with demo mode on — it seeds a complete, realistic world on an
+      empty database:</p>
+    <pre>DEMO_MODE=1 go run ./cmd/server     <span class="c"># serves on http://localhost:8080</span></pre>
+    <p>Or reset an existing demo database to the known state at any time:</p>
+    <pre>mage seeddemo</pre>
+    <p>When <code>DEMO_MODE=1</code>, the admin dashboard also has a <strong>“↺ Reset demo data”</strong>
+      button — one click wipes everything and reseeds, so you can re-run a story from a clean slate
+      mid-demo.</p>
+    <p><strong>2. Log in</strong> at <code>/login</code>. All demo passwords are <code>demo1234</code>,
+      except the admin.</p>
+
+    <table>
+      <thead><tr><th>Role</th><th>Login</th><th>Password</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><span class="pill pill-mute">Admin</span></td><td><code>admin@example.com</code></td><td><code>admin1234</code></td><td>Full organizer surface</td></tr>
+        <tr><td><span class="pill pill-mute">Judge</span></td><td><code>judge@example.com</code></td><td><code>demo1234</code></td><td>Assigned to the live Cedar Creek trial</td></tr>
+        <tr><td><span class="pill pill-mute">Judge</span></td><td><code>jpereira@example.com</code></td><td><code>demo1234</code></td><td>Judged the closed Brindle Bay trial</td></tr>
+        <tr><td><span class="pill pill-blue">Competitor</span></td><td><code>ltanaka@example.com</code></td><td><code>demo1234</code></td><td>@ltanaka — 3 dogs (Vex, Kestrel, Nyx), most active</td></tr>
+        <tr><td><span class="pill pill-blue">Competitor</span></td><td><code>rokafor@example.com</code></td><td><code>demo1234</code></td><td>@rokafor — 2 dogs (Atlas, Echo)</td></tr>
+        <tr><td><span class="pill pill-blue">Competitor</span></td><td><code>khessel@example.com</code></td><td><code>demo1234</code></td><td>@khessel — 1 dog (Saber)</td></tr>
+        <tr><td><span class="pill pill-blue">Competitor</span></td><td><code>syi@example.com</code></td><td><code>demo1234</code></td><td>@syi — 1 dog (Lumen), first season</td></tr>
+        <tr><td><span class="pill pill-blue">Competitor</span></td><td><code>dfowler@example.com</code></td><td><code>demo1234</code></td><td>@dfowler — <strong>no dogs yet</strong> (fresh-account persona)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>The demo world at a glance</h3>
+    <table>
+      <thead><tr><th>Event</th><th>When</th><th>Status</th><th>What it shows</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Cedar Creek Spring Trial</strong></td><td>May 2026</td><td><span class="pill pill-green">Published</span></td><td>A trial <strong>mid-run</strong> — finalized scores, a run still scoring, open registrations, and active challenges</td></tr>
+        <tr><td><strong>Hopkins Mill Tracking</strong></td><td>Jun 2026</td><td><span class="pill pill-green">Published</span></td><td>Accepted entries <strong>not yet run</strong> — the registration &amp; withdrawal surface</td></tr>
+        <tr><td><strong>Brindle Bay Autumn</strong></td><td>Oct 2025</td><td><span class="pill pill-mute">Closed</span></td><td>A <strong>completed</strong> event with final results and a resolved challenge</td></tr>
+        <tr><td><strong>Cedar Creek Summer</strong></td><td>Jul 2026</td><td><span class="pill pill-orange">Draft</span></td><td>An <strong>unpublished</strong> event — the “notify me when it opens” surface</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px">Scoring uses the <strong>Level 1 Obedience</strong> rulebook: 120 points
+      max, <strong>84 (70%) to qualify</strong>. In the live Cedar Creek trial that means Echo (104),
+      Saber (98) and Kestrel (95) qualify, while Atlas (74) is an NQ — which is exactly why @rokafor filed
+      a challenge on it.</p>
+  </section>
+
+  <!-- ============ PART 1 — FEATURE INVENTORY ============ -->
+  <section class="block">
+    <div class="eyebrow">Part 1</div>
+    <h2>Feature inventory</h2>
+    <p>Grouped by who uses it. Each line points at where to see it in the demo.</p>
+
+    <h3>Public site <span class="pill pill-mute" style="margin-left:6px">no login required</span></h3>
+    <ul class="feat">
+      <li><strong>Event listing &amp; detail</strong> (<code>/events</code>) — published and closed events, their trials, schedule, and location. <em>See: Cedar Creek, Hopkins Mill, Brindle Bay.</em></li>
+      <li><strong>Live trial leaderboard</strong> — standings sorted by score, qualifying runs above an <strong>NQ divider</strong>, color-coded result tiers, and a <strong>live auto-refresh</strong> while a trial is in progress. <em>See: Cedar Creek → Obedience L1.</em></li>
+      <li><strong>Public scoresheet</strong> (<code>/entries/{id}</code>) — the full per-exercise breakdown for any finalized run, with its Q/NQ verdict.</li>
+      <li><strong>Competitor directory</strong> (<code>/competitors</code>) — searchable list of handlers, each with a public profile: bio, dogs, and trial history. <em>See: @ltanaka, @rokafor.</em></li>
+      <li><strong>Dog profiles</strong> (<code>/dogs/{id}</code>) — per-dog registry info and chronological trial history. <em>See: Vex, Atlas.</em></li>
+      <li><strong>Contact form</strong> with spam protection.</li>
+    </ul>
+
+    <h3>Accounts &amp; onboarding</h3>
+    <ul class="feat">
+      <li><strong>Self-service signup</strong> (<code>/signup</code>) — a handler creates an account and claims a unique <strong>@handle</strong>, checked for availability as they type.</li>
+      <li><strong>Login / logout</strong>, role-aware — competitors land on their account, admins on the operations dashboard, judges on their scoring queue.</li>
+    </ul>
+
+    <h3>Competitor account</h3>
+    <ul class="feat">
+      <li><strong>Dashboard</strong> — what's upcoming, recent results, and open challenges at a glance.</li>
+      <li><strong>Profile editor</strong> — display name, bio, public handle.</li>
+      <li><strong>Dog roster</strong> — add/edit dogs with call name, registered name, breed, date of birth, <strong>sex</strong>, and registration number.</li>
+      <li><strong>Entries list</strong> — every run across all events with status filter chips (Upcoming / In progress / Finalized / Withdrawn) and live counts.</li>
+      <li><strong>Entry detail</strong> — the competitor's own scoresheet, the qualifying threshold, the <strong>“challenge this score” affordance</strong> (open for 7 days after finalizing), and the <strong>“request withdrawal”</strong> action for upcoming runs.</li>
+      <li><strong>Challenges</strong> — file a dispute against a finalized score (with a scoresheet excerpt of what's being disputed) and track it through to resolution.</li>
+    </ul>
+
+    <h3>Registration</h3>
+    <ul class="feat">
+      <li><strong>Register for an event</strong> — pick a dog, pick the trials to enter, submit; the request lands in the organizer's review queue.</li>
+      <li><strong>“Notify me”</strong> — for an event that hasn't opened registration yet, a logged-in competitor can subscribe to be emailed the moment it opens.</li>
+    </ul>
+
+    <h3>Judge scoring</h3>
+    <ul class="feat">
+      <li><strong>Scoring queue</strong> — the runs assigned to a judge, in order.</li>
+      <li><strong>Guided scoring flow</strong> — a gate/eligibility step, per-exercise scoring against the rulebook, a review screen, a submit-and-lock step, and a locked read-only view. Scores are <strong>append-only</strong> and audit-tracked.</li>
+    </ul>
+
+    <h3>Admin / organizer</h3>
+    <ul class="feat">
+      <li><strong>Operations dashboard</strong> — a “what needs attention” board: pending registrations and open challenges, the live events and unpublished drafts, a <strong>quick-actions</strong> card, and a cross-event <strong>recent-activity feed</strong>.</li>
+      <li><strong>Events</strong> — searchable list with status filters (Draft / Published / Closed / Archived); create and edit events with a slug-availability check, an <strong>audit block</strong> (created / published / last-edited), and an <strong>archive lifecycle</strong>.</li>
+      <li><strong>Trials</strong> — per-event management grouped by day, with a <strong>slide-over new-trial form</strong> (pill-chip discipline/level selectors) and an “N trials without a judge” flag.</li>
+      <li><strong>Registration review</strong> — accept (which assigns an entry number and creates the scoring entry), waitlist, or reject; <strong>confirm withdrawal requests</strong>.</li>
+      <li><strong>Judge assignments</strong> — assign a judge per trial and notify the judging panel.</li>
+      <li><strong>Challenge queue</strong> — review disputes with filtering, sorting, an audit timeline, and start-review / resolve / dismiss actions.</li>
+      <li><strong>Users &amp; roles</strong> — search users and change roles (competitor / judge / admin).</li>
+    </ul>
+
+    <div class="note"><b>Demo note / honest stubs:</b> outbound email (notify-me, notify-judges,
+      registration confirmations) is <strong>logged to the server console, not actually sent</strong> —
+      the delivery backend is intentionally not wired yet. Everything else is live functionality against a
+      real database.</div>
+  </section>
+
+  <!-- ============ PART 2 — PLAYBOOK ============ -->
+  <section class="block">
+    <div class="eyebrow">Part 2</div>
+    <h2>User-story playbook</h2>
+    <p>Eight scripted walkthroughs. Run them in this order for a natural narrative, or cherry-pick. Each
+      lists the persona, the goal, the click-path, and what it demonstrates. Tip: keep the
+      <strong>server console visible</strong> for the email-stub stories.</p>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">1</span><span class="story-title">A new handler gets set up</span></div>
+      <p class="pg"><b>Persona:</b> @dfowler (fresh account, no dogs) · <b>Goal:</b> join and enter a trial.</p>
+      <ol>
+        <li>Log in as <code>dfowler@example.com</code>. The account dashboard greets an empty roster.</li>
+        <li>Go to <strong>Dogs → Add a dog</strong>. Fill in call name, breed, date of birth, and the <strong>Sex</strong> field; save.</li>
+        <li>Go to <strong>Events</strong>, open <strong>Hopkins Mill Tracking</strong>, and click <strong>Register</strong>.</li>
+        <li>Pick the new dog, check the <strong>Tracking L1</strong> trial, add a note, and submit.</li>
+        <li>Open <strong>My entries</strong> — the new entry shows as <strong>Pending review</strong>.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> self-onboarding, the dog roster (incl. the new sex field), event discovery, and the registration flow that feeds the organizer's queue.</p>
+      <div class="tip">Want to show <strong>signup from scratch</strong>? Use <code>/signup</code> with a brand-new email and watch the live @handle availability check, then continue from step 2.</div>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">2</span><span class="story-title">The organizer works the registration queue</span></div>
+      <p class="pg"><b>Persona:</b> Admin · <b>Goal:</b> turn requests into scoreable entries.</p>
+      <ol>
+        <li>Log in as <code>admin@example.com</code> → the <strong>dashboard</strong> shows pending registrations under “Needs review.”</li>
+        <li>Open <strong>Cedar Creek Spring → Registrations</strong>. Requests are grouped by trial.</li>
+        <li>On <strong>Obedience L2</strong>, <strong>Accept</strong> @ltanaka's Vex — note it's assigned the next <strong>entry number</strong> and becomes an entry. <strong>Waitlist</strong> or <strong>Reject</strong> others to show those paths.</li>
+        <li>(Optional) Accept @dfowler's Hopkins Mill request from Story 1.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> the registration “bridge” — accept assigns a number and creates the scoring entry; waitlist/reject are one click each; the dashboard counters update.</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">3</span><span class="story-title">A judge scores a run</span></div>
+      <p class="pg"><b>Persona:</b> Judge (<code>judge@example.com</code>) · <b>Goal:</b> finalize a live run.</p>
+      <ol>
+        <li>Log in as the judge → the <strong>scoring queue</strong> lists the Cedar Creek Obedience L1 runs assigned to them (Vex is mid-score).</li>
+        <li>Open <strong>Vex</strong> → step through the <strong>gate</strong>, then <strong>score</strong> each exercise against the L1 Obedience criteria.</li>
+        <li>Continue to <strong>review</strong>, confirm, and <strong>submit</strong> — the run <strong>locks</strong> and a final score is produced.</li>
+        <li>Open the same trial's <strong>public leaderboard</strong> in another tab and refresh — Vex now appears in the standings.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> the guided, rulebook-driven judging flow; append-only, audit-tracked scoring; and the result flowing straight to the public leaderboard.</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">4</span><span class="story-title">A competitor reviews a score and disputes it</span></div>
+      <p class="pg"><b>Persona:</b> @ltanaka · <b>Goal:</b> see results and file a challenge.</p>
+      <ol>
+        <li>Log in as <code>ltanaka@example.com</code> → <strong>My entries</strong>. Filter to <strong>Finalized</strong>.</li>
+        <li>Open <strong>Vex's Brindle Bay</strong> run (a qualifying 110/120) — the <strong>scoresheet</strong> shows the per-exercise breakdown, the 84-point threshold, and the <strong>Q</strong> verdict.</li>
+        <li>Within the 7-day window, click <strong>Challenge this score</strong>, pick a reason, and submit — note the scoresheet <strong>excerpt</strong> of what's being disputed.</li>
+        <li>Visit <strong>Challenges</strong> to see it tracked; existing demo challenges show the other states (Kestrel's is <em>under review</em>, Saber's Brindle Bay one is <em>resolved</em> with the judge's notes).</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> the competitor-facing scoresheet, the time-boxed challenge window, and the dispute lifecycle from the handler's side.</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">5</span><span class="story-title">The organizer resolves a challenge</span></div>
+      <p class="pg"><b>Persona:</b> Admin · <b>Goal:</b> adjudicate a dispute. <em>(Pairs with Story 4.)</em></p>
+      <ol>
+        <li>As admin, open <strong>Challenges</strong> — the queue shows open and in-review disputes across all events, with filters and sorting.</li>
+        <li>Open @rokafor's <strong>open</strong> challenge on <strong>Atlas</strong> (the 74/120 NQ at Cedar Creek). The detail panel shows the disputed run, the <strong>NQ reason excerpt</strong>, and an <strong>audit timeline</strong>.</li>
+        <li>Click <strong>Start review</strong>, then <strong>Resolve</strong> (or <strong>Dismiss</strong>) with notes.</li>
+        <li>Back in the competitor account, the filer now sees the updated status.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> the full challenge-review surface — context, audit trail, and the resolve/dismiss decision — closing the loop opened in Story 4.</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">6</span><span class="story-title">A competitor withdraws an entry</span></div>
+      <p class="pg"><b>Persona:</b> @ltanaka + Admin · <b>Goal:</b> the admin-confirmed withdrawal flow.</p>
+      <ol>
+        <li>As <code>ltanaka@example.com</code>, open <strong>My entries</strong> and select <strong>Kestrel at Hopkins Mill</strong> (accepted, not yet run).</li>
+        <li>Click <strong>Request withdrawal</strong> — the page now reads <strong>“Withdrawal requested · pending admin.”</strong> The entry isn't voided yet.</li>
+        <li>Log in as admin → <strong>Hopkins Mill → Registrations</strong>. Kestrel's row shows a <strong>“Withdrawal requested”</strong> badge and a <strong>Confirm withdrawal</strong> button.</li>
+        <li>Click <strong>Confirm</strong>. The registration becomes <strong>Withdrawn</strong> — and the <strong>entry number is retained</strong> on the record for the audit history.</li>
+        <li>Back as @ltanaka, the entry now shows <strong>Withdrawn</strong>, and a <strong>Withdrawn</strong> filter chip appears on the entries list.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> withdrawal as a <strong>request routed to the organizer</strong>, not an instant cancel — with the number retained for auditability.</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">7</span><span class="story-title">“Notify me” for an upcoming event</span></div>
+      <p class="pg"><b>Persona:</b> Any competitor + Admin · <b>Goal:</b> subscribe, then trigger the open.</p>
+      <ol>
+        <li>As a logged-in competitor, go directly to <code>/events/cedar-creek-summer/register</code> (Cedar Creek Summer is still a draft, so it isn't in the public list — open it by link).</li>
+        <li>The page shows <strong>“Not yet open.”</strong> Click <strong>Notify me</strong> — it confirms you're on the list.</li>
+        <li>Log in as admin → <strong>Events → Cedar Creek Summer → Edit</strong> → set status to <strong>Published</strong> and save.</li>
+        <li>Watch the <strong>server console</strong>: a line logs the registration-opened notification and its recipients.</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> event subscriptions and the <strong>publish-transition hook</strong> that notifies subscribers (delivery stubbed to the log for now).</p>
+    </div>
+
+    <div class="story">
+      <div class="story-head"><span class="story-num">8</span><span class="story-title">The organizer's event lifecycle &amp; dashboard</span></div>
+      <p class="pg"><b>Persona:</b> Admin · <b>Goal:</b> the full operations surface.</p>
+      <ol>
+        <li>As admin, start on the <strong>dashboard</strong> — the <strong>recent-activity feed</strong> (finalized runs, accepted registrations, filed challenges, published events), the <strong>needs-review</strong> counters, and <strong>quick actions</strong>.</li>
+        <li>Open <strong>Events</strong>: try the <strong>search</strong> box and the status <strong>filter chips</strong>.</li>
+        <li>Open <strong>Cedar Creek Spring → Edit</strong>: show the <strong>audit block</strong> (created / published / last-edited) and the fuller at-a-glance (judge coverage, total entries).</li>
+        <li><strong>Archive</strong> the closed <strong>Brindle Bay</strong> event — it leaves the public listings, and the <strong>Archived</strong> chip on the events list now has a count. <strong>Restore</strong> it to show the lifecycle is reversible.</li>
+        <li>Open <strong>Cedar Creek Spring → Trials</strong>: click <strong>+ New trial</strong> to open the <strong>slide-over</strong> form with <strong>pill-chip</strong> discipline/level selectors; note the “trials without a judge” flag.</li>
+        <li>Open <strong>Judge assignments</strong>: assign a judge to an unjudged trial and use <strong>Notify judges</strong> (logged to the console).</li>
+      </ol>
+      <p class="demonstrates"><b>Demonstrates:</b> the complete organizer toolkit — dashboard, event lifecycle with audit &amp; archive, trial setup, and judge coordination.</p>
+    </div>
+
+    <div class="story" style="border-left-color:var(--green-600)">
+      <div class="story-head"><span class="story-num" style="color:var(--green-600);font-size:22px">★</span><span class="story-title">Spectator path (no login) — quick opener or closer</span></div>
+      <p>Browse <code>/events</code> → open <strong>Cedar Creek Spring</strong> → open the
+        <strong>Obedience L1</strong> trial for the <strong>live leaderboard</strong> (qualifiers above the
+        NQ divider, auto-refreshing) → click a name into a <strong>competitor profile</strong> → into a
+        <strong>dog profile</strong> and its trial history. A clean, zero-friction way to open or close a
+        demo.</p>
+    </div>
+  </section>
+
+  <!-- ============ RESET ============ -->
+  <section class="block">
+    <div class="eyebrow">Housekeeping</div>
+    <h2>Resetting between runs</h2>
+    <p>Stories 2, 3, 6, and 7 change data. To return to the pristine demo world, click
+      <strong>“↺ Reset demo data”</strong> on the admin dashboard (DEMO_MODE), or run
+      <code>mage seeddemo</code>. Logins and the world above are restored exactly.</p>
+  </section>
+
+  <footer>
+    <span class="fb">
+      <span class="stripes" aria-hidden="true">
+        <span style="background:var(--blue-600)"></span>
+        <span style="background:var(--green-600)"></span>
+        <span style="background:var(--orange-600)"></span>
+      </span>
+      K9 Elements · Helena, MT · info@k9elements.com
+    </span>
+    <span>Built by Flintcraft Studio · © 2026 K9 Elements</span>
+  </footer>
+
+</div>
+</body>
+</html>
