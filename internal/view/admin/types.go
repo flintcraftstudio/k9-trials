@@ -10,6 +10,15 @@ type DashboardViewData struct {
 	Counts         EventStatusCounts
 	Published      []EventLine
 	Drafts         []EventLine
+	Activity       []ActivityLine
+}
+
+// ActivityLine is one row in the dashboard recent-activity feed (D1).
+type ActivityLine struct {
+	When  string // "2 hours ago" / "yesterday"
+	Kind  string // finalized | accepted | challenge | published — drives the dot
+	Text  string // "Entry #14 (Echo) finalized"
+	Event string // owning event name, "" when not applicable
 }
 
 // EventStatusCounts is the event tally by status for the dashboard and the
@@ -29,9 +38,13 @@ type EventLine struct {
 	Status string
 }
 
-// EventsListViewData backs the admin events list (D2).
+// EventsListViewData backs the admin events list (D2). Active is the current
+// status filter ("" = all) and Query the current search term; both feed the
+// chip hrefs and the search box so filter + search compose.
 type EventsListViewData struct {
 	Total   int
+	Active  string
+	Query   string
 	Filters []EventFilter
 	Rows    []EventRow
 }
@@ -70,9 +83,17 @@ type EventFormViewData struct {
 	Saved     bool
 
 	// Edit-only at-a-glance.
-	TrialCount  int
-	PendingRegs int
-	PublicURL   string
+	TrialCount   int
+	PendingRegs  int
+	JudgedTrials int // trials with a judge assigned
+	TotalEntries int // entries across all trials
+	PublicURL    string
+
+	// Edit-only audit block. Lines are pre-rendered ("Created 4 Jan 2026 by
+	// admin@…"); a line is empty when its timestamp is not recorded.
+	AuditCreated   string
+	AuditPublished string
+	AuditEdited    string
 }
 
 // TrialsViewData backs the admin trials list for an event (D4).
@@ -82,6 +103,7 @@ type TrialsViewData struct {
 	EventStatus string
 	EventSlug   string
 	TrialCount  int
+	Unjudged    int // trials with no judge assigned (can't be scored)
 	Days        []TrialDay
 }
 
@@ -143,25 +165,27 @@ type RegTrialGroup struct {
 
 // RegRow is one registration in the review list.
 type RegRow struct {
-	ID          int64
-	DogName     string
-	DogMeta     string // "K9-3187 · Czech GSD"
-	Owner       string // "owner @ltanaka"
-	SubmittedBy string // "Submitted by ... · 3 hours ago"
-	Status      string
-	EntryNumber string // "entry #17" once accepted, else ""
-	Pending     bool
+	ID                int64
+	DogName           string
+	DogMeta           string // "K9-3187 · Czech GSD"
+	Owner             string // "owner @ltanaka"
+	SubmittedBy       string // "Submitted by ... · 3 hours ago"
+	Status            string
+	EntryNumber       string // "entry #17" once accepted, else ""
+	Pending           bool
+	WithdrawRequested bool // accepted entry with a pending withdrawal request (Q1)
 }
 
 // --- D6 Judge assignments ---
 
 // AssignmentsViewData backs the judge assignment screen (D6).
 type AssignmentsViewData struct {
-	EventID    int64
-	EventName  string
-	Unassigned int
-	Trials     []AssignTrial
-	Judges     []JudgeOption
+	EventID        int64
+	EventName      string
+	Unassigned     int
+	AssignedJudges int // distinct judges currently assigned (drives Notify)
+	Trials         []AssignTrial
+	Judges         []JudgeOption
 }
 
 // AssignTrial is one trial's assignment row.
@@ -241,25 +265,48 @@ type ChalRow struct {
 
 // ChalDetail is the selected challenge in the detail panel.
 type ChalDetail struct {
-	ID              int64
-	Title           string // "Vex · Obedience · Level 2"
-	Status          string
-	Filed           string // "Filed by @ltanaka · 5 days ago"
-	EntryID         int64
-	EntryTitle      string // "Cedar Creek · Obedience · Level 2 · Entry 08"
-	EntrySub        string // "result NQ" / entry status
-	EventKey        string
+	ID         int64
+	Title      string // "Vex · Obedience · Level 2"
+	Status     string
+	Filed      string // "Filed by @ltanaka · 5 days ago · review started yesterday"
+	EntryID    int64
+	EntryTitle string // "Cedar Creek · Obedience · Level 2 · Entry 08 · 12 Jan"
+	EntrySub   string // "Judged by H. Vance · finalized · result NQ"
+	EventKey   string
+
+	// Disputed-entry excerpt: the NQ reason (or score summary) the judge's
+	// result produced, so the admin sees what is being disputed. Empty when
+	// the score could not be evaluated.
+	ExcerptLabel string // "NQ reason —" / "Result —"
+	Excerpt      string // "\"Ring departure during courage test…\""
+
 	Reason          string
 	ResolutionNotes string
 	CanStart        bool // status is open
 	CanClose        bool // status is open or under_review
+
+	// Timeline is the audit trail of the dispute: entry finalized → challenge
+	// filed → review started → terminal/pending state.
+	Timeline []ChalAuditStep
+}
+
+// ChalAuditStep is one entry in the challenge audit timeline.
+type ChalAuditStep struct {
+	Title string // "Entry finalized · result NQ"
+	Meta  string // "H. Vance" / "@ltanaka · re-score request"
+	When  string // "12 Jan" / "5 days ago" / "—"
+	Kind  string // dot color: lock / warn / green / muted / "" (pending)
 }
 
 // --- D8 Users and roles ---
 
-// UsersViewData backs the users and roles admin (D8).
+// UsersViewData backs the users and roles admin (D8). Active is the current
+// role filter ("" = all) and Query the current search term; both feed the
+// chip hrefs and the search box so role filter + search compose.
 type UsersViewData struct {
 	Total   int
+	Active  string
+	Query   string
 	Filters []UserFilter
 	Rows    []UserRow
 }

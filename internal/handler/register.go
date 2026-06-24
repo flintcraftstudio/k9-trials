@@ -23,12 +23,24 @@ func RegisterPage(st *store.Store) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		ewt, ok := loadRegistrableEvent(w, r, st)
+		ewt, ok := loadEventForRegister(w, r, st)
 		if !ok {
 			return
 		}
 
-		// Unpublished events are not accepting registrations.
+		// A draft event is not yet open: offer notify-me rather than a form
+		// (Q4 / R1c). Reachable only by direct link — drafts stay out of
+		// public lists and the detail page.
+		if ewt.Event.Status == "draft" {
+			subscribed, err := st.HasEventSubscription(r.Context(), ewt.Event.ID, c.ID)
+			if err != nil {
+				slog.Error("register subscription check", "event", ewt.Event.ID, "err", err)
+			}
+			renderPublic(w, r, account.RegisterPage(registerComingSoonVD(ewt, subscribed)))
+			return
+		}
+
+		// A closed (or otherwise not-published) event is not accepting entries.
 		if !registrationOpen(ewt.Event.Status) {
 			renderPublic(w, r, account.RegisterPage(registerNotOpenVD(ewt)))
 			return
@@ -208,6 +220,57 @@ func RegisterSubmit(st *store.Store) http.HandlerFunc {
 	}
 }
 
+// RegisterNotify serves POST /events/{slug}/register/notify — subscribes a
+// logged-in competitor to a not-yet-open (draft) event so they are emailed
+// when it opens registration (Q4 / R1c). Delivery itself is unwired; the
+// publish hook logs recipients.
+func RegisterNotify(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c, ok := currentCompetitor(w, r, st)
+		if !ok {
+			return
+		}
+		ewt, ok := loadEventForRegister(w, r, st)
+		if !ok {
+			return
+		}
+		// Notify-me only applies before the event opens. A published/closed
+		// event has no pending open transition, so just bounce back.
+		if ewt.Event.Status != "draft" {
+			hxRedirect(w, r, "/events/"+ewt.Event.Slug+"/register")
+			return
+		}
+		if err := st.SubscribeToEvent(r.Context(), ewt.Event.ID, c.ID); err != nil {
+			slog.Error("subscribe to event", "event", ewt.Event.ID, "competitor", c.ID, "err", err)
+			http.Error(w, "could not subscribe", http.StatusInternalServerError)
+			return
+		}
+		hxRedirect(w, r, "/events/"+ewt.Event.Slug+"/register")
+	}
+}
+
+// loadEventForRegister loads the event by {slug} for the register surface. It
+// allows drafts (so a direct-link competitor can subscribe via R1c) but still
+// rejects archived and missing events as not-found.
+func loadEventForRegister(w http.ResponseWriter, r *http.Request, st *store.Store) (store.EventWithTrials, bool) {
+	slug := r.PathValue("slug")
+	ewt, err := st.LoadPublicEvent(r.Context(), slug)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.NotFound(w, r)
+		return store.EventWithTrials{}, false
+	}
+	if err != nil {
+		slog.Error("register event load", "slug", slug, "err", err)
+		http.Error(w, "registration unavailable", http.StatusInternalServerError)
+		return store.EventWithTrials{}, false
+	}
+	if ewt.Event.Status == "archived" {
+		http.NotFound(w, r)
+		return store.EventWithTrials{}, false
+	}
+	return ewt, true
+}
+
 // loadRegistrableEvent loads the event by {slug} and rejects drafts and
 // archived events as not-found (they are not public). Returns ok=false
 // after writing the response on any miss.
@@ -271,6 +334,19 @@ func registerNoDogsVD(ewt store.EventWithTrials) account.RegisterViewData {
 		DateRange: dateRange(ewt.Event.StartDate, ewt.Event.EndDate),
 		EventKey:  regEventKey(selectableTrials(ewt)),
 		NoDogs:    true,
+	}
+}
+
+// registerComingSoonVD builds the R1c not-yet-open state for a draft event,
+// where a competitor can subscribe to be notified when registration opens.
+func registerComingSoonVD(ewt store.EventWithTrials, subscribed bool) account.RegisterViewData {
+	return account.RegisterViewData{
+		EventName:  ewt.Event.Name,
+		EventSlug:  ewt.Event.Slug,
+		DateRange:  dateRange(ewt.Event.StartDate, ewt.Event.EndDate),
+		EventKey:   regEventKey(selectableTrials(ewt)),
+		ComingSoon: true,
+		Subscribed: subscribed,
 	}
 }
 

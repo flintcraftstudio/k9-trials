@@ -3,6 +3,7 @@ package handler
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 
@@ -68,6 +69,33 @@ func AccountEntryDetail(st *store.Store) http.HandlerFunc {
 	}
 }
 
+// AccountEntryWithdraw serves POST /account/entries/{id}/withdraw — a
+// competitor's request to withdraw their own accepted entry (Q1). It routes
+// to an admin for confirmation rather than voiding the entry immediately, and
+// is only offered before the run is scored.
+func AccountEntryWithdraw(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		c, ok := currentCompetitor(w, r, st)
+		if !ok {
+			return
+		}
+		entry, _, _, ok := loadOwnedEntry(w, r, st, c)
+		if !ok {
+			return
+		}
+		if entry.Status != "registered" {
+			http.Error(w, "this entry can no longer be withdrawn", http.StatusConflict)
+			return
+		}
+		if err := st.RequestEntryWithdrawal(r.Context(), entry.ID, c.ID); err != nil {
+			slog.Error("request withdrawal", "entry", entry.ID, "err", err)
+			http.Error(w, "could not request withdrawal", http.StatusInternalServerError)
+			return
+		}
+		hxRedirect(w, r, fmt.Sprintf("/account/entries/%d", entry.ID))
+	}
+}
+
 // loadOwnedEntry parses the {id} path segment, loads the entry with its
 // trial and event, and confirms the logged-in competitor is the handler of
 // record. It writes a 404 (and returns ok=false) on a missing id, a missing
@@ -106,7 +134,7 @@ func ownedEntryByID(w http.ResponseWriter, r *http.Request, st *store.Store, c d
 // filters (empty means "all").
 func validEntryFilter(key string) bool {
 	switch key {
-	case "", "upcoming", "scoring", "finalized":
+	case "", "upcoming", "scoring", "finalized", "withdrawn":
 		return true
 	}
 	return false

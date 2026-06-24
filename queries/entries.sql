@@ -47,15 +47,19 @@ DELETE FROM entries WHERE id = ?;
 -- Every entry handled by a competitor across all events and statuses,
 -- joined to trial + event. Newest trial date first. Backs the account
 -- entries list (A5) and the dashboard up-next / recent clusters (A1).
--- template_version is included so finalized rows can be re-evaluated.
+-- template_version is included so finalized rows can be re-evaluated. The
+-- linked registration's status and withdraw_requested_at carry the
+-- withdrawal state (null for entries created outside the registration flow).
 SELECT
     e.id, e.entry_number, e.dog_name, e.dog_breed, e.handler_name,
     e.status, e.dog_id,
     t.id AS trial_id, t.discipline, t.level, t.trial_date, t.template_version,
-    ev.name AS event_name, ev.slug AS event_slug
+    ev.name AS event_name, ev.slug AS event_slug,
+    rg.status AS reg_status, rg.withdraw_requested_at AS withdraw_requested_at
 FROM entries e
 JOIN trials t ON t.id = e.trial_id
 JOIN events ev ON ev.id = t.event_id
+LEFT JOIN registrations rg ON rg.entry_id = e.id
 WHERE e.handler_id = ?
 ORDER BY t.trial_date DESC, e.id DESC;
 

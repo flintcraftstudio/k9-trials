@@ -15,7 +15,7 @@ templ trialsListBody(d TrialsViewData) {
 	@adminPage(
 		d.EventName+" · "+eventStatusLabel(d.EventStatus),
 		"Trials",
-		fmt.Sprintf("%s across %d %s", trialsLabel(d.TrialCount), len(d.Days), daysWord(len(d.Days))),
+		trialsSub(d),
 		trialsListActions(d),
 		trialsListContent(d),
 	)
@@ -25,7 +25,22 @@ templ trialsListActions(d TrialsViewData) {
 	@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events/" + d.EventSlug}) {
 		View public page ↗
 	}
-	@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials/new", d.EventID)}) {
+	@newTrialButton(d.EventID)
+}
+
+// newTrialButton opens the new-trial slide-over via htmx, falling back to the
+// full-page form when JS is unavailable (the href).
+templ newTrialButton(eventID int64) {
+	@components.Button(components.ButtonProps{
+		Variant: "primary",
+		Size:    "md",
+		Href:    fmt.Sprintf("/admin/events/%d/trials/new", eventID),
+		Attrs: templ.Attributes{
+			"hx-get":    fmt.Sprintf("/admin/events/%d/trials/new", eventID),
+			"hx-target": "#trial-drawer",
+			"hx-swap":   "innerHTML",
+		},
+	}) {
 		+ New trial
 	}
 }
@@ -35,9 +50,7 @@ templ trialsListContent(d TrialsViewData) {
 		<div class="card flex-col items-start gap-2" style="padding:24px;">
 			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials yet</div>
 			<p class="body-sm" style="margin:0;">Add the disciplines and levels this event will run.</p>
-			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials/new", d.EventID)}) {
-				+ New trial
-			}
+			@newTrialButton(d.EventID)
 		</div>
 	} else {
 		<div class="flex-col gap-6">
@@ -46,6 +59,21 @@ templ trialsListContent(d TrialsViewData) {
 			}
 		</div>
 	}
+	// Slide-over mount point — the new-trial form htmx-swaps in here.
+	<div id="trial-drawer"></div>
+}
+
+// trialsSub renders the at-a-glance line, flagging unjudged trials since a
+// trial without a judge cannot be scored.
+func trialsSub(d TrialsViewData) string {
+	s := fmt.Sprintf("%s across %d %s", trialsLabel(d.TrialCount), len(d.Days), daysWord(len(d.Days)))
+	switch {
+	case d.Unjudged == 1:
+		s += " · 1 trial without a judge"
+	case d.Unjudged > 1:
+		s += fmt.Sprintf(" · %d trials without a judge", d.Unjudged)
+	}
+	return s
 }
 
 templ trialDay(eventID int64, day TrialDay) {
@@ -88,7 +116,9 @@ templ trialRow(eventID int64, t TrialLine) {
 	</div>
 }
 
-// TrialsFormPage is the create-trial form for a given event (D4).
+// TrialsFormPage is the full-page create-trial form (D4) — the no-JS fallback
+// for a direct visit to /trials/new. With JS, the same form opens as a
+// slide-over (TrialDrawer) over the trials list.
 templ TrialsFormPage(d TrialFormViewData) {
 	@shell("New trial", "Add a trial to this event.", "event-trials", fmt.Sprintf("%d", d.EventID), trialsFormBody(d))
 }
@@ -99,70 +129,119 @@ templ trialsFormBody(d TrialFormViewData) {
 
 templ trialsFormContent(d TrialFormViewData) {
 	<div class="max-w-md">
-		<form hx-post={ fmt.Sprintf("/admin/events/%d/trials", d.EventID) } hx-target="this" hx-swap="outerHTML" class="flex flex-col gap-5">
-			if d.Err != "" {
-				<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
-					<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
-				</div>
-			}
-			@components.Field(components.FieldProps{}) {
-				@components.Label(components.LabelProps{For: "discipline"}) {
-					Discipline
-				}
-				@disciplineSelect(d.Discipline)
-			}
-			@components.Field(components.FieldProps{}) {
-				@components.Label(components.LabelProps{For: "level"}) {
-					Level
-				}
-				@levelSelect(d.Level)
-			}
-			@components.Field(components.FieldProps{}) {
-				@components.Label(components.LabelProps{For: "trial_date"}) {
-					Date
-				}
-				@components.Input(components.InputProps{Type: "date", ID: "trial_date", Name: "trial_date", Value: d.Date, Required: true})
-			}
-			@components.Field(components.FieldProps{}) {
-				@components.Label(components.LabelProps{For: "template_version"}) {
-					Template version
-				}
-				@components.Input(components.InputProps{ID: "template_version", Name: "template_version", Value: d.TemplateVersion, Required: true})
-				@components.Description(components.FieldProps{}) {
-					The rulebook revision scored against, e.g. 2026.1.
-				}
-			}
-			<div class="flex items-center gap-3">
-				@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
-					Add trial
-				}
-				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials", d.EventID)}) {
-					Cancel
-				}
-			</div>
-		</form>
+		@TrialForm(d)
 	</div>
 }
 
-templ disciplineSelect(current string) {
-	<select id="discipline" name="discipline" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
-		@disciplineOption("OB", "Obedience", current)
-		@disciplineOption("PR", "Protection", current)
-		@disciplineOption("TR", "Tracking", current)
-		@disciplineOption("DT", "Detection", current)
-	</select>
+// TrialDrawer is the slide-over form opened over the trials list via htmx. The
+// scrim and close affordances are plain anchors back to the list, so closing
+// works without JS even though the panel itself is htmx-loaded.
+templ TrialDrawer(d TrialFormViewData) {
+	<div style="position:fixed;inset:0;z-index:50;">
+		<a href={ trialsListHref(d.EventID) } aria-label="Close" style="position:absolute;inset:0;background:rgb(0 0 0 / 0.32);"></a>
+		<aside class="flex-col" style="position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:#fff;box-shadow:-8px 0 24px rgb(0 0 0 / 0.12);">
+			<div class="flex items-center justify-between gap-3" style="padding:18px 24px;border-bottom:1px solid var(--color-divider);">
+				<div class="flex-col gap-1">
+					@components.Eyebrow() {
+						{ d.EventName }
+					}
+					<span class="serif" style="font-size:22px;line-height:1.1;">New trial</span>
+				</div>
+				<a href={ trialsListHref(d.EventID) } aria-label="Close" style="text-decoration:none;font-size:22px;line-height:1;color:var(--mist-500);">×</a>
+			</div>
+			<div style="flex:1;overflow-y:auto;padding:22px 24px;">
+				@TrialForm(d)
+			</div>
+		</aside>
+	</div>
 }
 
-templ disciplineOption(code, label, current string) {
-	<option value={ code } selected?={ code == current }>{ label }</option>
-}
-
-templ levelSelect(current string) {
-	<select id="level" name="level" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
-		for _, lv := range []string{"1", "2", "3"} {
-			<option value={ lv } selected?={ lv == current }>{ "Level " + lv }</option>
+// TrialForm is the shared create-trial form body, used standalone on the
+// full-page fallback and inside TrialDrawer. On a validation error the handler
+// re-renders this fragment in place (hx-target="this").
+templ TrialForm(d TrialFormViewData) {
+	<form
+		hx-post={ fmt.Sprintf("/admin/events/%d/trials", d.EventID) }
+		hx-target="this"
+		hx-swap="outerHTML"
+		class="flex flex-col gap-5"
+	>
+		if d.Err != "" {
+			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
+				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
+			</div>
 		}
-	</select>
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "discipline"}) {
+				Discipline
+			}
+			@disciplineChips(d.Discipline)
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "level"}) {
+				Level
+			}
+			@levelChips(d.Level)
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "trial_date"}) {
+				Date
+			}
+			@components.Input(components.InputProps{Type: "date", ID: "trial_date", Name: "trial_date", Value: d.Date, Required: true})
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{For: "template_version"}) {
+				Template version
+			}
+			@components.Input(components.InputProps{ID: "template_version", Name: "template_version", Value: d.TemplateVersion, Required: true})
+			@components.Description(components.FieldProps{}) {
+				The rulebook revision scored against, e.g. 2026.1. Defaults to the latest.
+			}
+		}
+		<div class="card" style="padding:11px 14px;background:var(--blue-50);border-color:var(--blue-300);">
+			<span class="body-sm" style="margin:0;">A dog can enter this trial only once — the one-entry-per-trial rule is enforced at registration.</span>
+		</div>
+		<div class="flex items-center justify-between gap-3">
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: fmt.Sprintf("/admin/events/%d/trials", d.EventID)}) {
+				Cancel
+			}
+			@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+				Create trial
+			}
+		</div>
+	</form>
+}
+
+// disciplineChips / levelChips are pill-chip radio selectors. The checked
+// state is styled with CSS :has(), so they reflect the selection with no JS.
+templ disciplineChips(current string) {
+	<div class="flex flex-wrap gap-2">
+		@trialChip("discipline", "OB", "Obedience", current)
+		@trialChip("discipline", "PR", "Protection", current)
+		@trialChip("discipline", "TR", "Tracking", current)
+		@trialChip("discipline", "DT", "Detection", current)
+	</div>
+}
+
+templ levelChips(current string) {
+	<div class="flex gap-2">
+		@trialChip("level", "1", "L1", current)
+		@trialChip("level", "2", "L2", current)
+		@trialChip("level", "3", "L3", current)
+	</div>
+}
+
+templ trialChip(name, value, label, current string) {
+	<label class="pill pill-choice">
+		<input type="radio" name={ name } value={ value } checked?={ value == current }/>
+		{ label }
+	</label>
+}
+
+// trialsListHref is the trials-list URL for an event, used by the drawer's
+// close affordances.
+func trialsListHref(eventID int64) templ.SafeURL {
+	return templ.SafeURL(fmt.Sprintf("/admin/events/%d/trials", eventID))
 }
 
 // daysWord / trialsWord render the singular/plural unit words.

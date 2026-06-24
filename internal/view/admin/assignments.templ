@@ -14,10 +14,30 @@ templ AssignmentsPage(d AssignmentsViewData) {
 }
 
 templ assignmentsBody(d AssignmentsViewData) {
-	@adminPage(d.EventName, "Judge assignments", assignmentsSub(d), nil, assignmentsContent(d))
+	@adminPage(d.EventName, "Judge assignments", assignmentsSub(d), assignmentsActions(d), assignmentsContent(d))
+}
+
+// assignmentsActions renders the header "Notify judges" button. It posts to
+// the notify endpoint and swaps the confirmation into #notify-result. The
+// button is disabled until at least one judge is assigned.
+templ assignmentsActions(d AssignmentsViewData) {
+	@components.Button(components.ButtonProps{
+		Variant:  "soft",
+		Size:     "md",
+		Type:     "submit",
+		Disabled: d.AssignedJudges == 0,
+		Attrs: templ.Attributes{
+			"hx-post":   fmt.Sprintf("/admin/events/%d/notify-judges", d.EventID),
+			"hx-target": "#notify-result",
+			"hx-swap":   "innerHTML",
+		},
+	}) {
+		Notify judges
+	}
 }
 
 templ assignmentsContent(d AssignmentsViewData) {
+	<div id="notify-result"></div>
 	if len(d.Trials) == 0 {
 		<div class="card flex-col items-start gap-2" style="padding:24px;">
 			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials to assign</div>
@@ -65,6 +85,21 @@ templ judgeSelect(current int64, judges []JudgeOption) {
 			<option value={ fmt.Sprintf("%d", j.ID) } selected?={ j.ID == current }>{ j.Name }</option>
 		}
 	</select>
+}
+
+// NotifyJudgesResult is the htmx confirmation swapped in after the Notify
+// button posts. Delivery is not wired yet, so the copy is honest about it.
+templ NotifyJudgesResult(n int) {
+	<div class="card" style="padding:12px 16px;border-color:var(--green-300);background:var(--green-50);">
+		<p class="body-sm" style="margin:0;color:var(--green-800);">{ notifyResultMsg(n) }</p>
+	</div>
+}
+
+func notifyResultMsg(n int) string {
+	if n == 1 {
+		return "✓ Assignment notification queued for 1 judge. Delivery pending mail setup."
+	}
+	return fmt.Sprintf("✓ Assignment notifications queued for %d judges. Delivery pending mail setup.", n)
 }
 
 func assignmentsSub(d AssignmentsViewData) string {

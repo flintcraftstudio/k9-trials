@@ -60,6 +60,37 @@ func AdminRegistrationReject(st *store.Store) http.HandlerFunc {
 	return setRegistrationStatusHandler(st, "rejected")
 }
 
+// AdminRegistrationConfirmWithdrawal serves POST
+// /admin/registrations/{rid}/confirm-withdrawal — grants a competitor's
+// pending withdrawal request (Q1). The registration becomes withdrawn; the
+// entry row and its entry_number are retained for audit.
+func AdminRegistrationConfirmWithdrawal(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		rid, err := strconv.ParseInt(r.PathValue("rid"), 10, 64)
+		if err != nil || rid <= 0 {
+			http.NotFound(w, r)
+			return
+		}
+		reg, err := st.GetRegistrationDetail(r.Context(), rid)
+		if errors.Is(err, sql.ErrNoRows) {
+			http.NotFound(w, r)
+			return
+		}
+		if err != nil {
+			slog.Error("load registration", "reg", rid, "err", err)
+			http.Error(w, "admin unavailable", http.StatusInternalServerError)
+			return
+		}
+		u := session.FromContext(r.Context())
+		if err := st.ConfirmRegistrationWithdrawal(r.Context(), rid, u.ID); err != nil {
+			slog.Error("confirm withdrawal", "reg", rid, "err", err)
+			http.Error(w, "could not confirm withdrawal", http.StatusInternalServerError)
+			return
+		}
+		hxRedirect(w, r, registrationsURL(reg.EventID))
+	}
+}
+
 // setRegistrationStatusHandler builds a handler that moves a pending
 // registration to the given status.
 func setRegistrationStatusHandler(st *store.Store, status string) http.HandlerFunc {
@@ -172,6 +203,46 @@ func AdminAssignJudge(st *store.Store) http.HandlerFunc {
 	}
 }
 
+// AdminNotifyJudges serves POST /admin/events/{id}/notify-judges — the D6
+// "Notify judges" action. It collects the distinct judges assigned across the
+// event's trials and returns an htmx confirmation. Email delivery is not wired
+// yet (the mail client only targets the contact-form recipient), so the
+// recipients are logged and the confirmation says delivery is pending.
+func AdminNotifyJudges(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		event, ok := loadAdminEvent(w, r, st)
+		if !ok {
+			return
+		}
+		trials, err := st.TrialsByEvent(r.Context(), event.ID)
+		if err != nil {
+			slog.Error("notify judges trials", "event", event.ID, "err", err)
+			http.Error(w, "admin unavailable", http.StatusInternalServerError)
+			return
+		}
+		seen := make(map[string]bool)
+		for _, t := range trials {
+			email, err := st.TrialJudgeEmail(r.Context(), t.ID)
+			if errors.Is(err, sql.ErrNoRows) {
+				continue
+			}
+			if err != nil {
+				slog.Error("notify judges email", "trial", t.ID, "err", err)
+				continue
+			}
+			if email != "" {
+				seen[email] = true
+			}
+		}
+		recipients := make([]string, 0, len(seen))
+		for e := range seen {
+			recipients = append(recipients, e)
+		}
+		slog.Info("notify judges requested (delivery not yet wired)", "event", event.ID, "recipients", recipients)
+		renderPublic(w, r, admin.NotifyJudgesResult(len(seen)))
+	}
+}
+
 // challengesPageSize is the number of queue rows shown per page (D7).
 const challengesPageSize = 12
 
@@ -257,7 +328,7 @@ func AdminChallenges(st *store.Store) http.HandlerFunc {
 				return
 			}
 			selectedID = id
-			d := chalDetailVD(c)
+			d := chalDetailVD(r, st, c)
 			detail = &d
 		}
 
@@ -349,10 +420,11 @@ func AdminUsers(st *store.Store) http.HandlerFunc {
 		if !validUserFilter(filter) {
 			filter = ""
 		}
+		q := r.URL.Query().Get("q")
 		self := session.FromContext(r.Context())
-		data := toUsersVD(rows, self.ID, filter)
+		data := toUsersVD(rows, self.ID, filter, q)
 		if r.Header.Get("HX-Request") == "true" {
-			renderPublic(w, r, admin.UsersTable(data))
+			renderPublic(w, r, admin.UsersResults(data))
 			return
 		}
 		renderPublic(w, r, admin.UsersPage(data))

@@ -171,6 +171,7 @@ func main() {
 	mux.Handle("POST /account/dogs/{id}/delete", competitor(handler.AccountDogsDelete(st)))
 	mux.Handle("GET /account/entries", competitor(handler.AccountEntries(st)))
 	mux.Handle("GET /account/entries/{id}", competitor(handler.AccountEntryDetail(st)))
+	mux.Handle("POST /account/entries/{id}/withdraw", competitor(handler.AccountEntryWithdraw(st)))
 	mux.Handle("GET /account/challenges", competitor(handler.AccountChallenges(st)))
 	mux.Handle("GET /account/challenges/new", competitor(handler.AccountChallengeNew(st)))
 	mux.Handle("POST /account/challenges", competitor(handler.AccountChallengeSubmit(st)))
@@ -179,6 +180,7 @@ func main() {
 	mux.Handle("GET /events/{slug}/register", competitor(handler.RegisterPage(st)))
 	mux.Handle("GET /events/{slug}/register/trials", competitor(handler.RegisterTrials(st)))
 	mux.Handle("POST /events/{slug}/register", competitor(handler.RegisterSubmit(st)))
+	mux.Handle("POST /events/{slug}/register/notify", competitor(handler.RegisterNotify(st)))
 
 	// Judge-side scoring UI (B1–B6 panels). All routes load real entries
 	// from store + run the scoring engine; access requires the judge or
@@ -198,6 +200,8 @@ func main() {
 	mux.Handle("GET /admin/events/slug-check", session.RequireAdmin(handler.AdminEventsSlugCheck(st)))
 	mux.Handle("GET /admin/events/{id}/edit", session.RequireAdmin(handler.AdminEventsEdit(st)))
 	mux.Handle("POST /admin/events/{id}", session.RequireAdmin(handler.AdminEventsUpdate(st)))
+	mux.Handle("POST /admin/events/{id}/archive", session.RequireAdmin(handler.AdminEventsArchive(st)))
+	mux.Handle("POST /admin/events/{id}/unarchive", session.RequireAdmin(handler.AdminEventsRestore(st)))
 	mux.Handle("GET /admin/events/{id}/trials", session.RequireAdmin(handler.AdminTrials(st)))
 	mux.Handle("POST /admin/events/{id}/trials", session.RequireAdmin(handler.AdminTrialsCreate(st)))
 	mux.Handle("GET /admin/events/{id}/trials/new", session.RequireAdmin(handler.AdminTrialsNew(st)))
@@ -205,9 +209,11 @@ func main() {
 	mux.Handle("GET /admin/events/{id}/registrations", session.RequireAdmin(handler.AdminRegistrations(st)))
 	mux.Handle("GET /admin/events/{id}/assignments", session.RequireAdmin(handler.AdminAssignments(st)))
 	mux.Handle("POST /admin/events/{id}/trials/{tid}/judge", session.RequireAdmin(handler.AdminAssignJudge(st)))
+	mux.Handle("POST /admin/events/{id}/notify-judges", session.RequireAdmin(handler.AdminNotifyJudges(st)))
 	mux.Handle("POST /admin/registrations/{rid}/accept", session.RequireAdmin(handler.AdminRegistrationAccept(st)))
 	mux.Handle("POST /admin/registrations/{rid}/waitlist", session.RequireAdmin(handler.AdminRegistrationWaitlist(st)))
 	mux.Handle("POST /admin/registrations/{rid}/reject", session.RequireAdmin(handler.AdminRegistrationReject(st)))
+	mux.Handle("POST /admin/registrations/{rid}/confirm-withdrawal", session.RequireAdmin(handler.AdminRegistrationConfirmWithdrawal(st)))
 	mux.Handle("GET /admin/challenges", session.RequireAdmin(handler.AdminChallenges(st)))
 	mux.Handle("GET /admin/challenges/{id}", session.RequireAdmin(handler.AdminChallenges(st)))
 	mux.Handle("POST /admin/challenges/{id}/status", session.RequireAdmin(handler.AdminChallengeStatus(st)))

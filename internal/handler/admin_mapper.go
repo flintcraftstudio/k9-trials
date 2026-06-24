@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strings"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
@@ -40,14 +41,32 @@ func toAdminDashboardVD(ctx context.Context, st *store.Store, events []db.Event,
 			counts.Closed++
 		}
 	}
+	activity := make([]admin.ActivityLine, 0, dashboardActivityLimit)
+	if items, err := st.RecentActivity(ctx, dashboardActivityLimit); err != nil {
+		slog.Error("dashboard activity", "err", err)
+	} else {
+		for _, it := range items {
+			activity = append(activity, admin.ActivityLine{
+				When:  relativeTime(it.When),
+				Kind:  it.Kind,
+				Text:  it.Text,
+				Event: it.Event,
+			})
+		}
+	}
+
 	return admin.DashboardViewData{
 		PendingRegs:    pendingRegs,
 		OpenChallenges: openCh,
 		Counts:         counts,
 		Published:      published,
 		Drafts:         drafts,
+		Activity:       activity,
 	}
 }
+
+// dashboardActivityLimit caps the recent-activity feed on D1.
+const dashboardActivityLimit = 8
 
 // eventLine builds a compact dashboard event row with its trial count.
 func eventLine(ctx context.Context, st *store.Store, e db.Event) admin.EventLine {
@@ -91,16 +110,18 @@ func trialsCountWord(n int) string {
 // (empty means all).
 func validEventFilter(key string) bool {
 	switch key {
-	case "", "draft", "published", "closed":
+	case "", "draft", "published", "closed", "archived":
 		return true
 	}
 	return false
 }
 
-// toAdminEventsVD builds the D2 list: status filter chips with counts and
-// the rows matching the active filter, each with its trial count.
-func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, active string) admin.EventsListViewData {
-	var draft, published, closed int
+// toAdminEventsVD builds the D2 list: status filter chips with counts and the
+// rows matching the active status filter and search term, each with its trial
+// count. Status counts span all events (independent of the search), so the
+// chips stay stable; the search narrows the visible rows by name or slug.
+func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, active, q string) admin.EventsListViewData {
+	var draft, published, closed, archived int
 	for _, e := range events {
 		switch e.Status {
 		case "draft":
@@ -109,12 +130,18 @@ func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, ac
 			published++
 		case "closed":
 			closed++
+		case "archived":
+			archived++
 		}
 	}
 
+	needle := strings.ToLower(strings.TrimSpace(q))
 	rows := make([]admin.EventRow, 0, len(events))
 	for _, e := range events {
 		if active != "" && e.Status != active {
+			continue
+		}
+		if needle != "" && !strings.Contains(strings.ToLower(e.Name), needle) && !strings.Contains(strings.ToLower(e.Slug), needle) {
 			continue
 		}
 		n, err := st.CountTrialsByEvent(ctx, e.ID)
@@ -134,13 +161,32 @@ func toAdminEventsVD(ctx context.Context, st *store.Store, events []db.Event, ac
 
 	return admin.EventsListViewData{
 		Total:   len(events),
-		Filters: eventFilters(active, len(events), draft, published, closed),
+		Active:  active,
+		Query:   q,
+		Filters: eventFilters(active, q, len(events), draft, published, closed, archived),
 		Rows:    rows,
 	}
 }
 
-// eventFilters builds the status chip row with per-status counts.
-func eventFilters(active string, total, draft, published, closed int) []admin.EventFilter {
+// eventsListURL composes an events-list URL preserving the status filter and
+// search term, omitting whichever is empty.
+func eventsListURL(status, q string) string {
+	v := url.Values{}
+	if status != "" {
+		v.Set("status", status)
+	}
+	if q != "" {
+		v.Set("q", q)
+	}
+	if len(v) == 0 {
+		return "/admin/events"
+	}
+	return "/admin/events?" + v.Encode()
+}
+
+// eventFilters builds the status chip row with per-status counts, preserving
+// the active search term in each chip's href.
+func eventFilters(active, q string, total, draft, published, closed, archived int) []admin.EventFilter {
 	defs := []struct {
 		key, label string
 		count      int
@@ -149,18 +195,15 @@ func eventFilters(active string, total, draft, published, closed int) []admin.Ev
 		{"draft", "Draft", draft},
 		{"published", "Published", published},
 		{"closed", "Closed", closed},
+		{"archived", "Archived", archived},
 	}
 	out := make([]admin.EventFilter, 0, len(defs))
 	for _, d := range defs {
-		href := "/admin/events"
-		if d.key != "" {
-			href += "?status=" + d.key
-		}
 		out = append(out, admin.EventFilter{
 			Key:    d.key,
 			Label:  d.label,
 			Count:  d.count,
-			Href:   href,
+			Href:   eventsListURL(d.key, q),
 			Active: active == d.key,
 		})
 	}
@@ -178,19 +221,53 @@ func editEventVD(ctx context.Context, st *store.Store, e db.Event) admin.EventFo
 	if err != nil {
 		slog.Error("count pending", "event", e.ID, "err", err)
 	}
-	return admin.EventFormViewData{
-		IsEdit:      true,
-		EventID:     e.ID,
-		Name:        e.Name,
-		Slug:        e.Slug,
-		Location:    e.Location,
-		StartDate:   e.StartDate.UTC().Format("2006-01-02"),
-		EndDate:     e.EndDate.UTC().Format("2006-01-02"),
-		Status:      e.Status,
-		TrialCount:  int(trials),
-		PendingRegs: int(pending),
-		PublicURL:   "/events/" + e.Slug,
+	judged, err := st.CountTrialsWithJudgeByEvent(ctx, e.ID)
+	if err != nil {
+		slog.Error("count judged trials", "event", e.ID, "err", err)
 	}
+	entries, err := st.CountEntriesByEvent(ctx, e.ID)
+	if err != nil {
+		slog.Error("count event entries", "event", e.ID, "err", err)
+	}
+	return admin.EventFormViewData{
+		IsEdit:         true,
+		EventID:        e.ID,
+		Name:           e.Name,
+		Slug:           e.Slug,
+		Location:       e.Location,
+		StartDate:      e.StartDate.UTC().Format("2006-01-02"),
+		EndDate:        e.EndDate.UTC().Format("2006-01-02"),
+		Status:         e.Status,
+		TrialCount:     int(trials),
+		PendingRegs:    int(pending),
+		JudgedTrials:   int(judged),
+		TotalEntries:   int(entries),
+		PublicURL:      "/events/" + e.Slug,
+		AuditCreated:   eventCreatedLine(ctx, st, e),
+		AuditPublished: eventPublishedLine(e),
+		AuditEdited:    "Last edited " + relativeTime(e.UpdatedAt),
+	}
+}
+
+// eventCreatedLine renders "Created 4 Jan 2026 by admin@example.com",
+// resolving the creator's email. The "by …" clause is dropped when the user
+// lookup fails rather than fabricated.
+func eventCreatedLine(ctx context.Context, st *store.Store, e db.Event) string {
+	line := "Created " + e.CreatedAt.UTC().Format("2 Jan 2006")
+	if _, email, _, err := st.GetUserByID(ctx, e.CreatedBy); err == nil && email != "" {
+		line += " by " + email
+	}
+	return line
+}
+
+// eventPublishedLine renders "Published 2 Feb 2026" when the event has a
+// publish timestamp, or "" otherwise. The publisher's name is not tracked, so
+// no "by …" clause is shown (cf. the D7 audit timeline).
+func eventPublishedLine(e db.Event) string {
+	if !e.PublishedAt.Valid {
+		return ""
+	}
+	return "Published " + e.PublishedAt.Time.UTC().Format("2 Jan 2006")
 }
 
 // toAdminTrialsVD groups an event trials by date for D4, resolving each
@@ -199,6 +276,7 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 	days := make([]admin.TrialDay, 0)
 	var cur *admin.TrialDay
 	curKey := ""
+	unjudged := 0
 	for _, t := range trials {
 		key := t.TrialDate.UTC().Format("2006-01-02")
 		if key != curKey {
@@ -206,7 +284,11 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 			cur = &days[len(days)-1]
 			curKey = key
 		}
-		cur.Trials = append(cur.Trials, trialLine(ctx, st, t))
+		line := trialLine(ctx, st, t)
+		if line.Judge == "" {
+			unjudged++
+		}
+		cur.Trials = append(cur.Trials, line)
 		cur.Count++
 	}
 	return admin.TrialsViewData{
@@ -215,6 +297,7 @@ func toAdminTrialsVD(ctx context.Context, st *store.Store, e db.Event, trials []
 		EventStatus: e.Status,
 		EventSlug:   e.Slug,
 		TrialCount:  len(trials),
+		Unjudged:    unjudged,
 		Days:        days,
 	}
 }

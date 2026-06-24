@@ -79,17 +79,33 @@ templ DogForm(d DogFormViewData) {
 					Value: d.Breed,
 				})
 			}
-			@components.Field(components.FieldProps{}) {
-				@components.Label(components.LabelProps{For: "date_of_birth"}) {
-					Date of birth
+			<div class="grid grid-cols-2 gap-3">
+				@components.Field(components.FieldProps{}) {
+					@components.Label(components.LabelProps{For: "date_of_birth"}) {
+						Date of birth
+					}
+					@components.Input(components.InputProps{
+						Type:  "date",
+						ID:    "date_of_birth",
+						Name:  "date_of_birth",
+						Value: d.DOB,
+					})
 				}
-				@components.Input(components.InputProps{
-					Type:  "date",
-					ID:    "date_of_birth",
-					Name:  "date_of_birth",
-					Value: d.DOB,
-				})
-			}
+				@components.Field(components.FieldProps{}) {
+					@components.Label(components.LabelProps{For: "sex"}) {
+						Sex
+					}
+					<select
+						id="sex"
+						name="sex"
+						class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950 outline-none transition focus:border-mist-950"
+					>
+						<option value="" selected?={ d.Sex == "" }>—</option>
+						<option value="male" selected?={ d.Sex == "male" }>Male</option>
+						<option value="female" selected?={ d.Sex == "female" }>Female</option>
+					</select>
+				}
+			</div>
 			@components.Field(components.FieldProps{}) {
 				@components.Label(components.LabelProps{For: "registration_number"}) {
 					Registration number

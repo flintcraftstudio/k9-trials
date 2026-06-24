@@ -144,13 +144,21 @@ templ EventForm(d EventFormViewData) {
 	</form>
 }
 
-// statusSelect renders the event-status dropdown with current selected.
+// statusSelect renders the event-status as a row of pill toggles (radios).
+// Alpine drives the selected outline live; the checked radio posts as status.
 templ statusSelect(current string) {
-	<select name="status" class="w-full rounded-md border border-mist-200 bg-white px-3 py-2 text-sm text-mist-950">
-		for _, opt := range []string{"draft", "published", "closed"} {
-			<option value={ opt } selected?={ opt == current }>{ eventStatusLabel(opt) }</option>
+	<div class="flex flex-wrap gap-2" x-data={ fmt.Sprintf("{ status: '%s' }", current) }>
+		for _, opt := range []string{"draft", "published", "closed", "archived"} {
+			<label
+				class="pill"
+				style="cursor:pointer;"
+				:class={ fmt.Sprintf("status === '%s' ? 'pill-active' : 'pill-muted'", opt) }
+			>
+				<input type="radio" name="status" value={ opt } checked?={ opt == current } x-model="status" class="sr-only"/>
+				{ eventStatusLabel(opt) }
+			</label>
 		}
-	</select>
+	</div>
 }
 
 // SlugStatus is the live slug-availability hint, returned by the
@@ -170,8 +178,8 @@ templ SlugStatus(slug string, available, checked bool) {
 	}
 }
 
-// eventGlance is the edit-only at-a-glance panel linking to the within-event
-// management pages.
+// eventGlance is the edit-only right column: a fuller at-a-glance panel, the
+// audit block, and the archive/restore lifecycle action.
 templ eventGlance(d EventFormViewData) {
 	<div class="flex-col gap-3">
 		<div class="card flex-col gap-2" style="padding:16px;background:var(--mist-100);">
@@ -181,10 +189,61 @@ templ eventGlance(d EventFormViewData) {
 			<div class="body-sm flex-col gap-1" style="margin:0;line-height:1.7;">
 				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/trials", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">{ trialsLabel(d.TrialCount) } · manage →</a>
 				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/registrations", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">{ pendingLabel(d.PendingRegs) } · review →</a>
-				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/assignments", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">Judge assignments →</a>
+				<a href={ templ.SafeURL(fmt.Sprintf("/admin/events/%d/assignments", d.EventID)) } style="color:var(--blue-700);text-decoration:none;">{ judgeCoverageLabel(d.JudgedTrials, d.TrialCount) } · assignments →</a>
+				<span style="color:var(--mist-700);">{ entriesAcrossLabel(d.TotalEntries) }</span>
 			</div>
 		</div>
+		<div class="card flex-col gap-2" style="padding:16px;">
+			@components.Eyebrow() {
+				Audit
+			}
+			<div class="body-sm flex-col gap-1" style="margin:0;line-height:1.7;color:var(--mist-700);">
+				<span>{ d.AuditCreated }</span>
+				if d.AuditPublished != "" {
+					<span>{ d.AuditPublished }</span>
+				}
+				<span>{ d.AuditEdited }</span>
+			</div>
+		</div>
+		if d.Status == "archived" {
+			<form hx-post={ fmt.Sprintf("/admin/events/%d/unarchive", d.EventID) } class="flex">
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit"}) {
+					Restore to draft
+				}
+			</form>
+		} else {
+			<form
+				hx-post={ fmt.Sprintf("/admin/events/%d/archive", d.EventID) }
+				hx-confirm="Archive this event? It will be hidden from public and competitor views. Its trials, entries, and history are retained, and you can restore it to draft later."
+				class="flex"
+			>
+				@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Type: "submit", Class: "text-[var(--color-danger)]"}) {
+					Archive this event…
+				}
+			</form>
+		}
 	</div>
+}
+
+// judgeCoverageLabel renders "3 / 4 trials have a judge" (or a teaching line
+// when the event has no trials yet).
+func judgeCoverageLabel(judged, total int) string {
+	if total == 0 {
+		return "No trials to assign yet"
+	}
+	return fmt.Sprintf("%d / %d trials have a judge", judged, total)
+}
+
+// entriesAcrossLabel renders "38 entries across all trials" with correct
+// pluralization, or a zero-state line.
+func entriesAcrossLabel(n int) string {
+	if n == 0 {
+		return "No entries yet"
+	}
+	if n == 1 {
+		return "1 entry across all trials"
+	}
+	return fmt.Sprintf("%d entries across all trials", n)
 }
 
 func eventFormEyebrow(d EventFormViewData) string {

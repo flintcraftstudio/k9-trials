@@ -19,7 +19,11 @@ templ registerBody(d RegisterViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
 			<div class="max-w-xl flex-col gap-6">
-				<a href={ templ.SafeURL("/events/" + d.EventSlug) } class="body-sm" style="text-decoration:none;">← { d.EventName }</a>
+				if d.ComingSoon {
+					<a href="/events" class="body-sm" style="text-decoration:none;">← Events</a>
+				} else {
+					<a href={ templ.SafeURL("/events/" + d.EventSlug) } class="body-sm" style="text-decoration:none;">← { d.EventName }</a>
+				}
 				<div class="flex-col gap-1">
 					@components.Eyebrow() {
 						Register
@@ -29,6 +33,8 @@ templ registerBody(d RegisterViewData) {
 				</div>
 				if d.NoDogs {
 					@registerNoDogs(d)
+				} else if d.ComingSoon {
+					@registerComingSoon(d)
 				} else if d.NotOpen {
 					@registerNotOpen(d)
 				} else {
@@ -163,6 +169,36 @@ templ registerNoDogs(d RegisterViewData) {
 		@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/account/dogs/new"}) {
 			Add a dog
 		}
+	</div>
+}
+
+// registerComingSoon is the R1c not-yet-open state for a draft event. A
+// competitor can subscribe to be emailed when registration opens; once
+// subscribed, the panel confirms they are on the list.
+templ registerComingSoon(d RegisterViewData) {
+	<div class="card flex-col items-start gap-3" style="padding:28px;">
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Not yet open</div>
+			if d.Subscribed {
+				<p class="body-sm" style="margin:0;">You're on the list. We'll email you when registration for { d.EventName } opens.</p>
+			} else {
+				<p class="body-sm" style="margin:0;">The organizers haven't opened registration for { d.EventName } yet. Get notified the moment it does.</p>
+			}
+		</div>
+		<div class="flex items-center gap-3">
+			if d.Subscribed {
+				<span class="pill pill-qual">✓ Notify requested</span>
+			} else {
+				<form method="post" action={ templ.SafeURL("/events/" + d.EventSlug + "/register/notify") }>
+					@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Type: "submit"}) {
+						Notify me
+					}
+				</form>
+			}
+			@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/events"}) {
+				← Back to events
+			}
+		</div>
 	</div>
 }
 

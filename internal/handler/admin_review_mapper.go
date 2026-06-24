@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"net/url"
 	"strconv"
 	"strings"
@@ -54,13 +55,14 @@ func toRegistrationsVD(event db.Event, rows []db.ListRegistrationsByEventRow) ad
 			cur.Pending++
 		}
 		cur.Rows = append(cur.Rows, admin.RegRow{
-			ID:          r.ID,
-			DogName:     r.DogName,
-			DogMeta:     regDogDetail(r.DogRegno, r.DogBreed),
-			SubmittedBy: regSubmittedLine(r),
-			Status:      r.Status,
-			EntryNumber: entryNum,
-			Pending:     pending,
+			ID:                r.ID,
+			DogName:           r.DogName,
+			DogMeta:           regDogDetail(r.DogRegno, r.DogBreed),
+			SubmittedBy:       regSubmittedLine(r),
+			Status:            r.Status,
+			EntryNumber:       entryNum,
+			Pending:           pending,
+			WithdrawRequested: r.Status == "accepted" && r.WithdrawRequestedAt.Valid,
 		})
 	}
 
@@ -121,12 +123,22 @@ func toAssignmentsVD(ctx context.Context, st *store.Store, event db.Event, trial
 		})
 	}
 
+	// Distinct judges currently assigned across the event's trials — the
+	// audience the Notify button would reach.
+	seen := make(map[int64]bool)
+	for _, t := range rows {
+		if t.Assigned && t.JudgeID > 0 {
+			seen[t.JudgeID] = true
+		}
+	}
+
 	return admin.AssignmentsViewData{
-		EventID:    event.ID,
-		EventName:  event.Name,
-		Unassigned: unassigned,
-		Trials:     rows,
-		Judges:     opts,
+		EventID:        event.ID,
+		EventName:      event.Name,
+		Unassigned:     unassigned,
+		AssignedJudges: len(seen),
+		Trials:         rows,
+		Judges:         opts,
 	}
 }
 
@@ -246,22 +258,119 @@ func toChallengesVD(in challengesVDInput) admin.ChallengesViewData {
 	}
 }
 
-// chalDetailVD maps a challenge detail row into the view.
-func chalDetailVD(c db.GetChallengeDetailRow) admin.ChalDetail {
-	return admin.ChalDetail{
+// chalDetailVD maps a challenge detail row into the view, re-evaluating the
+// disputed entry's score for the result label and excerpt and assembling the
+// audit timeline.
+func chalDetailVD(r *http.Request, st *store.Store, c db.GetChallengeDetailRow) admin.ChalDetail {
+	judge := challengeJudgeName(r, st, db.Trial{ID: c.TrialID})
+
+	result, excerptLabel, excerpt := chalEntryExcerpt(r, st, c)
+	d := admin.ChalDetail{
 		ID:              c.ID,
 		Title:           c.DogName + " · " + disciplineLevelLabel(c.Discipline, c.Level),
 		Status:          c.Status,
-		Filed:           "Filed by @" + c.FilerHandle + " · " + relativeTime(c.FiledAt),
+		Filed:           chalFiledLine(c),
 		EntryID:         c.EntryID,
-		EntryTitle:      c.EventName + " · " + disciplineLevelLabel(c.Discipline, c.Level) + " · " + entryNumberLabel(c.EntryNumber),
-		EntrySub:        "Entry is " + c.EntryStatus,
+		EntryTitle:      c.EventName + " · " + disciplineLevelLabel(c.Discipline, c.Level) + " · " + entryNumberLabel(c.EntryNumber) + " · " + shortDate(c.TrialDate),
+		EntrySub:        chalEntrySub(c, judge, result),
 		EventKey:        disciplineKey(c.Discipline),
+		ExcerptLabel:    excerptLabel,
+		Excerpt:         excerpt,
 		Reason:          c.Reason,
 		ResolutionNotes: c.ResolutionNotes,
 		CanStart:        c.Status == "open",
 		CanClose:        c.Status == "open" || c.Status == "under_review",
+		Timeline:        chalTimeline(c, judge, result),
 	}
+	return d
+}
+
+// chalEntryExcerpt evaluates the disputed entry's score and returns the
+// result label ("NQ"/"Q", empty when unevaluable) plus the excerpt label and
+// text for the disputed-entry card, reusing the competitor-side excerpt.
+func chalEntryExcerpt(r *http.Request, st *store.Store, c db.GetChallengeDetailRow) (result, label, text string) {
+	trial := db.Trial{Discipline: c.Discipline, Level: c.Level, TemplateVersion: c.TemplateVersion}
+	tpl, sheet, _, res, err := loadTemplateAndEvaluate(r, st, trial, c.EntryID)
+	if err != nil {
+		return "", "", ""
+	}
+	result = "NQ"
+	if res.Passed {
+		result = "Q"
+	}
+	label, text = challengeExcerpt(tpl, sheet, res)
+	return result, label, text
+}
+
+// chalEntrySub renders the disputed-entry sub-line: judge, finalized state,
+// and result. Clauses drop out gracefully when their data is unavailable.
+func chalEntrySub(c db.GetChallengeDetailRow, judge, result string) string {
+	parts := []string{}
+	if judge != "" {
+		parts = append(parts, "Judged by "+judge)
+	}
+	parts = append(parts, c.EntryStatus)
+	if result != "" {
+		parts = append(parts, "result "+result)
+	}
+	return strings.Join(parts, " · ")
+}
+
+// chalFiledLine renders the header attribution: who filed it and when, plus
+// the review/resolution clause once the dispute has moved past open.
+func chalFiledLine(c db.GetChallengeDetailRow) string {
+	line := "Filed by @" + c.FilerHandle + " · " + relativeTime(c.FiledAt)
+	switch c.Status {
+	case "under_review":
+		line += " · review started " + relativeTime(c.UpdatedAt)
+	case "resolved":
+		line += " · resolved " + relativeTime(c.UpdatedAt)
+	case "dismissed":
+		line += " · dismissed " + relativeTime(c.UpdatedAt)
+	}
+	return line
+}
+
+// chalTimeline assembles the audit trail. The schema records only the
+// challenge's latest updated_at (not each intermediate transition), so the
+// terminal step carries that timestamp while earlier transitions show their
+// own recorded time.
+func chalTimeline(c db.GetChallengeDetailRow, judge, result string) []admin.ChalAuditStep {
+	finalized := admin.ChalAuditStep{
+		Title: "Entry finalized",
+		Meta:  judge,
+		When:  shortDate(c.TrialDate),
+		Kind:  "lock",
+	}
+	if result != "" {
+		finalized.Title += " · result " + result
+	}
+	filed := admin.ChalAuditStep{
+		Title: "Challenge filed",
+		Meta:  "@" + c.FilerHandle,
+		When:  relativeTime(c.FiledAt),
+		Kind:  "warn",
+	}
+	steps := []admin.ChalAuditStep{finalized, filed}
+
+	switch c.Status {
+	case "open":
+		steps = append(steps, admin.ChalAuditStep{
+			Title: "Awaiting review",
+			Meta:  "with admin",
+			When:  "—",
+		})
+	case "under_review":
+		steps = append(steps,
+			admin.ChalAuditStep{Title: "Review started", When: relativeTime(c.UpdatedAt), Kind: "green"},
+			admin.ChalAuditStep{Title: "Pending — resolve or dismiss", Meta: "awaiting admin decision", When: "—"},
+		)
+	case "resolved":
+		steps = append(steps, admin.ChalAuditStep{Title: "Resolved", Meta: c.ResolutionNotes, When: relativeTime(c.UpdatedAt), Kind: "green"})
+	case "dismissed":
+		steps = append(steps, admin.ChalAuditStep{Title: "Dismissed", Meta: c.ResolutionNotes, When: relativeTime(c.UpdatedAt), Kind: "muted"})
+	}
+	return steps
 }
 
 // validUserFilter reports whether key is a recognized role filter (empty
@@ -274,9 +383,11 @@ func validUserFilter(key string) bool {
 	return false
 }
 
-// toUsersVD builds the D8 list with role filter chips, marking the
-// logged-in admin row so it cannot self-demote.
-func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active string) admin.UsersViewData {
+// toUsersVD builds the D8 list with role filter chips and a search box,
+// marking the logged-in admin row so it cannot self-demote. Role counts span
+// all users (independent of search); the search narrows the visible rows by
+// email, display name, or handle.
+func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active, q string) admin.UsersViewData {
 	var competitors, judges, admins int
 	for _, u := range rows {
 		switch u.Role {
@@ -289,9 +400,13 @@ func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active string
 		}
 	}
 
+	needle := strings.ToLower(strings.TrimSpace(q))
 	out := make([]admin.UserRow, 0, len(rows))
 	for _, u := range rows {
 		if active != "" && u.Role != active {
+			continue
+		}
+		if needle != "" && !userMatches(u, needle) {
 			continue
 		}
 		out = append(out, userRowVD(u, selfID))
@@ -299,9 +414,35 @@ func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active string
 
 	return admin.UsersViewData{
 		Total:   len(rows),
-		Filters: userFilters(active, len(rows), competitors, judges, admins),
+		Active:  active,
+		Query:   q,
+		Filters: userFilters(active, q, len(rows), competitors, judges, admins),
 		Rows:    out,
 	}
+}
+
+// userMatches reports whether a user row matches the lowercased search needle
+// across email, display name, and handle.
+func userMatches(u db.ListUsersWithCompetitorRow, needle string) bool {
+	return strings.Contains(strings.ToLower(u.Email), needle) ||
+		strings.Contains(strings.ToLower(u.DisplayName.String), needle) ||
+		strings.Contains(strings.ToLower(u.Handle.String), needle)
+}
+
+// usersListURL composes a users-list URL preserving the role filter and search
+// term, omitting whichever is empty.
+func usersListURL(role, q string) string {
+	v := url.Values{}
+	if role != "" {
+		v.Set("role", role)
+	}
+	if q != "" {
+		v.Set("q", q)
+	}
+	if len(v) == 0 {
+		return "/admin/users"
+	}
+	return "/admin/users?" + v.Encode()
 }
 
 // userRowVD maps one user row, preferring the competitor display name and
@@ -329,8 +470,9 @@ func userRowVD(u db.ListUsersWithCompetitorRow, selfID int64) admin.UserRow {
 	}
 }
 
-// userFilters builds the role filter chip row with counts.
-func userFilters(active string, total, competitors, judges, admins int) []admin.UserFilter {
+// userFilters builds the role filter chip row with counts, preserving the
+// active search term in each chip's href.
+func userFilters(active, q string, total, competitors, judges, admins int) []admin.UserFilter {
 	defs := []struct {
 		key, label string
 		count      int
@@ -342,15 +484,11 @@ func userFilters(active string, total, competitors, judges, admins int) []admin.
 	}
 	out := make([]admin.UserFilter, 0, len(defs))
 	for _, d := range defs {
-		href := "/admin/users"
-		if d.key != "" {
-			href += "?role=" + d.key
-		}
 		out = append(out, admin.UserFilter{
 			Key:    d.key,
 			Label:  d.label,
 			Count:  d.count,
-			Href:   href,
+			Href:   usersListURL(d.key, q),
 			Active: active == d.key,
 		})
 	}

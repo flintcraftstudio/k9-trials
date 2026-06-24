@@ -22,19 +22,56 @@ templ challengesListBody(d ChallengesListViewData) {
 						{ fmt.Sprintf("Challenges · %d", d.Total) }
 					}
 					<h1 class="h2" style="margin:0;">Score disputes</h1>
+					if d.LastUpdate != "" {
+						<span class="body-sm" style="margin:2px 0 0;">{ "Last update " + d.LastUpdate }</span>
+					}
 				</div>
-				if len(d.Rows) == 0 {
+				if d.Total == 0 {
 					@challengesEmptyState()
 				} else {
-					<div class="flex-col gap-2">
-						for _, row := range d.Rows {
-							@challengeRow(row)
+					<div class="flex gap-2 flex-wrap">
+						for _, f := range d.Filters {
+							@challengeFilterChip(f)
 						}
 					</div>
+					@ChallengesResults(d)
 				}
 			</div>
 		}
 	</section>
+}
+
+// challengeFilterChip is one status filter pill; htmx swaps the results
+// fragment in place and pushes the filtered URL.
+templ challengeFilterChip(f ChallengeFilter) {
+	<a
+		href={ templ.SafeURL(f.Href) }
+		hx-get={ f.Href }
+		hx-target="#challenges-results"
+		hx-swap="outerHTML"
+		hx-push-url="true"
+		class={ "pill", templ.KV("pill-active", f.Active), templ.KV("pill-muted", !f.Active) }
+		style="text-decoration:none;"
+	>
+		{ fmt.Sprintf("%s · %d", f.Label, f.Count) }
+	</a>
+}
+
+// ChallengesResults is the filterable list body, returned alone for htmx
+// filter swaps and embedded on first load.
+templ ChallengesResults(d ChallengesListViewData) {
+	<div id="challenges-results" class="flex-col gap-2">
+		if len(d.Rows) == 0 {
+			<div class="card flex-col items-start gap-1" style="padding:20px;">
+				<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Nothing here</div>
+				<p class="body-sm" style="margin:0;">No challenges match this filter.</p>
+			</div>
+		} else {
+			for _, row := range d.Rows {
+				@challengeRow(row)
+			}
+		}
+	</div>
 }
 
 templ challengeRow(row ChallengeRow) {

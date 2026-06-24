@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log/slog"
@@ -54,9 +55,10 @@ func AdminEvents(st *store.Store) http.HandlerFunc {
 		if !validEventFilter(filter) {
 			filter = ""
 		}
-		data := toAdminEventsVD(r.Context(), st, events, filter)
+		q := r.URL.Query().Get("q")
+		data := toAdminEventsVD(r.Context(), st, events, filter, q)
 		if r.Header.Get("HX-Request") == "true" {
-			renderPublic(w, r, admin.EventsTable(data))
+			renderPublic(w, r, admin.EventsResults(data))
 			return
 		}
 		renderPublic(w, r, admin.EventsListPage(data))
@@ -151,9 +153,68 @@ func AdminEventsUpdate(st *store.Store) http.HandlerFunc {
 			renderPublic(w, r, admin.EventForm(vd))
 			return
 		}
+		// Opening registration (draft/closed → published) fires the notify-me
+		// hook for subscribers (Q4 / R1c).
+		if event.Status != "published" && in.Status == "published" {
+			notifyEventSubscribers(r.Context(), st, event.ID, event.Name)
+		}
 		vd.Saved = true
 		vd.Err = ""
 		renderPublic(w, r, admin.EventForm(vd))
+	}
+}
+
+// notifyEventSubscribers logs the recipients who asked to be notified when an
+// event opens registration, then marks them notified so a later re-publish
+// does not re-notify. Email delivery is not wired (the mail client only
+// targets the contact-form recipient), mirroring the D6 notify-judges stub.
+func notifyEventSubscribers(ctx context.Context, st *store.Store, eventID int64, eventName string) {
+	subs, err := st.ListEventSubscribers(ctx, eventID)
+	if err != nil {
+		slog.Error("list event subscribers", "event", eventID, "err", err)
+		return
+	}
+	if len(subs) == 0 {
+		return
+	}
+	emails := make([]string, 0, len(subs))
+	for _, s := range subs {
+		emails = append(emails, s.Email)
+	}
+	slog.Info("event registration opened — notifying subscribers (delivery pending mail setup)",
+		"event", eventID, "name", eventName, "count", len(emails), "recipients", emails)
+	if err := st.MarkEventSubscribersNotified(ctx, eventID); err != nil {
+		slog.Error("mark subscribers notified", "event", eventID, "err", err)
+	}
+}
+
+// AdminEventsArchive serves POST /admin/events/{id}/archive — the D3 archive
+// lifecycle action. Archiving files the event away (hidden from public lists,
+// excluded from the default admin view) while retaining its row and history.
+func AdminEventsArchive(st *store.Store) http.HandlerFunc {
+	return setEventStatusHandler(st, "archived")
+}
+
+// AdminEventsRestore serves POST /admin/events/{id}/unarchive — returns an
+// archived event to draft so it can be edited and re-published.
+func AdminEventsRestore(st *store.Store) http.HandlerFunc {
+	return setEventStatusHandler(st, "draft")
+}
+
+// setEventStatusHandler builds a handler that transitions an event to the
+// given status and reloads its editor.
+func setEventStatusHandler(st *store.Store, status string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		event, ok := loadAdminEvent(w, r, st)
+		if !ok {
+			return
+		}
+		if _, err := st.SetEventStatus(r.Context(), event.ID, status); err != nil {
+			slog.Error("set event status", "event", event.ID, "status", status, "err", err)
+			http.Error(w, "something went wrong", http.StatusInternalServerError)
+			return
+		}
+		hxRedirect(w, r, "/admin/events/"+strconv.FormatInt(event.ID, 10)+"/edit")
 	}
 }
 
@@ -204,13 +265,20 @@ func AdminTrialsNew(st *store.Store) http.HandlerFunc {
 		if !ok {
 			return
 		}
-		renderPublic(w, r, admin.TrialsFormPage(admin.TrialFormViewData{
+		vd := admin.TrialFormViewData{
 			EventID:         event.ID,
 			EventName:       event.Name,
 			Discipline:      "OB",
 			Level:           "1",
 			TemplateVersion: "2026.1",
-		}))
+		}
+		// htmx opens the form as a slide-over over the list; a direct visit
+		// gets the full page.
+		if r.Header.Get("HX-Request") == "true" {
+			renderPublic(w, r, admin.TrialDrawer(vd))
+			return
+		}
+		renderPublic(w, r, admin.TrialsFormPage(vd))
 	}
 }
 
@@ -228,18 +296,18 @@ func AdminTrialsCreate(st *store.Store) http.HandlerFunc {
 		}
 		in, vd, ok := parseTrialForm(r, event.ID, event.Name)
 		if !ok {
-			renderPublic(w, r, admin.TrialsFormPage(vd))
+			renderPublic(w, r, admin.TrialForm(vd))
 			return
 		}
 		if _, err := st.CreateTrial(r.Context(), event.ID, in); err != nil {
 			if isUniqueViolation(err) {
 				vd.Err = "A trial with that discipline, level, and date already exists."
-				renderPublic(w, r, admin.TrialsFormPage(vd))
+				renderPublic(w, r, admin.TrialForm(vd))
 				return
 			}
 			slog.Error("create trial", "event", event.ID, "err", err)
 			vd.Err = "Something went wrong. Please try again."
-			renderPublic(w, r, admin.TrialsFormPage(vd))
+			renderPublic(w, r, admin.TrialForm(vd))
 			return
 		}
 		hxRedirect(w, r, "/admin/events/"+strconv.FormatInt(event.ID, 10)+"/trials")
@@ -410,7 +478,7 @@ func parseTrialForm(r *http.Request, eventID int64, eventName string) (store.Tri
 // validEventStatus reports whether status is a recognized event status.
 func validEventStatus(status string) bool {
 	switch status {
-	case "draft", "published", "closed":
+	case "draft", "published", "closed", "archived":
 		return true
 	}
 	return false

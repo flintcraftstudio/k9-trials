@@ -24,57 +24,125 @@ pass, NOT greenfield. The mockups are a hi-fi refresh of working screens.
 - P4 / A5 / A6 — already at mockup fidelity, untouched.
 - Auth + profile copy/bug pass (commit 60c1095): competitor login → `/account`;
   U2 routing banner + create-account link; U1 URL preview; A2 toast + 30-day note.
+- **Tranche 2 (A7 / A8 / D7)** — done, smoke-tested against the DEMO_MODE seed across all
+  status branches. See "Tranche 2 — DONE" below for what shipped.
 
-## Tranche 2 — unblocked, no schema/migration (do these next)
+## Tranche 2 — DONE
 
-### A7 · Challenges list — `internal/view/account/challenges_list.templ`, `account_challenges_mapper.go:toChallengesListVD`
-- GAP [feature]: no filter-chip strip. Mockup: `All · 2 / Open · 1 / Review · 1 / Resolved · 0 / Dismissed · 0`.
-- Clone A5's pattern: add per-status counts + a `Filters` struct to `ChallengesListViewData`
-  (currently only `Total` + `Rows`), render chips, filter by `?status=` with htmx swap of a
-  `#challenges-results` fragment. Count in-memory from the loaded challenges (like A5).
-- GAP [copy]: header "Last update {relative}" line; per-row "admin started review yesterday" detail.
-- Effort: M.
+### A7 · Challenges list — `challenges_list.templ`, `account_challenges_mapper.go:toChallengesListVD`
+- Added filter-chip strip (`All/Open/Review/Resolved/Dismissed` + counts), `ChallengeFilter`
+  struct, `?status=` htmx swap of `#challenges-results` fragment (cloned A5). Reuses admin's
+  `validChallengeFilter`. Empty-state gates on `Total==0` (teaching state, no chips); a filter
+  with no matches shows "No challenges match this filter."
+- Header "Last update {relative}" (max UpdatedAt across all rows). Per-row detail line is now
+  status-dependent: open→"waiting on admin", under_review→"admin started review {rel}", etc.
 
-### A8 · File a challenge — `internal/view/account/challenges_new.templ`, `account_challenges_mapper.go:toChallengeNewVD`
-- GAP [feature] (headline): the disputing card must show the **scoresheet excerpt** — the NQ
-  reason quote (e.g. "Ring departure during courage test, 1.4s outside the working line") and a
-  **"View full scoresheet →"** link. `ChallengeNewViewData` has no NQ-reason/excerpt/scoresheet-link
-  fields. The mapper already runs `evalFinalizedScore`; extract the NQ reason / per-exercise excerpt
-  from the scoring result and add fields.
-- GAP [copy]: disputing sub should read "{dog} · {date} · judged by {judge} · finalized" — the
-  struct comment already promises "judged by H. Vance" but the mapper never populates judge name.
-- Effort: M.
+### A8 · File a challenge — `challenges_new.templ`, `account_challenges_mapper.go:toChallengeNewVD`
+- Disputing card now shows the **scoresheet excerpt**: a Q/NQ result pill, an adaptive reason
+  line (`challengeExcerpt`: AutoNQ trigger description quote → Insufficient tally → below-threshold
+  summary → Q score summary), and a "View full scoresheet →" link to A6.
+- Sub reads "{dog} · {date} · judged by {judge} · finalized"; judge resolved via
+  `st.TrialJudgeEmail` + `judgeName`, clause dropped when unavailable.
+- New helpers `challengeExcerpt` / `firedTriggerReasons` / `challengeJudgeName` are shared with D7.
 
-### D7 · Challenge review — `internal/view/admin/challenges.templ`, `admin_review_mapper.go:chalDetailVD`
-- Two-pane is already built (and exceeds mockup: has filter+sort+pagination). Gaps only:
-- GAP [feature]: detail has no **audit timeline** (Entry finalized → Challenge filed → Review
-  started → Pending). `ChalDetail` has no timeline data; mapper doesn't load it.
-- GAP [copy]: entry-disputed card omits the NQ-reason line (`EntrySub` is just "Entry is {status}");
-  "Filed by … review started yesterday by {admin}" attribution missing.
-- Effort: M.
+### D7 · Challenge review — `admin/challenges.templ`, `admin_review_mapper.go:chalDetailVD`
+- `GetChallengeDetail` query extended with `ch.updated_at, t.id, t.template_version` (sqlc regen,
+  no migration). `chalDetailVD` now takes `(r, st, c)` and re-evaluates the score.
+- Entry-disputed card: result in sub ("Judged by … · finalized · result NQ"), trial date in title,
+  NQ-reason excerpt line (reuses A8's `challengeExcerpt`), "View full scoresheet →" → `/entries/{id}`
+  (public scoresheet; the old `/account/entries` link would 404 for a non-owner admin).
+- **Audit timeline** (`ChalAuditStep` + `chalAudit`/`chalDotStyle`): finalized→filed→(branch by
+  status). Only one `updated_at` exists, so intermediate transitions aren't reconstructable — the
+  terminal step carries it. Filed line extends with "· review started/resolved/dismissed {rel}".
+- Reviewer/resolver *name* is genuinely not in the schema (UpdateChallengeStatus records
+  resolved_by only on resolve/dismiss, not on start-review) — "by {admin}" clause omitted, not faked.
 
-### Quick wins
-- D6 assignments (`admin/assignments.templ`): add a "Notify judges" button. [S]
-- D2 events / D8 users: add a search box (`?q=`) + render as a true table with header; D8 already
-  has an unrendered `UserRow.Created` field. Also D2 missing an Archived filter chip. [M]
+### Quick wins — DONE
+- **D6 assignments** (`admin/assignments.templ`): "Notify judges" header button → POST
+  `/admin/events/{id}/notify-judges` → htmx confirmation into `#notify-result`. Disabled until a
+  judge is assigned (`AssignedJudges` count); singular/plural copy. **No email backend yet** (mail
+  client only targets the contact-form recipient) — recipients are logged and the banner says
+  "Delivery pending mail setup." Real per-judge delivery is a later task.
+- **D2 events** + **D8 users**: in-memory `?q=` search box (events: name/slug; users:
+  email/name/handle) + rendered as true tables with header rows. D8 surfaces the `Created` column.
+  Chips + search compose: the whole `#events-results`/`#users-results` block swaps so active
+  status/role + query stay consistent; status counts span all rows (search only narrows visible).
+  Shared `orDash` helper; `eventsListURL`/`usersListURL` (handler) bake `q` into chip hrefs.
+- ⛔ **D2 Archived filter chip — DEFERRED**: the events CHECK constraint only allows
+  `draft/published/closed`; `archived` needs a migration, which belongs with **D3's archive
+  lifecycle** (Tranche 3). Add the chip when that status lands.
 
-## Tranche 3 — bigger; three blocked on product decisions
-- **D1 dashboard** — recent-activity feed (needs a new query/data source) + quick-actions card +
-  2-col board layout. [L, unblocked but needs new data]
-- **D5 registrations** — accordion + lifecycle strip + Export CSV + "Add manual entry" +
-  **club-secretary badge** when `submitted_by ≠ handler`. ⛔ *Withdraw* action blocked on **open
-  question Q1** (void-and-free-number vs. retain-for-audit). [L]
-- **R1 register** — stepped-checkout chrome (step indicator, selected-dog 2px discipline border,
-  avatars), live "N trials selected for {dog}" count, per-trial entry-count/judge metadata. R1c
-  ⛔ "Notify me" + open-date email promise blocked on **open question Q4** (what it subscribes to). [L]
-- **A4 dog form** — missing **Sex** field. ⛔ Needs a migration + a decision to add it now. Also
-  breed autocomplete. [M]
-- **D3 event form** — audit block (created/published/last-edited), Archive lifecycle action,
-  fuller at-a-glance (judge-coverage + total entries), `archived` status. [L, needs timestamps]
-- **D4 trials** — new-trial as slide-over (currently full page), pill-chip discipline/level
-  selectors, "1 trial without a judge" summary. [M]
+## Tranche 3 — DONE so far (branch `write-surface-tranche2`)
 
-## Open questions to resolve before Tranche 3's blocked items
-- **Q1** (D5/A6): withdrawal semantics after accept — void+free entry number, or retain for audit?
-- **Q4** (R1c): what does "Notify me" subscribe to, and does it require login?
-- **A4**: add a `sex` column to dogs now? (migration + store/parse/view wiring.)
+### A4 · Dog form sex field — `commit fc3aab9`
+- Migration 014 adds `dogs.sex` (TEXT, CHECK in `male/female/''`, default `''`).
+- Wired `DogInput.Sex`, `CreateDog`/`UpdateDog`, `parseDogForm` (validates the set),
+  `dogFormVD` prefill, and a paired DOB+Sex 2-col row with a native `<select>` on A4.
+- Breed autocomplete still deferred.
+
+### D3 · Event form + D2 Archived chip — `commit 91f82aa`
+- Migration 015 rebuilds `events` (FK-safe, NO TRANSACTION): adds `archived` status to
+  the CHECK + a nullable `published_at`.
+- Audit card: Created {date} by {creator email} (resolved via GetUserByID), Published
+  {date} (stamped on first publish transition only — seeded events show no line),
+  Last edited {relative}. Publisher name not tracked → no "by" clause (D7 precedent).
+- Archive lifecycle: "Archive this event…" (hx-confirm) → POST `.../archive` (status=archived);
+  "Restore to draft" → POST `.../unarchive` (status=draft). `SetEventStatus` preserves
+  metadata + stamps published_at on first publish. New `setEventStatusHandler`.
+- Fuller at-a-glance: judge-coverage ("N / M trials have a judge") + total entries, via
+  new `CountTrialsWithJudgeByEvent` / `CountEntriesByEvent` queries.
+- Status selector is now pill-radio toggles (incl. archived) w/ live Alpine outline.
+- **D2 Archived filter chip — DONE** (was deferred): `validEventFilter`/`validEventStatus`/
+  `eventFilters` now include `archived`; archived events excluded from public lists
+  (`ListPublishedEvents` already filters to published/closed). Smoke-tested archive →
+  chip count → filter → restore → publish-stamp round-trip on the demo seed.
+
+### D5 · Withdrawal — `commit 180b238`
+- **Registration-based**, NOT entry-status (registrations already had `withdrawn`; avoided a risky
+  6-FK entries-table rebuild). Migration 016 adds `registrations.withdraw_requested_at`.
+- A6 not-yet-run entry → "Request withdrawal" (gated `entry.status=registered`) → POST
+  `/account/entries/{id}/withdraw` (RequestEntryWithdrawal, idempotent SQL guard on accepted+no-prior).
+  After request: "Withdrawal requested · pending admin"; after confirm: "Withdrawn".
+- D5 admin: accepted+requested rows show a "Withdrawal requested" badge + "Confirm withdrawal" → POST
+  `/admin/registrations/{rid}/confirm-withdrawal` → status=withdrawn, entry+number RETAINED.
+- A5 LEFT JOINs registrations for per-row withdrawal pills + a Withdrawn filter chip (shown only >0).
+- NOTE: club-secretary badge / Export CSV / Add-manual-entry from the original D5 line were NOT in
+  scope for this tranche (only the Q1 withdrawal was decided) — still open if wanted.
+
+### R1c · Notify-me — `commit b8b3d24`
+- Migration 017 `event_subscriptions`. **Entry point decision (user-chosen): draft events reachable on
+  `/events/{slug}/register` by DIRECT LINK ONLY** — lists + the detail page still 404 drafts.
+  `loadEventForRegister` allows drafts; the page shows R1c "Not yet open" + Notify-me.
+- POST `/events/{slug}/register/notify` (SubscribeToEvent, idempotent). Publish transition
+  (draft/closed→published) in AdminEventsUpdate fires `notifyEventSubscribers`: logs recipients
+  ("delivery pending mail setup", D6-style stub) + stamps `notified_at` (no re-notify).
+- NOTE: the broader R1a/R1b stepped-checkout chrome (step indicator, dog border, live count) from the
+  original R1 line was NOT in scope — only R1c notify-me was decided. Still open if wanted.
+
+### D1 · Dashboard — `commit d2b3036`
+- 1.45fr/1fr board: left = Live + Drafts; right = Needs-review + Quick-actions card + Recent-activity.
+- Feed merges 4 typed sources (`queries/activity.sql`: finalized entries, accepted regs, filed
+  challenges, published events) in Go (`Store.RecentActivity`), newest-first, capped 8. Separate
+  queries (not a UNION) so timestamps scan into time.Time. Kind-colored dot + "{rel} · {event}" meta.
+
+### D4 · Trials — `commit 39e19fa`
+- New-trial form opens as an htmx **slide-over** (`TrialDrawer`) over the list (#trial-drawer mount);
+  href is the no-JS fallback to the full page (both share the `TrialForm` fragment). Scrim/×/Cancel
+  are anchors to the list (close without JS).
+- Discipline/level are now **pill-chip radios** styled via CSS `:has(input:checked)` (new
+  `.pill-choice` in tailwind/input.css) — no JS, works in the htmx-swapped drawer where Alpine
+  wouldn't auto-init.
+- Sub line flags "N trial(s) without a judge" (`toAdminTrialsVD`).
+
+## Tranche 3 — COMPLETE
+All decided behavior shipped (A4, D3+D2-archived, D5 withdrawal, R1c notify-me, D1, D4). Branch
+`write-surface-tranche2` holds the work, NOT merged to main. Deferred/not-in-scope extras noted
+above per item (D5 secretary-badge/CSV/manual-entry; R1a/R1b checkout chrome; breed autocomplete).
+
+## Decisions (resolved 2026-06-24 — were the Tranche 3 blockers)
+- **Q1** (D5/A6) — withdrawal after accept: **retain for audit, admin-confirmed**. Withdraw is a
+  request that routes to admin; on confirm, entry → `withdrawn`, entry_number + row retained, number
+  NOT freed.
+- **Q4** (R1c) — "Notify me": subscribes to **event registration opening**, **requires login**;
+  emailed when the event publishes.
+- **A4** — dogs `sex` column: **add it now** (migration + store/parse/form wiring).
