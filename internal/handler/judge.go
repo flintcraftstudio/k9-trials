@@ -74,6 +74,40 @@ func notFound(w http.ResponseWriter, r *http.Request, err error) {
 	http.NotFound(w, r)
 }
 
+// entryAssignedTo reports whether u is authorized to act on entry at the row
+// level: the user must be the entry's assigned judge (entry.judge_id == u.ID),
+// with admins exempt as a superset (an admin may score/finalize any entry).
+// RequireJudge already gated the surface; this gates the specific row. A nil
+// user or an entry with no assigned judge is never authorized (except admins).
+func entryAssignedTo(entry db.Entry, u *session.User) bool {
+	if u == nil {
+		return false
+	}
+	if u.IsAdmin() {
+		return true
+	}
+	return entry.JudgeID.Valid && entry.JudgeID.Int64 == u.ID
+}
+
+// guardEntryAuthority enforces the per-entry scoring authority rule. It returns
+// true when the request may proceed; otherwise it has already written a 403 (or
+// a redirect for an anonymous caller) and the handler must return. Centralizes
+// the row-level check shared by every per-entry judge handler.
+func guardEntryAuthority(w http.ResponseWriter, r *http.Request, entry db.Entry) bool {
+	u := session.FromContext(r.Context())
+	if u == nil {
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+		return false
+	}
+	if entryAssignedTo(entry, u) {
+		return true
+	}
+	slog.Info("judge entry authority denied",
+		"path", r.URL.Path, "entry", entry.ID, "user", u.ID)
+	http.Error(w, "You are not the assigned judge for this entry.", http.StatusForbidden)
+	return false
+}
+
 // JudgeQueue renders the run queue (B1).
 func JudgeQueue(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -167,6 +201,9 @@ func JudgeGate(st *store.Store) http.HandlerFunc {
 			http.Error(w, "gate unavailable", http.StatusInternalServerError)
 			return
 		}
+		if !guardEntryAuthority(w, r, entry) {
+			return
+		}
 		data := judge.GateViewData{
 			Trial: toTrial(trial, event, u.Email),
 			Run:   toRun(entry, ""),
@@ -193,6 +230,9 @@ func JudgeScore(st *store.Store) http.HandlerFunc {
 			}
 			slog.Error("judge score load", "err", err)
 			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
 			return
 		}
 
@@ -244,6 +284,9 @@ func JudgeReview(st *store.Store) http.HandlerFunc {
 			http.Error(w, "review unavailable", http.StatusInternalServerError)
 			return
 		}
+		if !guardEntryAuthority(w, r, entry) {
+			return
+		}
 		tpl, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)
 		if err != nil {
 			slog.Error("judge review evaluate", "err", err)
@@ -284,6 +327,9 @@ func JudgeSubmit(st *store.Store) http.HandlerFunc {
 			}
 			slog.Error("judge submit load", "err", err)
 			http.Error(w, "submit unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
 			return
 		}
 		_, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)
@@ -329,6 +375,9 @@ func JudgeLocked(st *store.Store) http.HandlerFunc {
 			}
 			slog.Error("judge locked load", "err", err)
 			http.Error(w, "locked view unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
 			return
 		}
 		tpl, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)

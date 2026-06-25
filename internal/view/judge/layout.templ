@@ -67,7 +67,7 @@ templ judgeDrawer(u *session.User) {
 			<button class="btn btn-ghost" @click="drawer = false" aria-label="Close" style="padding:4px 8px;">✕</button>
 		</div>
 		<a href="/judge" class="pill" style="text-decoration:none; justify-content:flex-start;">Switch trial</a>
-		if u != nil && u.Role == "admin" {
+		if u.IsAdmin() {
 			<a href="/admin" class="pill" style="text-decoration:none; justify-content:flex-start;">Admin</a>
 		}
 		<a href="/account" class="pill" style="text-decoration:none; justify-content:flex-start;">My account</a>

@@ -61,37 +61,39 @@ func (s *Store) DeleteSession(ctx context.Context, token string) error {
 	return err
 }
 
-// GetUserByID retrieves a user's id, email, and role by their ID.
-func (s *Store) GetUserByID(ctx context.Context, id int64) (int64, string, string, error) {
+// GetUserByID retrieves a user's id and email by their ID.
+func (s *Store) GetUserByID(ctx context.Context, id int64) (int64, string, error) {
 	var userID int64
-	var email, role string
+	var email string
 	err := s.db.QueryRowContext(ctx,
-		"SELECT id, email, role FROM users WHERE id = ?",
+		"SELECT id, email FROM users WHERE id = ?",
 		id,
-	).Scan(&userID, &email, &role)
-	return userID, email, role, err
+	).Scan(&userID, &email)
+	return userID, email, err
 }
 
-// GetUserByEmail retrieves a user by email, returning id, email, password hash, and role.
-func (s *Store) GetUserByEmail(ctx context.Context, email string) (int64, string, string, string, error) {
+// GetUserByEmail retrieves a user by email, returning id, email, and password hash.
+func (s *Store) GetUserByEmail(ctx context.Context, email string) (int64, string, string, error) {
 	var id int64
-	var userEmail, passwordHash, role string
+	var userEmail, passwordHash string
 	err := s.db.QueryRowContext(ctx,
-		"SELECT id, email, password_hash, role FROM users WHERE email = ?",
+		"SELECT id, email, password_hash FROM users WHERE email = ?",
 		email,
-	).Scan(&id, &userEmail, &passwordHash, &role)
-	return id, userEmail, passwordHash, role, err
+	).Scan(&id, &userEmail, &passwordHash)
+	return id, userEmail, passwordHash, err
 }
 
-// CreateUser inserts a new user with a bcrypt-hashed password and the given role.
-func (s *Store) CreateUser(ctx context.Context, email, password, role string) (int64, error) {
+// CreateUser inserts a new account at the competitor baseline with a
+// bcrypt-hashed password. Capabilities ('judge'/'admin') are additive grants in
+// user_roles — call GrantCapability after creation to elevate an account.
+func (s *Store) CreateUser(ctx context.Context, email, password string) (int64, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
 	result, err := s.db.ExecContext(ctx,
-		"INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
-		email, string(hash), role,
+		"INSERT INTO users (email, password_hash) VALUES (?, ?)",
+		email, string(hash),
 	)
 	if err != nil {
 		return 0, err
@@ -103,4 +105,24 @@ func (s *Store) CreateUser(ctx context.Context, email, password, role string) (i
 func (s *Store) DeleteExpiredSessions(ctx context.Context) error {
 	_, err := s.db.ExecContext(ctx, "DELETE FROM sessions WHERE expires_at <= CURRENT_TIMESTAMP")
 	return err
+}
+
+// UserCapabilities returns the explicit account capabilities a user holds
+// ('judge' / 'admin'), sorted for determinism. The 'competitor' baseline is
+// implicit and never stored, so a nil/empty slice means competitor-only.
+func (s *Store) UserCapabilities(ctx context.Context, userID int64) ([]string, error) {
+	return s.q.UserCapabilities(ctx, userID)
+}
+
+// GrantCapability grants an account capability to a user. Idempotent: granting
+// a capability the user already holds is a no-op and returns no error.
+func (s *Store) GrantCapability(ctx context.Context, userID int64, cap string) error {
+	return s.q.GrantCapability(ctx, db.GrantCapabilityParams{UserID: userID, Capability: cap})
+}
+
+// RevokeCapability revokes an account capability from a user. Idempotent:
+// revoking a capability the user does not hold deletes zero rows and returns
+// no error.
+func (s *Store) RevokeCapability(ctx context.Context, userID int64, cap string) error {
+	return s.q.RevokeCapability(ctx, db.RevokeCapabilityParams{UserID: userID, Capability: cap})
 }

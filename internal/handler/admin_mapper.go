@@ -254,7 +254,7 @@ func editEventVD(ctx context.Context, st *store.Store, e db.Event) admin.EventFo
 // lookup fails rather than fabricated.
 func eventCreatedLine(ctx context.Context, st *store.Store, e db.Event) string {
 	line := "Created " + e.CreatedAt.UTC().Format("2 Jan 2006")
-	if _, email, _, err := st.GetUserByID(ctx, e.CreatedBy); err == nil && email != "" {
+	if _, email, err := st.GetUserByID(ctx, e.CreatedBy); err == nil && email != "" {
 		line += " by " + email
 	}
 	return line

@@ -137,14 +137,25 @@ func run() error {
 }
 
 func ensureUser(ctx context.Context, st *store.Store, email, password, role string) (int64, error) {
-	id, _, _, _, err := st.GetUserByEmail(ctx, email)
+	id, _, _, err := st.GetUserByEmail(ctx, email)
 	if err == nil {
 		return id, nil
 	}
 	if !errors.Is(err, sql.ErrNoRows) {
 		return 0, err
 	}
-	return st.CreateUser(ctx, email, password, role)
+	id, err = st.CreateUser(ctx, email, password)
+	if err != nil {
+		return 0, err
+	}
+	// Elevate to judge/admin via a capability grant; competitor is the implicit
+	// baseline and needs no row.
+	if role == "admin" || role == "judge" {
+		if err := st.GrantCapability(ctx, id, role); err != nil {
+			return 0, err
+		}
+	}
+	return id, nil
 }
 
 func ensureEvent(ctx context.Context, st *store.Store, adminID int64) (db.Event, error) {

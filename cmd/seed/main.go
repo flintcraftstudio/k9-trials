@@ -47,10 +47,20 @@ func main() {
 	defer db.Close()
 
 	st := store.New(db)
-	id, err := st.CreateUser(context.Background(), email, password, role)
+	ctx := context.Background()
+	id, err := st.CreateUser(ctx, email, password)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error creating user: %v\n", err)
 		os.Exit(1)
+	}
+
+	// Every account is a competitor at baseline (implicit, no row). Elevate to
+	// judge/admin by granting the capability — that is the source of truth now.
+	if role == "admin" || role == "judge" {
+		if err := st.GrantCapability(ctx, id, role); err != nil {
+			fmt.Fprintf(os.Stderr, "Error granting %s capability: %v\n", role, err)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Printf("Created %s %s (id=%d)\n", role, email, id)

@@ -157,9 +157,10 @@ func main() {
 	mux.Handle("GET /competitors/{handle}", handler.CompetitorProfile(st))
 	mux.Handle("GET /dogs/{id}", handler.DogProfile(st))
 
-	// Competitor account — requires competitor or admin role
+	// Competitor account — every authenticated account holds the competitor
+	// baseline, so any logged-in user passes. RequireAuth is the competitor gate.
 	competitor := func(h http.Handler) http.Handler {
-		return session.RequireRole(h, "competitor", "admin")
+		return session.RequireAuth(h)
 	}
 	mux.Handle("GET /account", competitor(handler.AccountDashboard(st)))
 	mux.Handle("GET /account/profile", competitor(handler.AccountProfile(st)))

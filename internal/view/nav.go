@@ -36,30 +36,31 @@ func topNavProps(u *session.User, currentRoute string) components.NavBarProps {
 	}
 }
 
-// sectionAnchorsFor returns the role-aware chips shown in the top bar's
-// actions area. Anonymous visitors get none. Each role currently maps to
-// a single chip pointing at its primary section; if multi-role users
-// land later, this returns a slice naturally — the NavBar already loops.
+// sectionAnchorsFor returns the capability-aware chip shown in the top bar's
+// actions area. Anonymous visitors get none. The chip points at the user's
+// primary section, derived from capabilities (never users.role) using the
+// admin > judge > competitor precedence: admins land on /admin, judges on
+// /judge, and everyone else (the competitor baseline) on /account. If multi-
+// chip users land later, this returns a slice naturally — the NavBar loops.
 func sectionAnchorsFor(u *session.User) []components.NavBarLink {
 	if u == nil {
 		return nil
 	}
 	initials := initialsFromEmail(u.Email)
-	switch u.Role {
-	case "admin":
+	switch {
+	case u.IsAdmin():
 		return []components.NavBarLink{
 			{ID: "admin", Href: "/admin", Label: "Admin", Initials: initials},
 		}
-	case "judge":
+	case u.IsJudge():
 		return []components.NavBarLink{
 			{ID: "judge", Href: "/judge", Label: "Judge", Initials: initials},
 		}
-	case "competitor":
+	default:
 		return []components.NavBarLink{
 			{ID: "account", Href: "/account", Label: "My account", Initials: initials},
 		}
 	}
-	return nil
 }
 
 // initialsFromEmail picks up to two letters from the local part of an

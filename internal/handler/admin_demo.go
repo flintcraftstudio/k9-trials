@@ -34,7 +34,7 @@ func AdminSeedDemo(st *store.Store) http.HandlerFunc {
 		// session. Re-establish one for the freshly created admin so the
 		// operator stays logged in across repeated demo run-throughs. If this
 		// fails we simply fall through logged out and /admin bounces to /login.
-		if uid, _, _, _, err := st.GetUserByEmail(r.Context(), "admin@example.com"); err == nil {
+		if uid, _, _, err := st.GetUserByEmail(r.Context(), "admin@example.com"); err == nil {
 			if err := session.Create(r.Context(), w, st, uid); err != nil {
 				slog.Error("demo reset: re-establish admin session", "err", err)
 			}

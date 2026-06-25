@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/flintcraftstudio/k9-trials/internal/db"
+	"github.com/flintcraftstudio/k9-trials/internal/session"
 	"github.com/flintcraftstudio/k9-trials/internal/store"
 	"github.com/flintcraftstudio/k9-trials/internal/view/admin"
 )
@@ -93,7 +94,7 @@ func regSubmittedLine(r db.ListRegistrationsByEventRow) string {
 
 // toAssignmentsVD builds the D6 view: each trial with its entry count and
 // current judge, plus the assignable-judge options.
-func toAssignmentsVD(ctx context.Context, st *store.Store, event db.Event, trials []db.Trial, judges []db.ListAssignableJudgesRow) admin.AssignmentsViewData {
+func toAssignmentsVD(ctx context.Context, st *store.Store, event db.Event, trials []db.Trial, judges []db.ListJudgeEligibleUsersRow) admin.AssignmentsViewData {
 	opts := make([]admin.JudgeOption, 0, len(judges))
 	for _, j := range judges {
 		opts = append(opts, admin.JudgeOption{ID: j.ID, Name: judgeName(j.Email)})
@@ -383,14 +384,15 @@ func validUserFilter(key string) bool {
 	return false
 }
 
-// toUsersVD builds the D8 list with role filter chips and a search box,
-// marking the logged-in admin row so it cannot self-demote. Role counts span
-// all users (independent of search); the search narrows the visible rows by
-// email, display name, or handle.
-func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active, q string) admin.UsersViewData {
+// toUsersVD builds the D8 list with capability filter chips and a search box,
+// marking the logged-in admin row so it cannot revoke its own admin. The filter
+// buckets a user by its derived capability label (admin > judge > competitor),
+// not by users.role. Counts span all users (independent of search); the search
+// narrows the visible rows by email, display name, or handle.
+func toUsersVD(rows []db.ListUsersWithCapsRow, selfID int64, active, q string) admin.UsersViewData {
 	var competitors, judges, admins int
 	for _, u := range rows {
-		switch u.Role {
+		switch userFilterBucket(u) {
 		case "competitor":
 			competitors++
 		case "judge":
@@ -403,7 +405,7 @@ func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active, q str
 	needle := strings.ToLower(strings.TrimSpace(q))
 	out := make([]admin.UserRow, 0, len(rows))
 	for _, u := range rows {
-		if active != "" && u.Role != active {
+		if active != "" && userFilterBucket(u) != active {
 			continue
 		}
 		if needle != "" && !userMatches(u, needle) {
@@ -421,9 +423,31 @@ func toUsersVD(rows []db.ListUsersWithCompetitorRow, selfID int64, active, q str
 	}
 }
 
+// userFilterBucket returns the single filter bucket a user falls into, derived
+// from capabilities (admin > judge > competitor baseline) — never users.role.
+func userFilterBucket(u db.ListUsersWithCapsRow) string {
+	switch session.CapsLabel(splitCaps(u.Caps)) {
+	case "Admin":
+		return "admin"
+	case "Judge":
+		return "judge"
+	default:
+		return "competitor"
+	}
+}
+
+// splitCaps turns the comma-separated caps column into a slice, tolerating the
+// empty string (competitor-only) by returning nil.
+func splitCaps(caps string) []string {
+	if caps == "" {
+		return nil
+	}
+	return strings.Split(caps, ",")
+}
+
 // userMatches reports whether a user row matches the lowercased search needle
 // across email, display name, and handle.
-func userMatches(u db.ListUsersWithCompetitorRow, needle string) bool {
+func userMatches(u db.ListUsersWithCapsRow, needle string) bool {
 	return strings.Contains(strings.ToLower(u.Email), needle) ||
 		strings.Contains(strings.ToLower(u.DisplayName.String), needle) ||
 		strings.Contains(strings.ToLower(u.Handle.String), needle)
@@ -446,8 +470,9 @@ func usersListURL(role, q string) string {
 }
 
 // userRowVD maps one user row, preferring the competitor display name and
-// handle when present.
-func userRowVD(u db.ListUsersWithCompetitorRow, selfID int64) admin.UserRow {
+// handle when present. The role label and capability toggle states are derived
+// from the user's capabilities (admin > judge > competitor), never users.role.
+func userRowVD(u db.ListUsersWithCapsRow, selfID int64) admin.UserRow {
 	name := u.DisplayName.String
 	if name == "" {
 		name = emailLocal(u.Email)
@@ -458,15 +483,18 @@ func userRowVD(u db.ListUsersWithCompetitorRow, selfID int64) admin.UserRow {
 		handle = u.Handle.String
 		sub = "@" + handle
 	}
+	caps := splitCaps(u.Caps)
 	return admin.UserRow{
-		ID:      u.ID,
-		Name:    name,
-		Sub:     sub,
-		Email:   u.Email,
-		Created: fullDate(u.CreatedAt),
-		Role:    u.Role,
-		Handle:  handle,
-		IsSelf:  u.ID == selfID,
+		ID:       u.ID,
+		Name:     name,
+		Sub:      sub,
+		Email:    u.Email,
+		Created:  fullDate(u.CreatedAt),
+		RoleText: session.CapsLabel(caps),
+		IsAdmin:  hasCap(caps, "admin"),
+		IsJudge:  hasCap(caps, "judge"),
+		Handle:   handle,
+		IsSelf:   u.ID == selfID,
 	}
 }
 
@@ -501,13 +529,4 @@ func emailLocal(email string) string {
 		return email[:i]
 	}
 	return email
-}
-
-// validRole reports whether role is one the admin may assign.
-func validRole(role string) bool {
-	switch role {
-	case "competitor", "judge", "admin":
-		return true
-	}
-	return false
 }

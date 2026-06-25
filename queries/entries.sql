@@ -89,3 +89,18 @@ LIMIT 1;
 -- Sets the judge on every entry in a trial. Judge assignment is per-entry
 -- in this schema, so assigning a trial judge bulk-updates its entries.
 UPDATE entries SET judge_id = ?, updated_at = CURRENT_TIMESTAMP WHERE trial_id = ?;
+
+-- name: JudgeHandlesEntryInTrial :one
+-- Conflict-of-interest probe for the assign-time advisory: counts entries in
+-- the given trial whose handler (entries.handler_id -> competitors.id) is the
+-- competitor identity owned by the candidate judge's user account
+-- (competitors.user_id). The first ? is the trial id, the second the judge's
+-- user id. A non-zero count means the judge handles at least one dog entered in
+-- that trial. Advisory only — the caller warns but does not block the
+-- assignment.
+SELECT COUNT(*) AS conflicts
+FROM entries e
+JOIN competitors c ON c.id = e.handler_id
+WHERE c.user_id = ?
+  AND e.trial_id = ?
+  AND e.handler_id IS NOT NULL;

@@ -186,6 +186,10 @@ type AssignmentsViewData struct {
 	AssignedJudges int // distinct judges currently assigned (drives Notify)
 	Trials         []AssignTrial
 	Judges         []JudgeOption
+	// COIWarning is a non-blocking conflict-of-interest advisory shown after an
+	// assignment where the assigned judge handles a dog entered in that trial.
+	// Empty when there is no advisory to show. The assignment still succeeded.
+	COIWarning string
 }
 
 // AssignTrial is one trial's assignment row.
@@ -320,14 +324,19 @@ type UserFilter struct {
 	Active bool
 }
 
-// UserRow is one user line with an inline role control.
+// UserRow is one user line with inline capability controls. The displayed
+// label (RoleText) and the toggle states (IsAdmin/IsJudge) are derived from the
+// user's account capabilities, not from users.role. Competitor is the implicit
+// baseline and is not a toggle.
 type UserRow struct {
-	ID      int64
-	Name    string // display name, or email local part
-	Sub     string // "@handle" or role note
-	Email   string
-	Created string
-	Role    string
-	Handle  string // public-profile handle, empty when none
-	IsSelf  bool   // the logged-in admin cannot change their own role
+	ID       int64
+	Name     string // display name, or email local part
+	Sub      string // "@handle" or note
+	Email    string
+	Created  string
+	RoleText string // capability-derived label: "Admin" / "Judge" / "Competitor"
+	IsAdmin  bool   // holds the admin capability
+	IsJudge  bool   // holds the judge capability
+	Handle   string // public-profile handle, empty when none
+	IsSelf   bool   // the logged-in admin (cannot revoke own admin)
 }

@@ -16,8 +16,8 @@ import (
 // currentCompetitor resolves the competitor identity for the logged-in
 // user. When the account has no competitor row (an admin, seeded
 // server-side), it renders the neutral no-profile page and returns
-// ok=false so the caller stops. RequireRole has already guaranteed a
-// logged-in competitor or admin by the time this runs.
+// ok=false so the caller stops. RequireAuth has already guaranteed a
+// logged-in account (the competitor baseline) by the time this runs.
 func currentCompetitor(w http.ResponseWriter, r *http.Request, st *store.Store) (db.Competitor, bool) {
 	u := session.FromContext(r.Context())
 	if u == nil {

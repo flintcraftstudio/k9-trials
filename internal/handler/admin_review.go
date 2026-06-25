@@ -152,14 +152,38 @@ func AdminAssignments(st *store.Store) http.HandlerFunc {
 			http.Error(w, "admin unavailable", http.StatusInternalServerError)
 			return
 		}
-		judges, err := st.AssignableJudges(r.Context())
+		// Eligibility (step 4-A): the judge picker lists accounts holding the
+		// 'judge' (or superset 'admin') capability, from user_roles — NOT the
+		// legacy users.role column. A competitor-role account granted the judge
+		// capability is therefore assignable.
+		judges, err := st.JudgeEligibleUsers(r.Context())
 		if err != nil {
-			slog.Error("assignable judges", "err", err)
+			slog.Error("judge eligible users", "err", err)
 			http.Error(w, "admin unavailable", http.StatusInternalServerError)
 			return
 		}
-		renderPublic(w, r, admin.AssignmentsPage(toAssignmentsVD(r.Context(), st, event, trials, judges)))
+		vd := toAssignmentsVD(r.Context(), st, event, trials, judges)
+		// Non-blocking COI advisory carried across the post-assign redirect:
+		// AdminAssignJudge appends ?coi=<trialID> when the just-assigned judge
+		// handles a dog in that trial. Surface it as a ⚠ banner; the assignment
+		// already went through.
+		if coiTrial, _ := strconv.ParseInt(r.URL.Query().Get("coi"), 10, 64); coiTrial > 0 {
+			vd.COIWarning = coiWarningFor(vd, coiTrial)
+		}
+		renderPublic(w, r, admin.AssignmentsPage(vd))
 	}
+}
+
+// coiWarningFor builds the conflict-of-interest banner message for a trial that
+// was just assigned a judge who handles a dog entered in it. Returns "" when
+// the trial id is not in the view (defensive).
+func coiWarningFor(vd admin.AssignmentsViewData, trialID int64) string {
+	for _, t := range vd.Trials {
+		if t.ID == trialID {
+			return "⚠ Conflict of interest: the assigned judge handles a dog entered in “" + t.Title + "”. The assignment was saved — review before the trial runs."
+		}
+	}
+	return "⚠ Conflict of interest: the assigned judge handles a dog entered in this trial. The assignment was saved — review before the trial runs."
 }
 
 // AdminAssignJudge serves POST /admin/events/{id}/trials/{tid}/judge —
@@ -192,14 +216,56 @@ func AdminAssignJudge(st *store.Store) http.HandlerFunc {
 			return
 		}
 		judgeID, _ := strconv.ParseInt(r.FormValue("judge"), 10, 64)
+		assignmentsURL := "/admin/events/" + strconv.FormatInt(event.ID, 10) + "/assignments"
 		if judgeID > 0 {
+			// Eligibility guard (step 4-A): never write entries.judge_id for an
+			// account that does not hold the judge capability. Admins are a
+			// superset and may also judge. Reject (422) without assigning.
+			eligible, err := st.UserHasCapability(r.Context(), judgeID, "judge")
+			if err != nil {
+				slog.Error("assign judge eligibility", "judge", judgeID, "err", err)
+				http.Error(w, "admin unavailable", http.StatusInternalServerError)
+				return
+			}
+			if !eligible {
+				isAdmin, err := st.UserHasCapability(r.Context(), judgeID, "admin")
+				if err != nil {
+					slog.Error("assign judge eligibility", "judge", judgeID, "err", err)
+					http.Error(w, "admin unavailable", http.StatusInternalServerError)
+					return
+				}
+				eligible = isAdmin
+			}
+			if !eligible {
+				slog.Info("rejected assign of non-judge-eligible account",
+					"trial", trialID, "judge", judgeID)
+				http.Error(w, "That account is not judge-eligible and cannot be assigned.", http.StatusUnprocessableEntity)
+				return
+			}
+
+			// Conflict-of-interest advisory (step 4-B): WARN ONLY. Compute
+			// whether the candidate judge handles a dog entered in this trial,
+			// then proceed with the assignment regardless. The warning is
+			// surfaced on the re-rendered assignments page via ?coi=<trialID>.
+			conflict, err := st.JudgeHandlesEntryInTrial(r.Context(), trialID, judgeID)
+			if err != nil {
+				// A COI probe failure must not block the assignment; log and
+				// treat as no conflict.
+				slog.Error("coi probe", "trial", trialID, "judge", judgeID, "err", err)
+				conflict = false
+			}
+
 			if err := st.AssignTrialJudge(r.Context(), trialID, judgeID); err != nil {
 				slog.Error("assign judge", "trial", trialID, "judge", judgeID, "err", err)
 				http.Error(w, "could not assign judge", http.StatusInternalServerError)
 				return
 			}
+
+			if conflict {
+				assignmentsURL += "?coi=" + strconv.FormatInt(trialID, 10)
+			}
 		}
-		hxRedirect(w, r, "/admin/events/"+strconv.FormatInt(event.ID, 10)+"/assignments")
+		hxRedirect(w, r, assignmentsURL)
 	}
 }
 
@@ -410,7 +476,7 @@ func validChallengeTarget(status string) bool {
 // filter. htmx filter requests receive only the table fragment.
 func AdminUsers(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		rows, err := st.ListUsers(r.Context())
+		rows, err := st.ListUsersWithCaps(r.Context())
 		if err != nil {
 			slog.Error("admin users", "err", err)
 			http.Error(w, "admin unavailable", http.StatusInternalServerError)
@@ -431,9 +497,14 @@ func AdminUsers(st *store.Store) http.HandlerFunc {
 	}
 }
 
-// AdminUserRole serves POST /admin/users/{id}/role — inline role change.
-// An admin cannot change their own role (lockout guard). Returns the
-// re-rendered role control fragment.
+// AdminUserRole serves POST /admin/users/{id}/role — grant or revoke a single
+// account capability. The form carries cap ("judge"|"admin") and action
+// ("grant"|"revoke"); competitor is the universal baseline and is never a
+// toggle. Self-lockout guard: an admin may not revoke their OWN admin
+// capability (that would lock them out of the admin surface) — that specific
+// action is rejected. Other self-edits (e.g. granting/revoking your own judge)
+// are allowed. On success, re-renders the user's capability control fragment so
+// the toggles reflect the new state.
 func AdminUserRole(st *store.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
@@ -442,24 +513,63 @@ func AdminUserRole(st *store.Store) http.HandlerFunc {
 			return
 		}
 		self := session.FromContext(r.Context())
-		if id == self.ID {
-			http.Error(w, "cannot change your own role", http.StatusForbidden)
-			return
-		}
 		if err := r.ParseForm(); err != nil {
 			http.Error(w, "bad request", http.StatusBadRequest)
 			return
 		}
-		role := r.FormValue("role")
-		if !validRole(role) {
-			http.Error(w, "invalid role", http.StatusBadRequest)
+		cap := r.FormValue("cap")
+		if cap != "judge" && cap != "admin" {
+			http.Error(w, "invalid capability", http.StatusBadRequest)
 			return
 		}
-		if err := st.UpdateUserRole(r.Context(), id, role); err != nil {
-			slog.Error("update user role", "user", id, "err", err)
-			http.Error(w, "could not update role", http.StatusInternalServerError)
+		action := r.FormValue("action")
+		if action != "grant" && action != "revoke" {
+			http.Error(w, "invalid action", http.StatusBadRequest)
 			return
 		}
-		renderPublic(w, r, admin.UserRoleControl(admin.UserRow{ID: id, Role: role}))
+
+		// Self-lockout guard: revoking your own admin would remove your access
+		// to this very surface. Reject it specifically.
+		if action == "revoke" && cap == "admin" && id == self.ID {
+			http.Error(w, "you cannot revoke your own Admin capability", http.StatusForbidden)
+			return
+		}
+
+		switch action {
+		case "grant":
+			err = st.GrantCapability(r.Context(), id, cap)
+		case "revoke":
+			err = st.RevokeCapability(r.Context(), id, cap)
+		}
+		if err != nil {
+			slog.Error("update user capability", "user", id, "cap", cap, "action", action, "err", err)
+			http.Error(w, "could not update capability", http.StatusInternalServerError)
+			return
+		}
+
+		caps, err := st.UserCapabilities(r.Context(), id)
+		if err != nil {
+			slog.Error("reload user capabilities", "user", id, "err", err)
+			http.Error(w, "could not load capabilities", http.StatusInternalServerError)
+			return
+		}
+		row := admin.UserRow{
+			ID:       id,
+			IsSelf:   id == self.ID,
+			IsAdmin:  hasCap(caps, "admin"),
+			IsJudge:  hasCap(caps, "judge"),
+			RoleText: session.CapsLabel(caps),
+		}
+		renderPublic(w, r, admin.UserRoleControl(row))
 	}
+}
+
+// hasCap reports whether caps contains the named capability.
+func hasCap(caps []string, name string) bool {
+	for _, c := range caps {
+		if c == name {
+			return true
+		}
+	}
+	return false
 }

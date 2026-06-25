@@ -38,6 +38,11 @@ templ assignmentsActions(d AssignmentsViewData) {
 
 templ assignmentsContent(d AssignmentsViewData) {
 	<div id="notify-result"></div>
+	if d.COIWarning != "" {
+		<div class="card" style="padding:12px 16px;border-color:var(--orange-400);background:var(--orange-50);">
+			<p class="body-sm" style="margin:0;color:var(--orange-800);">{ d.COIWarning }</p>
+		</div>
+	}
 	if len(d.Trials) == 0 {
 		<div class="card flex-col items-start gap-2" style="padding:24px;">
 			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">No trials to assign</div>

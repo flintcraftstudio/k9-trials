@@ -67,7 +67,7 @@ templ usersTable(d UsersViewData) {
 			<span>Display name / @handle</span>
 			<span>Email</span>
 			<span>Created</span>
-			<span>Role</span>
+			<span>Capabilities</span>
 			<span></span>
 		</div>
 		if len(d.Rows) == 0 {
@@ -101,22 +101,44 @@ templ userRow(u UserRow) {
 	</div>
 }
 
-// UserRoleControl is the swappable role cell: a dropdown that posts on
-// change, or static text for the logged-in admin (no self-demotion).
+// UserRoleControl is the swappable capability cell. It shows the user's
+// derived role label plus grant/revoke toggles for the two manageable
+// capabilities — Judge and Admin (competitor is the implicit baseline and is
+// never a toggle). Each toggle htmx-posts cap+action to
+// POST /admin/users/{id}/role and swaps this fragment back in. The logged-in
+// admin's own Admin toggle is suppressed so they cannot lock themselves out.
 templ UserRoleControl(u UserRow) {
-	<div id={ fmt.Sprintf("role-%d", u.ID) } class="flex items-center gap-2">
-		if u.IsSelf {
-			<span class="pill pill-muted">{ u.Role } · you</span>
+	<div id={ fmt.Sprintf("role-%d", u.ID) } class="flex items-center gap-2 flex-wrap">
+		<span class="pill pill-muted">
+			{ u.RoleText }
+			if u.IsSelf {
+				· you
+			}
+		</span>
+		@capToggle(u.ID, "judge", "Judge", u.IsJudge)
+		if u.IsSelf && u.IsAdmin {
+			<span class="pill pill-active" title="You cannot revoke your own Admin capability">Admin</span>
 		} else {
-			<form hx-post={ fmt.Sprintf("/admin/users/%d/role", u.ID) } hx-trigger="change" hx-target={ fmt.Sprintf("#role-%d", u.ID) } hx-swap="outerHTML" style="display:inline;">
-				<select name="role" class="rounded-md border border-mist-200 bg-white px-2 py-1 text-sm text-mist-950">
-					for _, role := range []string{"competitor", "judge", "admin"} {
-						<option value={ role } selected?={ role == u.Role }>{ role }</option>
-					}
-				</select>
-			</form>
+			@capToggle(u.ID, "admin", "Admin", u.IsAdmin)
 		}
 	</div>
+}
+
+// capToggle renders a single grant/revoke control for one capability. When the
+// user already holds the capability the button revokes it (and shows as
+// active); otherwise it grants. Posts cap + action to the role route and swaps
+// the whole capability cell.
+templ capToggle(userID int64, capName, label string, held bool) {
+	<form hx-post={ fmt.Sprintf("/admin/users/%d/role", userID) } hx-target={ fmt.Sprintf("#role-%d", userID) } hx-swap="outerHTML" style="display:inline;">
+		<input type="hidden" name="cap" value={ capName }/>
+		if held {
+			<input type="hidden" name="action" value="revoke"/>
+			<button type="submit" class="pill pill-active" title={ "Revoke " + label }>{ label } ✓</button>
+		} else {
+			<input type="hidden" name="action" value="grant"/>
+			<button type="submit" class="pill pill-muted" title={ "Grant " + label }>+ { label }</button>
+		}
+	</form>
 }
 
 // usersSearchURL is the base hx-get target for the search box; htmx appends
@@ -132,7 +154,7 @@ func usersSearchURL(role string) string {
 // usersGridStyle is the shared grid template for the users table header and
 // rows so columns line up.
 func usersGridStyle() string {
-	return "display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1.3fr) 110px 150px 72px;gap:12px;"
+	return "display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1.1fr) 110px minmax(220px,auto) 72px;gap:12px;"
 }
 
 // usersEmptyMsg distinguishes "no search matches" from "no users in role".

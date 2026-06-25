@@ -276,19 +276,27 @@ type seeder struct {
 
 func (s *seeder) seedUsersAndCompetitors() error {
 	var err error
-	if s.adminID, err = s.st.CreateUser(s.ctx, "admin@example.com", "admin1234", "admin"); err != nil {
+	// Capabilities are additive grants in user_roles; the competitor baseline is
+	// implicit (no row). Create each account, then grant judge/admin where needed.
+	if s.adminID, err = s.st.CreateUser(s.ctx, "admin@example.com", "admin1234"); err != nil {
 		return fmt.Errorf("admin: %w", err)
 	}
+	if err := s.st.GrantCapability(s.ctx, s.adminID, "admin"); err != nil {
+		return fmt.Errorf("grant admin: %w", err)
+	}
 	for _, email := range []string{"judge@example.com", "jpereira@example.com"} {
-		id, err := s.st.CreateUser(s.ctx, email, demoPass, "judge")
+		id, err := s.st.CreateUser(s.ctx, email, demoPass)
 		if err != nil {
 			return fmt.Errorf("judge %s: %w", email, err)
+		}
+		if err := s.st.GrantCapability(s.ctx, id, "judge"); err != nil {
+			return fmt.Errorf("grant judge %s: %w", email, err)
 		}
 		s.user[email] = id
 	}
 
 	for _, c := range competitors {
-		uid, err := s.st.CreateUser(s.ctx, c.email, demoPass, "competitor")
+		uid, err := s.st.CreateUser(s.ctx, c.email, demoPass)
 		if err != nil {
 			return fmt.Errorf("user %s: %w", c.email, err)
 		}

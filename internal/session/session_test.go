@@ -23,7 +23,7 @@ type mockSession struct {
 type mockUser struct {
 	id    int64
 	email string
-	role  string
+	caps  []string
 }
 
 func newMockStore() *mockStore {
@@ -51,16 +51,26 @@ func (m *mockStore) DeleteSession(_ context.Context, token string) error {
 	return nil
 }
 
-func (m *mockStore) GetUserByID(_ context.Context, id int64) (int64, string, string, error) {
+func (m *mockStore) GetUserByID(_ context.Context, id int64) (int64, string, error) {
 	u, ok := m.users[id]
 	if !ok {
-		return 0, "", "", sql.ErrNoRows
+		return 0, "", sql.ErrNoRows
 	}
-	return u.id, u.email, u.role, nil
+	return u.id, u.email, nil
 }
 
-func (m *mockStore) addUser(id int64, email string) {
-	m.users[id] = mockUser{id: id, email: email, role: "admin"}
+func (m *mockStore) UserCapabilities(_ context.Context, id int64) ([]string, error) {
+	u, ok := m.users[id]
+	if !ok {
+		return nil, sql.ErrNoRows
+	}
+	return u.caps, nil
+}
+
+// addUser seeds a user with the given capability grants ('judge'/'admin').
+// The competitor baseline is implicit, so pass no caps for a plain competitor.
+func (m *mockStore) addUser(id int64, email string, caps ...string) {
+	m.users[id] = mockUser{id: id, email: email, caps: caps}
 }
 
 // okHandler returns 200 with the user email if authenticated, or "anonymous".
@@ -325,7 +335,7 @@ func TestFromContext_NilWhenNoUser(t *testing.T) {
 
 func TestRequireAdmin_AllowsAdmin(t *testing.T) {
 	handler := RequireAdmin(okHandler())
-	ctx := withUser(context.Background(), &User{ID: 1, Email: "a@x", Role: "admin"})
+	ctx := withUser(context.Background(), &User{ID: 1, Email: "a@x", Caps: []string{"admin"}})
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil).WithContext(ctx)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
@@ -336,7 +346,19 @@ func TestRequireAdmin_AllowsAdmin(t *testing.T) {
 
 func TestRequireAdmin_ForbidsJudge(t *testing.T) {
 	handler := RequireAdmin(okHandler())
-	ctx := withUser(context.Background(), &User{ID: 2, Email: "j@x", Role: "judge"})
+	ctx := withUser(context.Background(), &User{ID: 2, Email: "j@x", Caps: []string{"judge"}})
+	req := httptest.NewRequest(http.MethodGet, "/admin", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d", rec.Code)
+	}
+}
+
+func TestRequireAdmin_ForbidsCompetitor(t *testing.T) {
+	// A plain competitor (no caps) is blocked from admin surfaces.
+	handler := RequireAdmin(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 3, Email: "c@x"})
 	req := httptest.NewRequest(http.MethodGet, "/admin", nil).WithContext(ctx)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
@@ -355,15 +377,83 @@ func TestRequireAdmin_RedirectsAnonymous(t *testing.T) {
 	}
 }
 
-func TestRequireJudge_AllowsJudgeAndAdmin(t *testing.T) {
-	for _, role := range []string{"judge", "admin"} {
-		handler := RequireJudge(okHandler())
-		ctx := withUser(context.Background(), &User{ID: 1, Email: "x@x", Role: role})
-		req := httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(ctx)
-		rec := httptest.NewRecorder()
-		handler.ServeHTTP(rec, req)
-		if rec.Code != http.StatusOK {
-			t.Fatalf("role %q: expected 200, got %d", role, rec.Code)
-		}
+func TestRequireJudge_AllowsJudge(t *testing.T) {
+	handler := RequireJudge(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 1, Email: "j@x", Caps: []string{"judge"}})
+	req := httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
+	}
+}
+
+// TestRequireJudge_AdminIsSuperset asserts the admin-as-superset rule: an admin
+// account (no explicit "judge" cap) still passes a RequireJudge gate.
+func TestRequireJudge_AdminIsSuperset(t *testing.T) {
+	handler := RequireJudge(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 1, Email: "a@x", Caps: []string{"admin"}})
+	req := httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("admin superset: expected 200, got %d", rec.Code)
+	}
+}
+
+// TestRequireJudge_ForbidsCompetitor confirms a plain competitor (no caps) is
+// blocked from judge surfaces.
+func TestRequireJudge_ForbidsCompetitor(t *testing.T) {
+	handler := RequireJudge(okHandler())
+	ctx := withUser(context.Background(), &User{ID: 2, Email: "c@x"})
+	req := httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(ctx)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("expected 403, got %d", rec.Code)
+	}
+}
+
+// TestJudgeHoldsBaseline confirms a judge account (which also holds the implicit
+// competitor baseline) passes BOTH a judge gate and the RequireAuth competitor
+// gate — the core multi-role guarantee: a judge can enter their own dog.
+func TestJudgeHoldsBaseline(t *testing.T) {
+	u := &User{ID: 1, Email: "judge@x", Caps: []string{"judge"}}
+
+	if !u.IsJudge() {
+		t.Fatal("expected IsJudge() true for judge cap")
+	}
+	if !u.IsCompetitor() {
+		t.Fatal("expected IsCompetitor() true (universal baseline)")
+	}
+
+	// Judge gate passes.
+	jrec := httptest.NewRecorder()
+	jctx := withUser(context.Background(), u)
+	RequireJudge(okHandler()).ServeHTTP(jrec, httptest.NewRequest(http.MethodGet, "/judge", nil).WithContext(jctx))
+	if jrec.Code != http.StatusOK {
+		t.Fatalf("judge gate: expected 200, got %d", jrec.Code)
+	}
+
+	// Competitor (RequireAuth) gate passes too.
+	crec := httptest.NewRecorder()
+	cctx := withUser(context.Background(), u)
+	RequireAuth(okHandler()).ServeHTTP(crec, httptest.NewRequest(http.MethodGet, "/account/dogs", nil).WithContext(cctx))
+	if crec.Code != http.StatusOK {
+		t.Fatalf("competitor gate: expected 200, got %d", crec.Code)
+	}
+}
+
+func TestHas_NilUserAndMembership(t *testing.T) {
+	var nilU *User
+	if nilU.Has("admin") {
+		t.Fatal("nil user must not hold any capability")
+	}
+	u := &User{Caps: []string{"judge"}}
+	if !u.Has("judge") {
+		t.Fatal("expected Has(judge) true")
+	}
+	if u.Has("admin") {
+		t.Fatal("expected Has(admin) false — Has does not apply superset rule")
 	}
 }

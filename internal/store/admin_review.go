@@ -113,9 +113,47 @@ func (s *Store) GetRegistrationDetail(ctx context.Context, regID int64) (db.GetR
 	return s.q.GetRegistrationDetail(ctx, regID)
 }
 
-// AssignableJudges lists users who can judge a trial (judges and admins).
-func (s *Store) AssignableJudges(ctx context.Context) ([]db.ListAssignableJudgesRow, error) {
-	return s.q.ListAssignableJudges(ctx)
+// JudgeEligibleUsers lists the accounts assignable as a trial judge, derived
+// from account capabilities (user_roles): a user is eligible if they hold the
+// 'judge' capability, or 'admin' (a superset that can judge). This replaces the
+// legacy role='judge' lookup so a competitor-role account that has been granted
+// the judge capability is correctly assignable.
+func (s *Store) JudgeEligibleUsers(ctx context.Context) ([]db.ListJudgeEligibleUsersRow, error) {
+	return s.q.ListJudgeEligibleUsers(ctx)
+}
+
+// JudgeHandlesEntryInTrial reports the conflict-of-interest advisory: whether
+// the candidate judge (a users.id) handles any dog entered in the given trial.
+// It is true when the trial has an entry whose handler_id resolves to a
+// competitor row owned by judgeUserID (competitors.user_id = judgeUserID).
+// Advisory only — callers warn but do not block on a conflict.
+func (s *Store) JudgeHandlesEntryInTrial(ctx context.Context, trialID, judgeUserID int64) (bool, error) {
+	n, err := s.q.JudgeHandlesEntryInTrial(ctx, db.JudgeHandlesEntryInTrialParams{
+		UserID:  sql.NullInt64{Int64: judgeUserID, Valid: true},
+		TrialID: trialID,
+	})
+	if err != nil {
+		return false, err
+	}
+	return n > 0, nil
+}
+
+// UserHasCapability reports whether a user holds a specific account capability
+// ('judge'/'admin'). Used to verify a target before assigning them as a judge:
+// only judge-eligible accounts may be written to entries.judge_id. The
+// 'competitor' baseline is implicit and never stored, so it is not testable
+// here (every authenticated account holds it by definition).
+func (s *Store) UserHasCapability(ctx context.Context, userID int64, cap string) (bool, error) {
+	caps, err := s.q.UserCapabilities(ctx, userID)
+	if err != nil {
+		return false, err
+	}
+	for _, c := range caps {
+		if c == cap {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // TrialJudgeID returns the judge id assigned to a trial (via its entries),
@@ -267,13 +305,11 @@ func (s *Store) UpdateChallengeStatus(ctx context.Context, id int64, status, not
 	})
 }
 
-// ListUsers returns every user with their competitor identity (when any),
-// for the users and roles admin (D8).
-func (s *Store) ListUsers(ctx context.Context) ([]db.ListUsersWithCompetitorRow, error) {
-	return s.q.ListUsersWithCompetitor(ctx)
-}
-
-// UpdateUserRole changes a user role.
-func (s *Store) UpdateUserRole(ctx context.Context, userID int64, role string) error {
-	return s.q.UpdateUserRole(ctx, db.UpdateUserRoleParams{Role: role, ID: userID})
+// ListUsersWithCaps returns every user with their competitor identity (when
+// any) and their explicit account capabilities (comma-separated, sorted), for
+// the users and roles admin (D8). The 'competitor' baseline is implicit, so an
+// empty caps string means competitor-only. The display label is derived from
+// caps.
+func (s *Store) ListUsersWithCaps(ctx context.Context) ([]db.ListUsersWithCapsRow, error) {
+	return s.q.ListUsersWithCaps(ctx)
 }

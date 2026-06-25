@@ -42,7 +42,7 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		userID, _, passwordHash, role, err := s.GetUserByEmail(r.Context(), email)
+		userID, _, passwordHash, err := s.GetUserByEmail(r.Context(), email)
 		if err != nil {
 			if err := view.LoginForm("Invalid email or password.", email).Render(r.Context(), w); err != nil {
 				slog.Error("render error", "err", err)
@@ -65,22 +65,28 @@ func LoginSubmit(s *store.Store) http.HandlerFunc {
 			return
 		}
 
-		hxRedirect(w, r, landingFor(role))
+		// Capability load failure falls back to the competitor landing — the
+		// user is authenticated regardless.
+		caps, _ := s.UserCapabilities(r.Context(), userID)
+		hxRedirect(w, r, landingFor(caps))
 	}
 }
 
-// landingFor returns the post-login destination for a user's role. Admins and
-// judges go straight to their work area; competitors land on their account
-// dashboard (U2 spec).
-func landingFor(role string) string {
-	switch role {
-	case "admin":
-		return "/admin"
-	case "judge":
-		return "/judge"
-	default: // competitor
-		return "/account"
+// landingFor returns the post-login destination derived from a user's account
+// capabilities. Admins and judges go straight to their work area; everyone else
+// (the competitor baseline) lands on their account dashboard (U2 spec).
+func landingFor(caps []string) string {
+	for _, c := range caps {
+		if c == "admin" {
+			return "/admin"
+		}
 	}
+	for _, c := range caps {
+		if c == "judge" {
+			return "/judge"
+		}
+	}
+	return "/account"
 }
 
 // Logout handles POST /logout, destroys the session, and redirects.
