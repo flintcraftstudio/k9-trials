@@ -101,7 +101,9 @@ templ submitBody(d SubmitViewData) {
 						</button>
 						<div class="row g8">
 							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
-							<a class="btn btn-primary btn-lg" data-event-tinted href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/locked") }>Lock score</a>
+							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;">
+								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted>Lock score</button>
+							</form>
 						</div>
 					</div>
 				</div>
@@ -129,7 +131,9 @@ templ submitBody(d SubmitViewData) {
 						</button>
 						<div class="row g8">
 							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
-							<a class="btn btn-primary btn-lg" data-event-tinted href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/locked") }>Lock signed score</a>
+							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;">
+								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted>Lock signed score</button>
+							</form>
 						</div>
 					</div>
 				</div>

@@ -235,6 +235,12 @@ func JudgeScore(st *store.Store) http.HandlerFunc {
 		if !guardEntryAuthority(w, r, entry) {
 			return
 		}
+		// A finalized entry is locked — scoring is read-only. Send the judge
+		// to the locked view instead of the editable scoresheet.
+		if entry.Status == entryStatusFinalized {
+			http.Redirect(w, r, lockedURL(entryID), http.StatusSeeOther)
+			return
+		}
 
 		tpl, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)
 		if err != nil {
@@ -244,7 +250,7 @@ func JudgeScore(st *store.Store) http.HandlerFunc {
 		}
 
 		flat := flattenExercises(sheet, result, inputs)
-		exercises, activeIdx := toExercises(flat)
+		exercises, activeIdx := toExercises(flat, r.URL.Query().Get("ex"))
 
 		data := judge.ScoreViewData{
 			Trial:      toTrial(trial, event, u.Email),
@@ -252,6 +258,7 @@ func JudgeScore(st *store.Store) http.HandlerFunc {
 			Discipline: judge.Discipline(trial.Discipline),
 			Exercises:  exercises,
 			ActiveIdx:  activeIdx,
+			TrialNQ:    result.TrialNQ,
 			Score:      float64(result.TotalPoints),
 			ScoreMax:   float64(sheet.MaxPoints),
 			NeedToPass: qualifyingThreshold(tpl, sheet),
@@ -261,7 +268,335 @@ func JudgeScore(st *store.Store) http.HandlerFunc {
 			renderJudge(w, r, judge.DetectionScorePage(data))
 			return
 		}
+		// htmx nav (clicking an exercise / Prev / Next) swaps just the
+		// scoresheet section; a normal request gets the full shell.
+		if r.Header.Get("HX-Request") == "true" {
+			renderJudge(w, r, judge.ObedienceScoreFragment(data))
+			return
+		}
 		renderJudge(w, r, judge.ObedienceScorePage(data))
+	}
+}
+
+// JudgeRecordCriterion records one criterion's point value for the active
+// exercise (B3-O), then re-renders the scoresheet section with updated
+// totals. Storage is append-only; the latest write per (exercise,
+// criterion) wins on read.
+func JudgeRecordCriterion(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := session.FromContext(r.Context())
+		entryID, ok := parseEntryID(r)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		entry, trial, event, err := st.LoadEntryWithTrial(r.Context(), entryID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				notFound(w, r, err)
+				return
+			}
+			slog.Error("judge criterion load", "err", err)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
+			return
+		}
+		if guardLocked(w, r, entry, entryID) {
+			return
+		}
+
+		exerciseCode := r.FormValue("exercise")
+		criterionCode := r.FormValue("criterion")
+		points, perr := strconv.Atoi(r.FormValue("points"))
+		if perr != nil {
+			http.Error(w, "invalid points", http.StatusBadRequest)
+			return
+		}
+
+		// Validate the codes against the template and clamp points to the
+		// criterion's range — the scoring engine only checks code presence,
+		// not point bounds, so the handler is the gatekeeper.
+		tpl, ok := templates.Lookup(
+			scoring.Discipline(trial.Discipline),
+			scoring.Level(trial.Level),
+			trial.TemplateVersion,
+		)
+		if !ok {
+			slog.Error("judge criterion template lookup", "discipline", trial.Discipline, "level", trial.Level)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		maxPts, found := criterionMax(tpl, exerciseCode, criterionCode)
+		if !found {
+			http.Error(w, "unknown criterion", http.StatusBadRequest)
+			return
+		}
+		if points < 0 {
+			points = 0
+		}
+		if points > int(maxPts) {
+			points = int(maxPts)
+		}
+
+		if _, err := st.Q().RecordCriterionScore(r.Context(), db.RecordCriterionScoreParams{
+			EntryID:       entryID,
+			ExerciseCode:  exerciseCode,
+			CriterionCode: criterionCode,
+			Points:        int64(points),
+			JudgedBy:      u.ID,
+		}); err != nil {
+			slog.Error("record criterion score", "err", err)
+			http.Error(w, "could not record score", http.StatusInternalServerError)
+			return
+		}
+		markScoring(r, st, entry)
+
+		tpl, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)
+		if err != nil {
+			slog.Error("judge criterion evaluate", "err", err)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		flat := flattenExercises(sheet, result, inputs)
+		exercises, activeIdx := toExercises(flat, exerciseCode)
+
+		data := judge.ScoreViewData{
+			Trial:      toTrial(trial, event, u.Email),
+			Run:        toRun(entry, ""),
+			Discipline: judge.Discipline(trial.Discipline),
+			Exercises:  exercises,
+			ActiveIdx:  activeIdx,
+			TrialNQ:    result.TrialNQ,
+			Score:      float64(result.TotalPoints),
+			ScoreMax:   float64(sheet.MaxPoints),
+			NeedToPass: qualifyingThreshold(tpl, sheet),
+		}
+		renderJudge(w, r, judge.ObedienceScoreFragment(data))
+	}
+}
+
+// JudgeToggleTrigger flags or clears one auto-NQ trigger on an exercise,
+// then re-renders the scoresheet section. Triggers are boolean in effect,
+// so a second tap on a fired trigger deletes the firing (undo).
+func JudgeToggleTrigger(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		u := session.FromContext(r.Context())
+		entryID, ok := parseEntryID(r)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		entry, trial, event, err := st.LoadEntryWithTrial(r.Context(), entryID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				notFound(w, r, err)
+				return
+			}
+			slog.Error("judge trigger load", "err", err)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
+			return
+		}
+		if guardLocked(w, r, entry, entryID) {
+			return
+		}
+
+		exerciseCode := r.FormValue("exercise")
+		triggerCode := r.FormValue("trigger")
+
+		tpl, ok := templates.Lookup(
+			scoring.Discipline(trial.Discipline),
+			scoring.Level(trial.Level),
+			trial.TemplateVersion,
+		)
+		if !ok {
+			slog.Error("judge trigger template lookup", "discipline", trial.Discipline, "level", trial.Level)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		if !triggerExists(tpl, exerciseCode, triggerCode) {
+			http.Error(w, "unknown trigger", http.StatusBadRequest)
+			return
+		}
+
+		// Toggle: if this trigger is already fired, clear it; otherwise fire it.
+		inputs, err := st.LoadInputsForEntry(r.Context(), entryID)
+		if err != nil {
+			slog.Error("judge trigger load inputs", "err", err)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		alreadyFired := false
+		for _, at := range inputs.AutoTriggers {
+			if at.ExerciseCode == exerciseCode && at.TriggerCode == triggerCode {
+				alreadyFired = true
+				break
+			}
+		}
+		if alreadyFired {
+			if err := st.Q().DeleteAutoTriggerFiring(r.Context(), db.DeleteAutoTriggerFiringParams{
+				EntryID:      entryID,
+				ExerciseCode: exerciseCode,
+				TriggerCode:  triggerCode,
+			}); err != nil {
+				slog.Error("clear auto trigger", "err", err)
+				http.Error(w, "could not update", http.StatusInternalServerError)
+				return
+			}
+		} else {
+			if _, err := st.Q().RecordAutoTriggerFiring(r.Context(), db.RecordAutoTriggerFiringParams{
+				EntryID:      entryID,
+				ExerciseCode: exerciseCode,
+				TriggerCode:  triggerCode,
+				JudgedBy:     u.ID,
+			}); err != nil {
+				slog.Error("record auto trigger", "err", err)
+				http.Error(w, "could not update", http.StatusInternalServerError)
+				return
+			}
+		}
+		markScoring(r, st, entry)
+
+		tpl, sheet, inputs, result, err := loadTemplateAndEvaluate(r, st, trial, entryID)
+		if err != nil {
+			slog.Error("judge trigger evaluate", "err", err)
+			http.Error(w, "scoresheet unavailable", http.StatusInternalServerError)
+			return
+		}
+		flat := flattenExercises(sheet, result, inputs)
+		exercises, activeIdx := toExercises(flat, exerciseCode)
+
+		data := judge.ScoreViewData{
+			Trial:      toTrial(trial, event, u.Email),
+			Run:        toRun(entry, ""),
+			Discipline: judge.Discipline(trial.Discipline),
+			Exercises:  exercises,
+			ActiveIdx:  activeIdx,
+			TrialNQ:    result.TrialNQ,
+			Score:      float64(result.TotalPoints),
+			ScoreMax:   float64(sheet.MaxPoints),
+			NeedToPass: qualifyingThreshold(tpl, sheet),
+		}
+		renderJudge(w, r, judge.ObedienceScoreFragment(data))
+	}
+}
+
+// JudgeFinalize locks an entry: it writes status=finalized (idempotent) and
+// redirects to the read-only locked view. Once finalized, the scoring routes
+// refuse edits (see guardLocked).
+func JudgeFinalize(st *store.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		entryID, ok := parseEntryID(r)
+		if !ok {
+			http.NotFound(w, r)
+			return
+		}
+		entry, _, _, err := st.LoadEntryWithTrial(r.Context(), entryID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				notFound(w, r, err)
+				return
+			}
+			slog.Error("judge finalize load", "err", err)
+			http.Error(w, "could not finalize", http.StatusInternalServerError)
+			return
+		}
+		if !guardEntryAuthority(w, r, entry) {
+			return
+		}
+		if entry.Status != entryStatusFinalized {
+			if _, err := st.Q().UpdateEntryStatus(r.Context(), db.UpdateEntryStatusParams{
+				Status: entryStatusFinalized,
+				ID:     entryID,
+			}); err != nil {
+				slog.Error("finalize entry", "err", err)
+				http.Error(w, "could not finalize", http.StatusInternalServerError)
+				return
+			}
+		}
+		http.Redirect(w, r, lockedURL(entryID), http.StatusSeeOther)
+	}
+}
+
+// criterionMax returns the MaxPoints for a (exercise, criterion) pair in
+// the template, and whether the pair exists.
+func criterionMax(tpl scoring.ScoresheetTemplate, exerciseCode, criterionCode string) (scoring.Points, bool) {
+	for _, ph := range tpl.Phases {
+		for _, ex := range ph.Exercises {
+			if ex.Code != exerciseCode {
+				continue
+			}
+			for _, c := range ex.Criteria {
+				if c.Code == criterionCode {
+					return c.MaxPoints, true
+				}
+			}
+		}
+	}
+	return 0, false
+}
+
+// triggerExists reports whether triggerCode is a valid AutoTrigger on the
+// named exercise in the template.
+func triggerExists(tpl scoring.ScoresheetTemplate, exerciseCode, triggerCode string) bool {
+	for _, ph := range tpl.Phases {
+		for _, ex := range ph.Exercises {
+			if ex.Code != exerciseCode {
+				continue
+			}
+			for _, at := range ex.AutoTriggers {
+				if at.Code == triggerCode {
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+// Entry life-cycle states written by the judge scoring flow.
+const (
+	entryStatusScoring   = "scoring"
+	entryStatusFinalized = "finalized"
+)
+
+// lockedURL is the read-only locked view for an entry.
+func lockedURL(entryID int64) string {
+	return "/judge/entry/" + strconv.FormatInt(entryID, 10) + "/locked"
+}
+
+// guardLocked stops edits to a finalized entry. It returns true (and steers
+// the client to the locked view) when the entry is locked, so callers should
+// `return` immediately. htmx callers get an HX-Redirect; others a 303.
+func guardLocked(w http.ResponseWriter, r *http.Request, entry db.Entry, entryID int64) bool {
+	if entry.Status != entryStatusFinalized {
+		return false
+	}
+	url := lockedURL(entryID)
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("HX-Redirect", url)
+		w.WriteHeader(http.StatusOK)
+	} else {
+		http.Redirect(w, r, url, http.StatusSeeOther)
+	}
+	return true
+}
+
+// markScoring advances a not-yet-started entry to "scoring" on first input.
+// Best-effort: a failure is logged but does not block the score write.
+func markScoring(r *http.Request, st *store.Store, entry db.Entry) {
+	if entry.Status == entryStatusScoring || entry.Status == entryStatusFinalized {
+		return
+	}
+	if _, err := st.Q().UpdateEntryStatus(r.Context(), db.UpdateEntryStatusParams{
+		Status: entryStatusScoring,
+		ID:     entry.ID,
+	}); err != nil {
+		slog.Error("mark entry scoring", "err", err, "entry", entry.ID)
 	}
 }
 

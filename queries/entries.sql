@@ -96,7 +96,7 @@ UPDATE entries SET judge_id = ?, updated_at = CURRENT_TIMESTAMP WHERE trial_id =
 -- competitor identity owned by the candidate judge's user account
 -- (competitors.user_id). The first ? is the trial id, the second the judge's
 -- user id. A non-zero count means the judge handles at least one dog entered in
--- that trial. Advisory only — the caller warns but does not block the
+-- that trial. Advisory only - the caller warns but does not block the
 -- assignment.
 SELECT COUNT(*) AS conflicts
 FROM entries e

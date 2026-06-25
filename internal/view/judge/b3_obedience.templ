@@ -3,13 +3,19 @@ package judge
 import "fmt"
 
 // ObedienceScorePage is the two-pane obedience scoresheet (B3-O).
-// Left: exercise nav rail. Right: active exercise with numpad + deductions.
+// Left: exercise nav rail. Right: active exercise with per-criterion entry.
 templ ObedienceScorePage(d ScoreViewData) {
 	@shell("Score · "+d.Run.DogName, d.Discipline.EventKey(), obedienceBody(d))
 }
 
+// ObedienceScoreFragment renders just the scoresheet section, for htmx
+// swaps when the judge navigates between exercises or records a criterion.
+templ ObedienceScoreFragment(d ScoreViewData) {
+	@obedienceBody(d)
+}
+
 templ obedienceBody(d ScoreViewData) {
-	<section class="judge-screen">
+	<section id="scoresheet" class="judge-screen" hx-target="this" hx-swap="outerHTML">
 		<div class="appbar event-rail">
 			<div class="a-left">
 				<a class="btn btn-ghost" href="/judge" style="padding:5px 10px;">← Queue</a>
@@ -38,6 +44,12 @@ templ obedienceBody(d ScoreViewData) {
 			</div>
 		</div>
 
+		if d.TrialNQ {
+			<div class="nq-banner">
+				<strong>Trial NQ</strong> — a trial-level trigger has fired. The whole run is non-qualifying regardless of points.
+			</div>
+		}
+
 		<div class="row f1" style="min-height:520px;">
 			<!-- Exercise nav rail -->
 			<div class="col" style="width:36%; background:var(--mist-50); border-right:1px solid var(--color-divider); overflow-y:auto;">
@@ -46,7 +58,7 @@ templ obedienceBody(d ScoreViewData) {
 					<span>{ itoa(countScored(d.Exercises)) }/{ itoa(len(d.Exercises)) } scored</span>
 				</div>
 				for i, ex := range d.Exercises {
-					@obNavRow(i, ex, d.ActiveIdx, d.Discipline.EventKey())
+					@obNavRow(i, ex, d.ActiveIdx, d.Discipline.EventKey(), d.Run.ID)
 				}
 			</div>
 
@@ -54,29 +66,41 @@ templ obedienceBody(d ScoreViewData) {
 			<div class="col f1">
 				<div class="col p16 g10 f1 scroll-y" style="min-height:0;">
 					if active := activeExercise(d); active != nil {
-						@obActivePane(*active, d.ActiveIdx, len(d.Exercises))
+						@obActivePane(*active, d.ActiveIdx, len(d.Exercises), d.Run.ID)
 					}
 				</div>
 				<div class="row between" style="padding:12px 16px; border-top:1px solid var(--color-divider); background:var(--mist-50);">
-					<button class="btn btn-soft">← Prev exercise</button>
-					<button class="btn btn-primary" data-event-tinted>Next exercise →</button>
+					if prev := navCode(d, -1); prev != "" {
+						<button class="btn btn-soft" hx-get={ scoreURL(d.Run.ID, prev) }>← Prev exercise</button>
+					} else {
+						<button class="btn btn-soft" disabled>← Prev exercise</button>
+					}
+					if next := navCode(d, 1); next != "" {
+						<button class="btn btn-primary" data-event-tinted hx-get={ scoreURL(d.Run.ID, next) }>Next exercise →</button>
+					} else {
+						<button class="btn btn-primary" data-event-tinted disabled>Next exercise →</button>
+					}
 				</div>
 			</div>
 		</div>
 	</section>
 }
 
-templ obNavRow(i int, ex Exercise, activeIdx int, eventKey string) {
+templ obNavRow(i int, ex Exercise, activeIdx int, eventKey, entryID string) {
 	if i == activeIdx {
-		<div class="row between event-rail" data-event={ eventKey } style="padding:11px 12px; align-items:center; background:var(--event-50);">
+		<a href={ templ.SafeURL(scoreURL(entryID, ex.Code)) } hx-get={ scoreURL(entryID, ex.Code) } class="row between event-rail nav-row" data-event={ eventKey } style="padding:11px 12px; align-items:center; background:var(--event-50); text-decoration:none; color:inherit;">
 			<div class="row g8 items-center">
 				<span class="row-prog"><i class="on" style="background:var(--event-600);"></i></span>
 				<span class="bold" style="font-size:12.5px;">{ itoa(ex.Num) } · { ex.Name }</span>
 			</div>
-			<span class="tabular bold" style="font-size:12px;">{ fnum(ex.Score) }</span>
-		</div>
+			if ex.NQ {
+				<span class="nq-tag">NQ</span>
+			} else {
+				<span class="tabular bold" style="font-size:12px;">{ fnum(ex.Score) }</span>
+			}
+		</a>
 	} else {
-		<div class="row between" style="padding:9px 12px; align-items:center;">
+		<a href={ templ.SafeURL(scoreURL(entryID, ex.Code)) } hx-get={ scoreURL(entryID, ex.Code) } class="row between nav-row" style="padding:9px 12px; align-items:center; text-decoration:none; color:inherit; cursor:pointer;">
 			<div class="row g8 items-center">
 				<span class="row-prog">
 					if ex.Scored {
@@ -89,63 +113,56 @@ templ obNavRow(i int, ex Exercise, activeIdx int, eventKey string) {
 					{ itoa(ex.Num) } · { ex.Name }
 				</span>
 			</div>
-			if ex.Scored {
+			if ex.NQ {
+				<span class="nq-tag">NQ</span>
+			} else if ex.Scored {
 				<span class="tabular muted" style="font-size:12px;">{ fnum(ex.Score) }</span>
 			} else {
 				<span class="muted" style="font-size:12px;">—</span>
 			}
-		</div>
+		</a>
 	}
 }
 
-templ obActivePane(ex Exercise, idx, total int) {
+templ obActivePane(ex Exercise, idx, total int, entryID string) {
 	<div class="row between" style="align-items:flex-start;">
 		<div class="col g4">
 			<span class="eyebrow">Exercise { itoa(idx + 1) } of { itoa(total) } · { fnum(ex.Max) } points</span>
 			<div class="serif" style="font-size:26px; line-height:1.05;">{ ex.Name }</div>
 		</div>
-		<span class="pill inprog">scoring now</span>
-	</div>
-
-	<div class="row g16" style="align-items:flex-start;">
-		<div class="col g6" style="width:140px;">
-			<span class="eyebrow muted">Score</span>
+		<div class="col g4" style="align-items:flex-end;">
+			if ex.NQ {
+				<span class="pill nq">{ ex.NQReason }</span>
+			} else {
+				<span class="pill inprog">scoring now</span>
+			}
 			<div class="row g6 items-baseline">
-				<span class="serif tabular" style="font-size:54px; line-height:1;">{ fnum(ex.Score) }</span>
+				<span class="serif tabular" style="font-size:40px; line-height:1;">{ fnum(ex.Score) }</span>
 				<span class="muted" style="font-size:12px;">/ { fnum(ex.Max) }</span>
 			</div>
-			<span class="muted" style="font-size:11px;">{ fnum(ex.Max) } − { fnumSigned(ex.Max - ex.Score) } deductions</span>
-		</div>
-		<div class="col f1 g4">
-			<span class="eyebrow muted">Tap to enter</span>
-			<div class="numpad">
-				for _, opt := range scoreOptions(ex.Max) {
-					if opt == ex.Score {
-						<button class="active">{ fnum(opt) }</button>
-					} else {
-						<button>{ fnum(opt) }</button>
-					}
-				}
-				<button class="alt">⌫</button>
-			</div>
 		</div>
 	</div>
 
-	if len(ex.Deductions) > 0 {
+	<div class="col g8">
+		<span class="eyebrow muted">Tap a value for each criterion</span>
+		for _, c := range ex.Criteria {
+			@obCriterionRow(c, ex.Code, entryID)
+		}
+	</div>
+
+	if len(ex.Triggers) > 0 {
 		<div class="col g6">
 			<div class="row between">
-				<span class="eyebrow muted">Deductions · catalog</span>
-				<span class="muted" style="font-size:11px;">Tap to apply</span>
+				<span class="eyebrow muted">Non-qualifying triggers</span>
+				<span class="muted" style="font-size:11px;">Tap to flag · tap again to undo</span>
 			</div>
 			<div class="row wrap g6">
-				for _, ded := range ex.Deductions {
-					@dedChip(ded)
+				for _, t := range ex.Triggers {
+					@nqChip(t, ex.Code, entryID)
 				}
-				<span class="ded-chip add">+ custom…</span>
 			</div>
 			<div class="muted" style="font-size:11px; padding-top:2px;">
-				<span style="color:var(--orange-700);">●</span>
-				&nbsp;Recently used at this trial — appears as a quick-add chip so judges don't retype.
+				Scope: <strong>exercise</strong> zeroes this exercise · <strong>phase</strong> zeroes the whole phase · <strong>trial</strong> NQs the entire run.
 			</div>
 		</div>
 	}
@@ -205,6 +222,49 @@ templ voiceNote(v VoiceNote) {
 	</div>
 }
 
+// obCriterionRow renders one criterion with a 0..Max button ladder.
+// Tapping a value posts it for the active exercise; the whole scoresheet
+// section is swapped back in with updated totals.
+templ obCriterionRow(c Criterion, exCode, entryID string) {
+	<div class="row between g8 items-center" style="padding:7px 0; border-bottom:1px solid var(--color-divider);">
+		<div class="col g2" style="flex:1; min-width:0;">
+			<span style="font-size:12.5px; line-height:1.25;">{ c.Desc }</span>
+			<span class="eyebrow muted">{ c.Code } · max { itoa(c.Max) }</span>
+		</div>
+		<div class="row g4 wrap" style="justify-content:flex-end;">
+			for _, p := range intRange(c.Max) {
+				if c.Scored && p == c.Points {
+					<button
+						class="crit-btn active"
+						hx-post={ scoreCriterionURL(entryID) }
+						hx-vals={ critVals(exCode, c.Code, p) }
+					>{ itoa(p) }</button>
+				} else {
+					<button
+						class="crit-btn"
+						hx-post={ scoreCriterionURL(entryID) }
+						hx-vals={ critVals(exCode, c.Code, p) }
+					>{ itoa(p) }</button>
+				}
+			}
+		</div>
+	</div>
+}
+
+// nqChip renders one auto-NQ trigger as a toggle. Fired triggers show
+// highlighted with a ✓; tapping again clears the firing (undo).
+templ nqChip(t Trigger, exCode, entryID string) {
+	if t.Fired {
+		<button class="nq-chip fired" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
+			{ t.Desc } <span class="nq-scope">{ t.Scope }</span> ✓
+		</button>
+	} else {
+		<button class="nq-chip" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
+			{ t.Desc } <span class="nq-scope">{ t.Scope }</span>
+		</button>
+	}
+}
+
 // --- helpers ---
 
 func countScored(xs []Exercise) int {
@@ -224,18 +284,48 @@ func activeExercise(d ScoreViewData) *Exercise {
 	return &d.Exercises[d.ActiveIdx]
 }
 
-// scoreOptions returns the 10..0 ladder for a max-10 exercise in half-point
-// steps, mirroring the panel's 5-column numpad layout (10, 9.5, 9, 8.5, 8 …).
-func scoreOptions(max float64) []float64 {
-	if max <= 0 {
-		return nil
-	}
-	step := 0.5
-	out := make([]float64, 0, int(max/step)+1)
-	for v := max; v >= 6; v -= step {
-		out = append(out, v)
+// intRange returns 0..n inclusive, for rendering a criterion's value ladder.
+func intRange(n int) []int {
+	out := make([]int, 0, n+1)
+	for i := 0; i <= n; i++ {
+		out = append(out, i)
 	}
 	return out
+}
+
+// scoreURL builds the GET URL to view a specific exercise's scoresheet.
+func scoreURL(entryID, exCode string) string {
+	return "/judge/entry/" + entryID + "/score?ex=" + exCode
+}
+
+// scoreCriterionURL builds the POST URL for recording a criterion score.
+func scoreCriterionURL(entryID string) string {
+	return "/judge/entry/" + entryID + "/score/criterion"
+}
+
+// scoreTriggerURL builds the POST URL for toggling an auto-NQ trigger.
+func scoreTriggerURL(entryID string) string {
+	return "/judge/entry/" + entryID + "/score/trigger"
+}
+
+// critVals builds the htmx hx-vals JSON payload for a criterion tap.
+func critVals(exCode, critCode string, points int) string {
+	return fmt.Sprintf(`{"exercise":%q,"criterion":%q,"points":%d}`, exCode, critCode, points)
+}
+
+// trigVals builds the htmx hx-vals JSON payload for an auto-NQ trigger toggle.
+func trigVals(exCode, trigCode string) string {
+	return fmt.Sprintf(`{"exercise":%q,"trigger":%q}`, exCode, trigCode)
+}
+
+// navCode returns the exercise code dir steps away from the active one
+// (dir −1 = previous, +1 = next), or "" when at an edge.
+func navCode(d ScoreViewData, dir int) string {
+	target := d.ActiveIdx + dir
+	if target < 0 || target >= len(d.Exercises) {
+		return ""
+	}
+	return d.Exercises[target].Code
 }
 
 func obNavLabelStyle(scored bool) string {
