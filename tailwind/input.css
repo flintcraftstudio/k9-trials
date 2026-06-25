@@ -35,3 +35,84 @@
   border-color: var(--mist-950);
 }
 .pill-choice:has(input:focus-visible) { outline: 2px solid var(--blue-600); outline-offset: 1px; }
+
+/*
+  Per-criterion score ladder (B3-O active pane). Square tappable 0..max
+  buttons sized for tablet touch, mirroring .numpad button but laid out
+  inline per criterion row. .active marks the current value.
+*/
+.crit-btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 10px;
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 9px;
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--mist-950);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out);
+}
+.crit-btn:hover { background: var(--mist-50); }
+.crit-btn.active {
+  background: var(--mist-950);
+  color: #fff;
+  border-color: var(--mist-950);
+}
+
+/* Exercise nav rail rows are clickable; give touch/hover affordance. */
+.nav-row { cursor: pointer; transition: background var(--duration-fast) var(--ease-out); }
+.nav-row:hover { background: var(--mist-100); }
+
+/*
+  Auto-NQ trigger chips (B3-O active pane). Tap to flag a non-qualifying
+  trigger; fired chips invert to a red state. Toggle again to undo.
+*/
+.nq-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid var(--color-border-strong, var(--mist-300));
+  font-size: 12px;
+  color: var(--mist-800);
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+.nq-chip:hover { border-color: var(--orange-400); }
+.nq-chip.fired {
+  background: var(--orange-600);
+  border-color: var(--orange-600);
+  color: #fff;
+  font-weight: 600;
+}
+.nq-scope {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+}
+
+/* NQ tag in the nav rail; NQ banner across the top when a trial trigger fires. */
+.nq-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: var(--orange-600);
+  padding: 2px 7px;
+  border-radius: 9999px;
+}
+.nq-banner {
+  padding: 9px 16px;
+  background: var(--orange-100);
+  color: var(--orange-900);
+  border-bottom: 1px solid var(--orange-300);
+  font-size: 12.5px;
+}

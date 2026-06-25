@@ -10,7 +10,7 @@ WHERE id = ?;
 
 -- name: CreateUser :one
 -- Creates a new account at the competitor baseline. Capabilities ('judge' /
--- 'admin') are additive grants stored in user_roles — never a column here — so
+-- 'admin') are additive grants stored in user_roles - never a column here - so
 -- a fresh account holds no explicit capability until one is granted.
 INSERT INTO users (email, password_hash)
 VALUES (?, ?)

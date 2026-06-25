@@ -34,6 +34,13 @@ SELECT * FROM auto_trigger_firings
 WHERE entry_id = ?
 ORDER BY created_at;
 
+-- name: DeleteAutoTriggerFiring :exec
+-- Removes all firings of one trigger on one exercise. Auto-NQ triggers are
+-- boolean in effect (fired or not), so the judge toggles them off by deleting
+-- the firing rows rather than appending a counter-record.
+DELETE FROM auto_trigger_firings
+WHERE entry_id = ? AND exercise_code = ? AND trigger_code = ?;
+
 -- name: RecordModifierApplication :one
 INSERT INTO modifier_applications (entry_id, modifier_code, judged_by)
 VALUES (?, ?, ?)

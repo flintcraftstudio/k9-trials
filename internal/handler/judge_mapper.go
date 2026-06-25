@@ -171,7 +171,41 @@ type flattenedExercise struct {
 	Name     string
 	MaxPts   scoring.Points
 	Result   scoring.ExerciseResult
-	HasInput bool // any criterion/penalty/trigger logged against this code
+	HasInput bool                 // any criterion/penalty/trigger logged against this code
+	Criteria []flattenedCriterion // per-criterion rows (CriteriaSum exercises)
+	Triggers []flattenedTrigger   // auto-NQ triggers with fired state
+	NQ       bool                 // score forced to 0 by a fired trigger (own or phase)
+	NQReason string
+}
+
+// flattenedCriterion is one criterion of a CriteriaSum exercise with its
+// current judge-entered value projected from the append-only inputs.
+type flattenedCriterion struct {
+	Code   string
+	Desc   string
+	Max    scoring.Points
+	Points scoring.Points
+	Scored bool
+}
+
+// flattenedTrigger is one auto-NQ trigger with whether it has fired.
+type flattenedTrigger struct {
+	Code  string
+	Desc  string
+	Scope string // "exercise" | "phase" | "trial"
+	Fired bool
+}
+
+// scopeStr renders an AutoTriggerScope as a short view-facing label.
+func scopeStr(s scoring.AutoTriggerScope) string {
+	switch s {
+	case scoring.AutoNQPhase:
+		return "phase"
+	case scoring.AutoNQTrial:
+		return "trial"
+	default:
+		return "exercise"
+	}
 }
 
 func flattenExercises(
@@ -184,14 +218,41 @@ func flattenExercises(
 		resultsByCode[r.ExerciseCode] = r
 	}
 	hasInputByCode := make(map[string]bool)
+	// pointsByCriterion is the latest-write-wins projection keyed by
+	// (exerciseCode, criterionCode); the store loader already collapses
+	// the append-only rows, so a present key means the criterion was scored.
+	pointsByCriterion := make(map[string]map[string]scoring.Points)
 	for _, cs := range inputs.CriterionScores {
 		hasInputByCode[cs.ExerciseCode] = true
+		if pointsByCriterion[cs.ExerciseCode] == nil {
+			pointsByCriterion[cs.ExerciseCode] = make(map[string]scoring.Points)
+		}
+		pointsByCriterion[cs.ExerciseCode][cs.CriterionCode] = cs.Points
 	}
 	for _, po := range inputs.PenaltyOccurrences {
 		hasInputByCode[po.ExerciseCode] = true
 	}
+	// firedTriggers[exerciseCode][triggerCode] = true for any logged firing.
+	firedTriggers := make(map[string]map[string]bool)
 	for _, at := range inputs.AutoTriggers {
 		hasInputByCode[at.ExerciseCode] = true
+		if firedTriggers[at.ExerciseCode] == nil {
+			firedTriggers[at.ExerciseCode] = make(map[string]bool)
+		}
+		firedTriggers[at.ExerciseCode][at.TriggerCode] = true
+	}
+
+	// A phase is NQ'd when any phase-scoped trigger inside it has fired;
+	// the engine then zeroes every exercise in that phase.
+	phaseNQ := make(map[string]bool)
+	for _, ph := range sheet.Phases {
+		for _, ex := range ph.Exercises {
+			for _, at := range ex.AutoTriggers {
+				if at.Scope == scoring.AutoNQPhase && firedTriggers[ex.Code][at.Code] {
+					phaseNQ[ph.Code] = true
+				}
+			}
+		}
 	}
 
 	out := make([]flattenedExercise, 0)
@@ -204,6 +265,39 @@ func flattenExercises(
 				continue
 			}
 			n++
+			crits := make([]flattenedCriterion, 0, len(ex.Criteria))
+			for _, c := range ex.Criteria {
+				pts, scored := pointsByCriterion[ex.Code][c.Code]
+				crits = append(crits, flattenedCriterion{
+					Code:   c.Code,
+					Desc:   c.Description,
+					Max:    c.MaxPoints,
+					Points: pts,
+					Scored: scored,
+				})
+			}
+			trigs := make([]flattenedTrigger, 0, len(ex.AutoTriggers))
+			exNQ := false
+			reason := ""
+			for _, at := range ex.AutoTriggers {
+				fired := firedTriggers[ex.Code][at.Code]
+				trigs = append(trigs, flattenedTrigger{
+					Code:  at.Code,
+					Desc:  at.Description,
+					Scope: scopeStr(at.Scope),
+					Fired: fired,
+				})
+				if fired && at.Scope == scoring.AutoNQExercise {
+					exNQ = true
+					reason = "NQ — " + at.Description
+				}
+			}
+			if phaseNQ[ph.Code] {
+				exNQ = true
+				if reason == "" {
+					reason = "Phase NQ"
+				}
+			}
 			out = append(out, flattenedExercise{
 				Num:      n,
 				Code:     ex.Code,
@@ -211,31 +305,68 @@ func flattenExercises(
 				MaxPts:   ex.MaxPoints,
 				Result:   resultsByCode[ex.Code],
 				HasInput: hasInputByCode[ex.Code],
+				Criteria: crits,
+				Triggers: trigs,
+				NQ:       exNQ,
+				NQReason: reason,
 			})
 		}
 	}
 	return out
 }
 
-// toExercises produces the B3-O scoresheet exercise list. The "active"
-// exercise is the first one with no inputs (judge's natural cursor); if
-// every exercise has inputs, the active row stays on the first.
-func toExercises(flat []flattenedExercise) ([]judge.Exercise, int) {
+// toExercises produces the B3-O scoresheet exercise list. When activeCode
+// names an exercise, that one is the active cursor (the judge navigated to
+// it or just scored a criterion on it). Otherwise the active exercise is
+// the first one with no inputs; if every exercise has inputs, it stays on
+// the first.
+func toExercises(flat []flattenedExercise, activeCode string) ([]judge.Exercise, int) {
 	out := make([]judge.Exercise, len(flat))
 	activeIdx := 0
 	pickedActive := false
+	requestedIdx := -1
 	for i, fx := range flat {
+		crits := make([]judge.Criterion, 0, len(fx.Criteria))
+		for _, c := range fx.Criteria {
+			crits = append(crits, judge.Criterion{
+				Code:   c.Code,
+				Desc:   c.Desc,
+				Max:    int(c.Max),
+				Points: int(c.Points),
+				Scored: c.Scored,
+			})
+		}
+		trigs := make([]judge.Trigger, 0, len(fx.Triggers))
+		for _, t := range fx.Triggers {
+			trigs = append(trigs, judge.Trigger{
+				Code:  t.Code,
+				Desc:  t.Desc,
+				Scope: t.Scope,
+				Fired: t.Fired,
+			})
+		}
 		out[i] = judge.Exercise{
-			Num:    fx.Num,
-			Name:   fx.Name,
-			Max:    float64(fx.MaxPts),
-			Score:  float64(fx.Result.Points),
-			Scored: fx.HasInput,
+			Num:      fx.Num,
+			Code:     fx.Code,
+			Name:     fx.Name,
+			Max:      float64(fx.MaxPts),
+			Score:    float64(fx.Result.Points),
+			Scored:   fx.HasInput,
+			Criteria: crits,
+			Triggers: trigs,
+			NQ:       fx.NQ,
+			NQReason: fx.NQReason,
+		}
+		if activeCode != "" && fx.Code == activeCode {
+			requestedIdx = i
 		}
 		if !pickedActive && !fx.HasInput {
 			activeIdx = i
 			pickedActive = true
 		}
+	}
+	if requestedIdx >= 0 {
+		activeIdx = requestedIdx
 	}
 	if len(out) > 0 {
 		out[activeIdx].Active = true

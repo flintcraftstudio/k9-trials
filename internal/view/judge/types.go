@@ -102,14 +102,39 @@ type Run struct {
 // Exercise is one row inside a scoresheet.
 type Exercise struct {
 	Num         int
+	Code        string // stable rulebook code, e.g. "1.1" — used for nav + scoring posts
 	Name        string
 	Max         float64
 	Score       float64 // -1 sentinel for unscored
 	Scored      bool
 	Active      bool
-	DeductLabel string // e.g. "anticipated −0.5", surfaces on B4/B6
+	Criteria    []Criterion // per-criterion entry rows for the active pane
+	Triggers    []Trigger   // auto-NQ triggers available on this exercise
+	NQ          bool        // exercise score forced to 0 by a fired trigger (own or phase)
+	NQReason    string      // human-readable cause, e.g. "NQ — Dog leaves the field"
+	DeductLabel string      // e.g. "anticipated −0.5", surfaces on B4/B6
 	Deductions  []Deduction
 	Voice       *VoiceNote
+}
+
+// Trigger is one auto-NQ trigger the judge can flag against an exercise.
+// Scope is "exercise" (zeroes this exercise), "phase" (zeroes the whole
+// phase), or "trial" (NQs the entire run).
+type Trigger struct {
+	Code  string
+	Desc  string
+	Scope string
+	Fired bool
+}
+
+// Criterion is one scored line within a CriteriaSum exercise. The judge
+// taps a value 0..Max; the exercise score is the sum across criteria.
+type Criterion struct {
+	Code   string // e.g. "1.1.a"
+	Desc   string // judge-facing description
+	Max    int    // whole points
+	Points int    // current value (0 when unscored)
+	Scored bool   // an input row exists for this criterion
 }
 
 // Deduction is one applied or available deduction in the catalog.
@@ -191,7 +216,8 @@ type ScoreViewData struct {
 
 	// Obedience two-pane state
 	Exercises  []Exercise
-	ActiveIdx  int // 0-based, references Exercises
+	ActiveIdx  int  // 0-based, references Exercises
+	TrialNQ    bool // a trial-scoped trigger fired — the whole run is NQ
 	Score      float64
 	ScoreMax   float64
 	NeedToPass float64

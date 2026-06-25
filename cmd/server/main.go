@@ -190,8 +190,11 @@ func main() {
 	mux.Handle("GET /judge", session.RequireJudge(handler.JudgeQueue(st)))
 	mux.Handle("GET /judge/entry/{id}/gate", session.RequireJudge(handler.JudgeGate(st)))
 	mux.Handle("GET /judge/entry/{id}/score", session.RequireJudge(handler.JudgeScore(st)))
+	mux.Handle("POST /judge/entry/{id}/score/criterion", session.RequireJudge(handler.JudgeRecordCriterion(st)))
+	mux.Handle("POST /judge/entry/{id}/score/trigger", session.RequireJudge(handler.JudgeToggleTrigger(st)))
 	mux.Handle("GET /judge/entry/{id}/review", session.RequireJudge(handler.JudgeReview(st)))
 	mux.Handle("GET /judge/entry/{id}/submit", session.RequireJudge(handler.JudgeSubmit(st)))
+	mux.Handle("POST /judge/entry/{id}/finalize", session.RequireJudge(handler.JudgeFinalize(st)))
 	mux.Handle("GET /judge/entry/{id}/locked", session.RequireJudge(handler.JudgeLocked(st)))
 
 	// Admin — events, trials, registrations, challenges, users
