@@ -57,12 +57,12 @@ templ filterChip(f DisciplineFilter) {
 // Carries id="event-grid" so the filter chips can target it.
 templ EventGridFragment(d ListViewData) {
 	if len(d.Events) == 0 {
-		<div id="event-grid" class="card flex-col items-start gap-3" style="padding:32px;">
+		<div id="event-grid" class="card flex-col items-start gap-3" style="padding:32px;" aria-live="polite">
 			<div class="eyebrow">No events</div>
 			<p class="body" style="margin:0;">No published events match this filter yet. Check back soon — or clear the filter to see everything.</p>
 		</div>
 	} else {
-		<div id="event-grid" class="grid grid-cols-2 gap-4">
+		<div id="event-grid" class="grid grid-cols-2 gap-4" aria-live="polite">
 			for _, e := range d.Events {
 				@eventCard(e)
 			}

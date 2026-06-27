@@ -8,7 +8,7 @@ templ SubmitPage(d SubmitViewData) {
 }
 
 templ submitBody(d SubmitViewData) {
-	<section class="judge-screen" x-data="{ mode: 'pin' }" style="position:relative;">
+	<section class="judge-screen" x-data="{ mode: 'pin', locking: false }" style="position:relative;">
 		<!-- Faded review context behind scrim -->
 		<div style="opacity:0.32; pointer-events:none;">
 			<div class="appbar event-rail">
@@ -102,8 +102,11 @@ templ submitBody(d SubmitViewData) {
 						</button>
 						<div class="row g8">
 							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
-							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;">
-								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted>Lock score</button>
+							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;" x-on:submit="locking = true">
+								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted x-bind:disabled="locking">
+									<span x-show="!locking">Lock score</span>
+									<span x-show="locking" x-cloak>Locking…</span>
+								</button>
 							</form>
 						</div>
 					</div>
@@ -132,8 +135,11 @@ templ submitBody(d SubmitViewData) {
 						</button>
 						<div class="row g8">
 							<a class="btn btn-outline" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") }>← Back to review</a>
-							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;">
-								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted>Lock signed score</button>
+							<form method="post" action={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/finalize") } style="display:inline;" x-on:submit="locking = true">
+								<button type="submit" class="btn btn-primary btn-lg" data-event-tinted x-bind:disabled="locking">
+									<span x-show="!locking">Lock signed score</span>
+									<span x-show="locking" x-cloak>Locking…</span>
+								</button>
 							</form>
 						</div>
 					</div>

@@ -58,6 +58,7 @@ templ leaderboard(d TrialDetailViewData) {
 	<div
 		id="leaderboard"
 		class="flex-col gap-3"
+		aria-live="polite"
 		if d.Live {
 			hx-get={ d.SelfPath }
 			hx-trigger="every 15s"
@@ -66,11 +67,14 @@ templ leaderboard(d TrialDetailViewData) {
 			hx-swap="outerHTML"
 		}
 	>
-		<div class="body-sm flex items-center gap-2" style="margin:0;">
+		<div class="body-sm flex items-center gap-2 flex-wrap" style="margin:0;">
 			if d.Live {
 				<span class="pill pill-scoring"><span class="dot"></span>live</span>
 			}
 			<span>{ leaderboardCounts(d) }</span>
+			if d.Live {
+				<span class="muted" style="margin-left:auto;">Updated { d.UpdatedAt }</span>
+			}
 		</div>
 		if len(d.Rows) == 0 {
 			<div class="card flex-col items-start gap-2" style="padding:24px;">

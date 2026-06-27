@@ -53,7 +53,7 @@ templ entryFilterChip(f EntryFilter) {
 // EntriesResults is the filterable list body, returned alone for htmx
 // filter swaps and embedded on first load.
 templ EntriesResults(d EntriesListViewData) {
-	<div id="entries-results" class="flex-col gap-2">
+	<div id="entries-results" class="flex-col gap-2" aria-live="polite">
 		if len(d.Rows) == 0 {
 			<div class="card flex-col items-start gap-1" style="padding:20px;">
 				<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Nothing here</div>

@@ -108,6 +108,7 @@ type TrialDetailViewData struct {
 	NQDividerAt    int    // row index of the NQ divider, or -1
 	Live           bool
 	SelfPath       string // current path+query, polled to refresh the board
+	UpdatedAt      string // wall-clock the board was last rendered, e.g. "14:32" — the live freshness signal
 	ScoreHref      string // sort toggle target for "Leaderboard"
 	RunningHref    string // sort toggle target for "Running order"
 }

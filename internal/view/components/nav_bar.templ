@@ -57,7 +57,7 @@ templ NavBar(p NavBarProps) {
 			<nav class="links flex-1 justify-center">
 				for _, l := range p.Links {
 					if l.ID == p.CurrentRoute {
-						<a href={ templ.SafeURL(l.Href) } class="active">{ l.Label }</a>
+						<a href={ templ.SafeURL(l.Href) } class="active" aria-current="page">{ l.Label }</a>
 					} else {
 						<a href={ templ.SafeURL(l.Href) }>{ l.Label }</a>
 					}

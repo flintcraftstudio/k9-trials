@@ -15,7 +15,15 @@ templ ObedienceScoreFragment(d ScoreViewData) {
 }
 
 templ obedienceBody(d ScoreViewData) {
-	<section id="scoresheet" class="judge-screen" hx-target="this" hx-swap="outerHTML">
+	<section
+		id="scoresheet"
+		class="judge-screen"
+		hx-target="this"
+		hx-swap="outerHTML"
+		hx-indicator="#scoresheet"
+		hx-on::before-request="this.setAttribute('aria-busy', 'true')"
+		hx-on::after-request="this.removeAttribute('aria-busy')"
+	>
 		<div class="appbar event-rail">
 			<div class="a-left">
 				<a class="btn btn-ghost" href="/judge" style="padding:5px 10px;">← Queue</a>
@@ -235,12 +243,14 @@ templ obCriterionRow(c Criterion, exCode, entryID string) {
 			for _, p := range intRange(c.Max) {
 				if c.Scored && p == c.Points {
 					<button
+						id={ "crit-" + c.Code + "-" + itoa(p) }
 						class="crit-btn active"
 						hx-post={ scoreCriterionURL(entryID) }
 						hx-vals={ critVals(exCode, c.Code, p) }
 					>{ itoa(p) }</button>
 				} else {
 					<button
+						id={ "crit-" + c.Code + "-" + itoa(p) }
 						class="crit-btn"
 						hx-post={ scoreCriterionURL(entryID) }
 						hx-vals={ critVals(exCode, c.Code, p) }
@@ -255,11 +265,11 @@ templ obCriterionRow(c Criterion, exCode, entryID string) {
 // highlighted with a ✓; tapping again clears the firing (undo).
 templ nqChip(t Trigger, exCode, entryID string) {
 	if t.Fired {
-		<button class="nq-chip fired" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
+		<button id={ "nq-" + exCode + "-" + t.Code } class="nq-chip fired" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
 			{ t.Desc } <span class="nq-scope">{ t.Scope }</span> ✓
 		</button>
 	} else {
-		<button class="nq-chip" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
+		<button id={ "nq-" + exCode + "-" + t.Code } class="nq-chip" hx-post={ scoreTriggerURL(entryID) } hx-vals={ trigVals(exCode, t.Code) }>
 			{ t.Desc } <span class="nq-scope">{ t.Scope }</span>
 		</button>
 	}

@@ -198,3 +198,14 @@
   .appbar .a-left  { flex: 1 1 100%; min-width: 0; }
   .appbar .a-right { flex: 1 1 100%; justify-content: flex-start; flex-wrap: wrap; }
 }
+
+/* Async pending state (UI fix pass — Batch 7). While a judge tap (criterion,
+   trigger, exercise nav) is in flight, dim and lock the scoring console so a
+   second tap can't double-submit before the swap lands. htmx adds
+   .htmx-request to the hx-indicator target (#scoresheet) for the request's
+   lifetime. */
+#scoresheet.htmx-request {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: progress;
+}

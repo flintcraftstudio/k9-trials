@@ -21,7 +21,7 @@ templ usersContent(d UsersViewData) {
 // the whole block swaps on a chip click or a search keystroke so the active
 // role and search term stay consistent across both controls.
 templ UsersResults(d UsersViewData) {
-	<div id="users-results" class="flex-col gap-4">
+	<div id="users-results" class="flex-col gap-4" aria-live="polite">
 		<div class="flex items-center gap-2 flex-wrap">
 			for _, f := range d.Filters {
 				@userFilterChip(f)

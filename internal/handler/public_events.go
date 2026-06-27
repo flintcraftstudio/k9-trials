@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 	"strconv"
+	"time"
 
 	"github.com/a-h/templ"
 
@@ -352,6 +353,7 @@ func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, eve
 		NQDividerAt:    nqDivider,
 		Live:           finalized < len(entries),
 		SelfPath:       r.URL.RequestURI(),
+		UpdatedAt:      time.Now().Format("15:04"),
 		ScoreHref:      fmt.Sprintf("/events/%s/trials/%d", event.Slug, trial.ID),
 		RunningHref:    fmt.Sprintf("/events/%s/trials/%d?order=running", event.Slug, trial.ID),
 	}
