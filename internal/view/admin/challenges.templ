@@ -80,22 +80,26 @@ templ chalPager(p ChalPage) {
 			<span class="body-sm" style="margin:0;color:var(--mist-500);">
 				{ fmt.Sprintf("%d–%d of %d", p.From, p.To, p.Total) }
 			</span>
-			<div class="flex items-center gap-2">
-				if p.HasPrev {
-					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.PrevHref}) {
-						← Prev
+			// Prev/Next only when there's more than one page — no disabled
+			// chrome on a single-page queue (Pagination/chrome principle).
+			if p.HasPrev || p.HasNext {
+				<div class="flex items-center gap-2">
+					if p.HasPrev {
+						@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.PrevHref}) {
+							← Prev
+						}
+					} else {
+						<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">← Prev</span>
 					}
-				} else {
-					<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">← Prev</span>
-				}
-				if p.HasNext {
-					@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.NextHref}) {
-						Next →
+					if p.HasNext {
+						@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: p.NextHref}) {
+							Next →
+						}
+					} else {
+						<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">Next →</span>
 					}
-				} else {
-					<span class="btn md btn-plain" style="opacity:.4;pointer-events:none;">Next →</span>
-				}
-			</div>
+				</div>
+			}
 		</div>
 	}
 }
