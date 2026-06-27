@@ -26,9 +26,11 @@ func eventStatusLabel(status string) string {
 	return status
 }
 
-// eventStatusKind maps an event status to a status-pill variant: a draft is
-// muted, a published event reads as open, a closed event reads as closed, an
-// archived event is muted (filed away).
+// eventStatusKind maps an event status to a status-pill variant. Color
+// carries lifecycle state on the canonical scale (text still names the
+// status): published is active → green (open); draft, closed, and archived
+// are all neutral/inactive → gray (muted). Red (closed) is reserved for
+// danger/rejected, which no event status is.
 func eventStatusKind(status string) string {
 	switch status {
 	case "draft":
@@ -36,7 +38,7 @@ func eventStatusKind(status string) string {
 	case "published":
 		return "open"
 	case "closed":
-		return "closed"
+		return "muted"
 	case "archived":
 		return "muted"
 	}
