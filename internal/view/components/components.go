@@ -104,6 +104,50 @@ func capitalize(s string) string {
 // footerYear returns the current year for the Footer copyright line.
 func footerYear() int { return time.Now().Year() }
 
+// AvatarUploadProps backs AvatarUpload — the profile-photo management
+// control shared by the handler profile editor and the dog form. It
+// renders the affordances only: the current photo (or an initials
+// placeholder), a file picker with live in-page preview, and a remove
+// toggle. Upload/storage is intentionally not wired anywhere.
+//
+// Name is the file field's form name. A companion hidden field
+// "<Name>_remove" posts alongside it, flipping from "false" to "true" when
+// the user clears the photo, so a backend (once wired) can tell "no
+// change" apart from "remove this". PhotoURL is the current image, empty
+// when the subject has none. Shape is "circ" (default) or "sq".
+type AvatarUploadProps struct {
+	Name     string
+	PhotoURL string
+	Initials string
+	Shape    string // "circ" (default) | "sq"
+	Label    string // upload button text, defaults to "Upload photo"
+	Hint     string // helper line under the buttons; a default is shown when empty
+}
+
+// avatarClasses builds the avatar element class for the upload control:
+// the xl size plus the requested shape (circular by default).
+func avatarClasses(p AvatarUploadProps) string {
+	shape := p.Shape
+	if shape == "" {
+		shape = "circ"
+	}
+	return joinClasses("avatar", "xl", shape)
+}
+
+func avatarUploadLabel(p AvatarUploadProps) string {
+	if p.Label == "" {
+		return "Upload photo"
+	}
+	return p.Label
+}
+
+func avatarUploadHint(p AvatarUploadProps) string {
+	if p.Hint == "" {
+		return "JPG, PNG or WebP, up to 5 MB."
+	}
+	return p.Hint
+}
+
 // InputProps mirrors flint-ui's input.Props shape (Tailwind v4 there;
 // our markup uses v3 utilities + mist-* tokens). Zero values default to
 // Type="text". Attrs spreads htmx/data-*/aria-* onto the <input>.

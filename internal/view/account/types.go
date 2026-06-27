@@ -45,6 +45,8 @@ type ProfileViewData struct {
 	Handle      string
 	Bio         string
 	PublicURL   string // "/competitors/ltanaka"
+	PhotoURL    string // current profile photo, empty when none (initials show)
+	Initials    string // placeholder when no photo is set
 	Saved       bool   // render the just-saved confirmation
 	Err         string // validation message, empty when none
 }
@@ -76,6 +78,8 @@ type DogFormViewData struct {
 	RegNo          string
 	Sex            string // "male", "female", or "" when unrecorded
 	PublicURL      string // dog public page, edit only
+	PhotoURL       string // current dog photo, empty when none (initials show)
+	Initials       string // placeholder when no photo is set
 	Err            string
 }
 

@@ -39,11 +39,23 @@ templ dogsFormBody(d DogFormViewData) {
 // success the handler issues an HX-Redirect instead.
 templ DogForm(d DogFormViewData) {
 	<div id="dog-form" class="flex-col gap-6">
-		<form hx-post={ dogFormAction(d) } hx-target="#dog-form" hx-swap="outerHTML" class="flex flex-col gap-5">
+		<form hx-post={ dogFormAction(d) } hx-target="#dog-form" hx-swap="outerHTML" enctype="multipart/form-data" class="flex flex-col gap-5">
 			if d.Err != "" {
 				<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
 					<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
 				</div>
+			}
+			@components.Field(components.FieldProps{}) {
+				@components.Label(components.LabelProps{}) {
+					Photo
+				}
+				@components.AvatarUpload(components.AvatarUploadProps{
+					Name:     "photo",
+					PhotoURL: d.PhotoURL,
+					Initials: d.Initials,
+					Shape:    "sq",
+					Hint:     "Shown on the dog's public profile. JPG, PNG or WebP, up to 5 MB.",
+				})
 			}
 			@components.Field(components.FieldProps{}) {
 				@components.Label(components.LabelProps{For: "call_name"}) {

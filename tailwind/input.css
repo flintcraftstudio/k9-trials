@@ -13,6 +13,15 @@
 @tailwind utilities;
 
 /*
+  Profile-photo upload control (components.AvatarUpload). The .avatar-edit
+  wrapper stacks the photo and the initials placeholder; only one is shown
+  at a time (toggled by /static/js/avatar.js). .avatar-img makes an <img>
+  fill the avatar box like the CSS placeholder it replaces.
+*/
+.avatar-edit { position: relative; flex: none; }
+.avatar-img { object-fit: cover; background: var(--mist-100); }
+
+/*
   Pill-chip radio for admin selectors (D4 new-trial discipline/level). The
   native radio is visually hidden; the wrapping .pill label reflects the
   selected state via :has(input:checked), so it needs no JS — and so it works

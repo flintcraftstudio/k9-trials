@@ -33,7 +33,7 @@ templ profileBody(d ProfileViewData) {
 // or validation error) so the saved confirmation and any error message
 // swap without a full navigation.
 templ ProfileForm(d ProfileViewData) {
-	<form hx-post="/account/profile" hx-swap="outerHTML" class="flex flex-col gap-5">
+	<form hx-post="/account/profile" hx-swap="outerHTML" enctype="multipart/form-data" class="flex flex-col gap-5">
 		if d.Err != "" {
 			<div class="rounded-md border border-[var(--color-danger-border)] bg-[var(--color-danger-bg)] p-3">
 				<p class="text-sm text-[var(--color-danger)]">{ d.Err }</p>
@@ -43,6 +43,18 @@ templ ProfileForm(d ProfileViewData) {
 			<div class="rounded-md border border-[var(--green-300)] bg-[var(--green-50)] p-3">
 				<p class="text-sm" style="color:var(--green-800);"><strong>Saved.</strong> Your changes are live.</p>
 			</div>
+		}
+		@components.Field(components.FieldProps{}) {
+			@components.Label(components.LabelProps{}) {
+				Profile photo
+			}
+			@components.AvatarUpload(components.AvatarUploadProps{
+				Name:     "photo",
+				PhotoURL: d.PhotoURL,
+				Initials: d.Initials,
+				Shape:    "circ",
+				Hint:     "Shown on your public page. JPG, PNG or WebP, up to 5 MB.",
+			})
 		}
 		@components.Field(components.FieldProps{}) {
 			@components.Label(components.LabelProps{For: "display_name"}) {

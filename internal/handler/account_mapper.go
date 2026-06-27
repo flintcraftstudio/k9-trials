@@ -106,6 +106,7 @@ func profileVD(c db.Competitor, saved bool, errMsg string) account.ProfileViewDa
 		Handle:      c.Handle,
 		Bio:         c.Bio,
 		PublicURL:   "/competitors/" + c.Handle,
+		Initials:    judgeInitials(c.DisplayName),
 		Saved:       saved,
 		Err:         errMsg,
 	}
@@ -119,6 +120,7 @@ func profileVDFrom(displayName, handle, bio string, saved bool, errMsg string) a
 		Handle:      handle,
 		Bio:         bio,
 		PublicURL:   "/competitors/" + handle,
+		Initials:    judgeInitials(displayName),
 		Saved:       saved,
 		Err:         errMsg,
 	}
@@ -176,6 +178,7 @@ func dogFormVD(dog db.Dog) account.DogFormViewData {
 		RegNo:          dog.RegistrationNumber,
 		Sex:            dog.Sex,
 		PublicURL:      dogPublicURL(dog.ID),
+		Initials:       judgeInitials(dog.CallName),
 	}
 }
 
@@ -202,6 +205,7 @@ func parseDogForm(r *http.Request, base account.DogFormViewData) (store.DogInput
 	vd.RegNo = regNo
 	vd.DOB = dobStr
 	vd.Sex = sex
+	vd.Initials = judgeInitials(callName)
 
 	if callName == "" {
 		vd.Err = "Call name is required."

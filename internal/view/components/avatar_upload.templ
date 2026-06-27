@@ -1,0 +1,61 @@
+package components
+
+// AvatarUpload renders the profile-photo management control: the current
+// photo (or an initials placeholder), a button to choose a replacement
+// with live preview, and a remove toggle. See AvatarUploadProps for the
+// form-field contract. Behaviour lives in /static/js/avatar.js — the
+// inline onchange/onclick handlers survive htmx form swaps, which Alpine
+// would not.
+templ AvatarUpload(p AvatarUploadProps) {
+	<div class="flex items-center gap-4" data-avatar>
+		<div class="avatar-edit">
+			<img
+				data-avatar-img
+				src={ p.PhotoURL }
+				alt=""
+				class={ avatarClasses(p) + " avatar-img" }
+				if p.PhotoURL == "" {
+					hidden
+				}
+			/>
+			<span data-avatar-placeholder class={ avatarClasses(p) } if p.PhotoURL != "" { hidden }>
+				{ p.Initials }
+			</span>
+		</div>
+		<div class="flex-col gap-2">
+			<div class="flex items-center gap-2">
+				@Button(ButtonProps{
+					Variant: "soft",
+					Size:    "md",
+					Type:    "button",
+					Attrs:   templ.Attributes{"onclick": "k9Avatar.open(this)"},
+				}) {
+					{ avatarUploadLabel(p) }
+				}
+				<button
+					type="button"
+					data-avatar-remove
+					onclick="k9Avatar.remove(this)"
+					class="btn md btn-plain text-[var(--color-danger)]"
+					if p.PhotoURL == "" {
+						hidden
+					}
+				>
+					Remove
+				</button>
+			</div>
+			<input
+				type="file"
+				name={ p.Name }
+				accept="image/png, image/jpeg, image/webp"
+				class="hidden"
+				data-avatar-file
+				onchange="k9Avatar.pick(this)"
+			/>
+			<input type="hidden" name={ p.Name + "_remove" } value="false" data-avatar-flag/>
+			@Description(FieldProps{}) {
+				{ avatarUploadHint(p) }
+			}
+		</div>
+	</div>
+}

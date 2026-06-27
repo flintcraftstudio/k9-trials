@@ -34,6 +34,7 @@ templ Base(title, description, currentRoute string, body templ.Component) {
 			<link rel="stylesheet" href="/static/css/site.css"/>
 			<script src="/static/js/htmx.min.js" defer></script>
 			<script src="/static/js/alpine.min.js" defer></script>
+			<script src="/static/js/avatar.js" defer></script>
 		</head>
 		<body class="min-h-screen antialiased">
 			@components.NavBar(topNavProps(session.FromContext(ctx), currentRoute))
