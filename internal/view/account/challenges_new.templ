@@ -18,7 +18,7 @@ templ ChallengesNewPage(d ChallengeNewViewData) {
 templ challengesNewBody(d ChallengeNewViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
-			<div class="max-w-xl flex-col gap-6">
+			<div class="max-w-xl flex-col gap-6 mx-auto">
 				<a href={ templ.SafeURL(fmt.Sprintf("/account/entries/%d", d.EntryID)) } class="body-sm" style="text-decoration:none;">← Entry detail</a>
 				<div class="flex-col gap-1">
 					@components.Eyebrow() {

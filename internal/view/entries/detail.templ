@@ -17,7 +17,7 @@ templ DetailPage(d DetailViewData) {
 templ detailBody(d DetailViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
-			<div class="flex-col gap-6 max-w-3xl">
+			<div class="flex-col gap-6 max-w-3xl mx-auto">
 				<a
 					href={ templ.SafeURL(fmt.Sprintf("/events/%s/trials/%d", d.EventSlug, d.TrialID)) }
 					class="body-sm"

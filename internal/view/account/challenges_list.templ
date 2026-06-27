@@ -16,7 +16,7 @@ templ ChallengesListPage(d ChallengesListViewData) {
 templ challengesListBody(d ChallengesListViewData) {
 	<section class="section">
 		@components.Container("") {
-			<div class="max-w-2xl flex-col gap-6">
+			<div class="max-w-2xl flex-col gap-6 mx-auto">
 				<div class="flex-col gap-1">
 					@components.Eyebrow() {
 						{ fmt.Sprintf("Challenges · %d", d.Total) }

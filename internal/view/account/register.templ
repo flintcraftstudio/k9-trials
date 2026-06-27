@@ -18,7 +18,7 @@ templ RegisterPage(d RegisterViewData) {
 templ registerBody(d RegisterViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
-			<div class="max-w-xl flex-col gap-6">
+			<div class="max-w-xl flex-col gap-6 mx-auto">
 				if d.ComingSoon {
 					<a href="/events" class="body-sm" style="text-decoration:none;">← Events</a>
 				} else {
@@ -224,7 +224,7 @@ templ RegisterDonePage(d RegisterDoneViewData) {
 templ registerDoneBody(d RegisterDoneViewData) {
 	<section class="section">
 		@components.Container("") {
-			<div class="max-w-xl flex-col gap-6">
+			<div class="max-w-xl flex-col gap-6 mx-auto">
 				<div class="flex-col gap-1">
 					@components.Eyebrow() {
 						Registration submitted

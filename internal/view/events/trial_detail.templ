@@ -18,7 +18,7 @@ templ TrialDetailPage(d TrialDetailViewData) {
 templ trialDetailBody(d TrialDetailViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
-			<div class="flex-col gap-6 max-w-3xl">
+			<div class="flex-col gap-6 max-w-3xl mx-auto">
 				<a href={ templ.SafeURL("/events/" + d.EventSlug) } class="body-sm" style="text-decoration:none;">← { d.EventName }</a>
 				<div class="flex-col gap-2">
 					@components.Eyebrow() {

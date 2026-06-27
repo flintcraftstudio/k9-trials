@@ -17,7 +17,7 @@ templ EntryDetailPage(d EntryDetailViewData) {
 templ entryDetailBody(d EntryDetailViewData) {
 	<section class="section" data-event={ d.EventKey }>
 		@components.Container("") {
-			<div class="flex-col gap-6 max-w-3xl">
+			<div class="flex-col gap-6 max-w-3xl mx-auto">
 				<a href="/account/entries" class="body-sm" style="text-decoration:none;">← All entries</a>
 				<div class="flex-col gap-2">
 					@components.Eyebrow() {
