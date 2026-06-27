@@ -89,8 +89,17 @@ templ lockedBody(d LockedViewData) {
 			<div class="col g6">
 				<span class="eyebrow muted">Audit chain · { itoa(len(d.Audit)) } records · append-only</span>
 				<div class="card p14">
-					for _, s := range d.Audit {
-						@auditStep(s)
+					if len(d.Audit) == 0 {
+						<div class="col g2" style="padding:4px 2px;">
+							<span class="bold" style="font-size:13px;">No audit records yet</span>
+							<span class="muted" style="font-size:11.5px; line-height:1.5;">
+								Every scoring action — finalize, lock, sync, and any later correction — is appended here as an immutable record. The chain fills in as this run accrues history.
+							</span>
+						</div>
+					} else {
+						for _, s := range d.Audit {
+							@auditStep(s)
+						}
 					}
 				</div>
 			</div>

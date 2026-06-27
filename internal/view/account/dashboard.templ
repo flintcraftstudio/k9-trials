@@ -23,42 +23,65 @@ templ dashboardBody(d DashboardViewData) {
 					}
 					<p class="body-sm" style="margin:0;">{ dashboardMeta(d) }</p>
 				</div>
-				if d.UpNext != nil {
-					@upNextCard(*d.UpNext)
-				}
-				<div class="flex-col gap-3">
-					@components.Eyebrow() {
-						Recent results
+				if d.DogCount == 0 {
+					@firstRunCard(d)
+				} else {
+					if d.UpNext != nil {
+						@upNextCard(*d.UpNext)
 					}
-					@recentResults(d.Recent)
-				</div>
-				if d.OpenChallenges > 0 {
-					<a href="/account/challenges" class="card flex items-center gap-2" style="padding:12px 16px;text-decoration:none;color:inherit;border-color:var(--orange-300);background:var(--orange-50);">
-						<span style="font-weight:600;color:var(--mist-950);">{ openChallengeLabel(d.OpenChallenges) }</span>
-						<span class="body-sm" style="margin:0 0 0 auto;">View →</span>
-					</a>
-				}
-				<div class="flex-col gap-3">
-					@components.Eyebrow() {
-						Quick actions
-					}
-					<div class="flex gap-3 flex-wrap">
-						@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/events"}) {
-							Register for an event
+					<div class="flex-col gap-3">
+						@components.Eyebrow() {
+							Recent results
 						}
-						@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/dogs/new"}) {
-							Add a dog
-						}
-						if d.Handle != "" {
-							@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/competitors/" + d.Handle}) {
-								View public profile
-							}
-						}
+						@recentResults(d.Recent)
 					</div>
-				</div>
+					if d.OpenChallenges > 0 {
+						<a href="/account/challenges" class="card flex items-center gap-2" style="padding:12px 16px;text-decoration:none;color:inherit;border-color:var(--orange-300);background:var(--orange-50);">
+							<span style="font-weight:600;color:var(--mist-950);">{ openChallengeLabel(d.OpenChallenges) }</span>
+							<span class="body-sm" style="margin:0 0 0 auto;">View →</span>
+						</a>
+					}
+					<div class="flex-col gap-3">
+						@components.Eyebrow() {
+							Quick actions
+						}
+						<div class="flex gap-3 flex-wrap">
+							@components.Button(components.ButtonProps{Variant: "primary", Size: "md", Href: "/events"}) {
+								Register for an event
+							}
+							@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/account/dogs/new"}) {
+								Add a dog
+							}
+							if d.Handle != "" {
+								@components.Button(components.ButtonProps{Variant: "plain", Size: "md", Href: "/competitors/" + d.Handle}) {
+									View public profile
+								}
+							}
+						</div>
+					</div>
+				}
 			</div>
 		}
 	</section>
+}
+
+// firstRunCard is the first-run hero for a competitor with no dogs yet. It
+// foregrounds the single most important next step — add a dog — rather than a
+// flat row of equal actions, since nothing else (entries, results, registering)
+// is possible until there's a dog on the roster.
+templ firstRunCard(d DashboardViewData) {
+	<div class="card flex-col items-start gap-3" style="padding:24px;">
+		@components.Eyebrow() {
+			Get started
+		}
+		<div class="flex-col gap-1">
+			<div class="body" style="margin:0;font-weight:600;color:var(--mist-950);">Add your first dog</div>
+			<p class="body-sm" style="margin:0;">You'll need at least one dog on your roster before you can register for a trial. Add one to get started — results and entries show up here afterward.</p>
+		</div>
+		@components.Button(components.ButtonProps{Variant: "primary", Size: "lg", Href: "/account/dogs/new"}) {
+			Add a dog
+		}
+	</div>
 }
 
 // upNextCard renders the prominent next-entry panel, accent-tinted by the

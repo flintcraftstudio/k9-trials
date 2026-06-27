@@ -29,9 +29,10 @@ templ submitBody(d SubmitViewData) {
 				</div>
 			</div>
 			<div class="col p16 g8">
-				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 1 · Heel free</span></div>
-				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 2 · Figure 8</span></div>
-				<div class="card p10"><span class="muted" style="font-size:12px;">Exercise 3 · Stand for exam</span></div>
+				<div class="card p10"><span class="muted" style="font-size:12px;">{ joinMeta(d.ExercisesOK, "provisional "+fnum(d.Total)) }</span></div>
+				if d.DedSummary != "" {
+					<div class="card p10"><span class="muted" style="font-size:12px;">{ d.DedSummary }</span></div>
+				}
 			</div>
 		</div>
 
