@@ -157,15 +157,13 @@ func entryRowVD(r *http.Request, st *store.Store, e db.ListEntriesByHandlerRow, 
 	case "scoring":
 		row.StatusLabel, row.StatusKind = "Scoring", "scoring"
 	case "finalized":
-		pts, passed, ok := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
-		if passed {
+		fs := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
+		if fs.Passed {
 			row.StatusLabel, row.StatusKind = "Finalized · Q", "qual"
 		} else {
 			row.StatusLabel, row.StatusKind = "Finalized · NQ", "closed"
 		}
-		if ok {
-			sub += fmt.Sprintf(" · scored %d", pts)
-		}
+		row.Points, row.Max, row.HasScore = fs.Points, fs.Max, fs.OK
 	case "withdrawn":
 		row.StatusLabel, row.StatusKind = "Withdrawn", "closed"
 	default:

@@ -50,7 +50,7 @@ templ submitBody(d SubmitViewData) {
 							}
 						</div>
 						<div class="muted tabular" style="font-size:12px;">
-							{ d.Run.HandlerSh } · { d.Run.K9ID } · { d.ExercisesOK } · { d.DedSummary }
+							{ joinMeta(d.Run.HandlerSh, d.Run.K9ID, d.ExercisesOK, d.DedSummary) }
 						</div>
 					</div>
 					<a class="btn btn-ghost" href={ templ.SafeURL("/judge/entry/" + d.Run.ID + "/review") } style="font-size:18px; padding:4px 10px;">×</a>

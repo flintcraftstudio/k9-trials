@@ -2,6 +2,7 @@ package judge
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/flintcraftstudio/k9-trials/internal/session"
 	"github.com/flintcraftstudio/k9-trials/internal/view"
@@ -82,6 +83,21 @@ func itoa(n int) string {
 	return fmt.Sprintf("%d", n)
 }
 
+// joinMeta joins meta fragments with " · ", dropping any that are empty so an
+// absent value (no K9 ID, no breed, no deduction summary) never leaves an
+// orphan separator or empty interpolation. The single sanctioned path for
+// optional-value joins on the judge surface — see UI principle "No orphan
+// separators or empty interpolation."
+func joinMeta(parts ...string) string {
+	kept := make([]string, 0, len(parts))
+	for _, p := range parts {
+		if strings.TrimSpace(p) != "" {
+			kept = append(kept, p)
+		}
+	}
+	return strings.Join(kept, " · ")
+}
+
 func fnum(f float64) string {
 	if f == float64(int(f)) {
 		return fmt.Sprintf("%d", int(f))
@@ -94,6 +110,24 @@ func fnumSigned(f float64) string {
 		return fmt.Sprintf("%+d", int(f))
 	}
 	return fmt.Sprintf("%+.1f", f)
+}
+
+// labeled returns "label value" when value is non-empty, else "" — so an
+// absent value drops its label too (not just the separator) when fed to
+// joinMeta. Prevents orphan labels like "recorded" or "last sync" with no
+// following value.
+func labeled(label, value string) string {
+	if strings.TrimSpace(value) == "" {
+		return ""
+	}
+	return label + " " + value
+}
+
+// disciplineClass renders "Obedience Open" (discipline label + class) as a
+// single meta fragment, trimmed so a blank class doesn't leave a trailing
+// space when fed to joinMeta.
+func disciplineClass(t Trial) string {
+	return strings.TrimSpace(t.Discipline.Label() + " " + t.Class)
 }
 
 // dogAvatarClass formats the variant suffix into a class string.

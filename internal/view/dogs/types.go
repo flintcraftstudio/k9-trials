@@ -11,6 +11,7 @@ type HistoryRow struct {
 	Title     string // "Obedience · Level 2"
 	Sub       string // "Cedar Creek · L. Tanaka · 14 Mar"
 	Points    int
+	Max       int
 	Qualified bool
 	HasScore  bool
 }

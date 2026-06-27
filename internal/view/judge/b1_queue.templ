@@ -23,7 +23,10 @@ templ queueBody(d QueueViewData) {
 				<span class="sync-chip">
 					<span class="dot"></span>
 					<strong>{ itoa(d.Trial.InPocket) }</strong>
-					&nbsp;in pocket · last sync { d.Trial.LastSync }
+					&nbsp;in pocket
+					if d.Trial.LastSync != "" {
+						&nbsp;· last sync { d.Trial.LastSync }
+					}
 				</span>
 				<span class="judge-chip">
 					<span class="avatar circ h-1 sm">{ d.Trial.JudgeInits }</span>

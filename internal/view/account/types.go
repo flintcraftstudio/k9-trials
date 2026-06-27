@@ -35,6 +35,7 @@ type RecentRow struct {
 	Title     string // "Kestrel · Detection · Level 3"
 	Sub       string // "Brindle Bay · 8 Feb"
 	Points    int
+	Max       int
 	Qualified bool
 	HasScore  bool
 }
@@ -105,10 +106,16 @@ type EntryFilter struct {
 type EntryRow struct {
 	Href        string
 	Title       string // "Cedar Creek · Obedience · Level 2"
-	Sub         string // "Vex · entry #17 · Sat 14 Mar" (+ "· scored 182")
+	Sub         string // "Vex · entry #17 · Sat 14 Mar"
 	EventKey    string
 	StatusLabel string
 	StatusKind  string // pill variant
+
+	// Finalized score, rendered via components.Score next to the status
+	// pill. HasScore is false when the entry couldn't be evaluated.
+	Points   int
+	Max      int
+	HasScore bool
 }
 
 // EntryDetailViewData backs the read-only entry page a competitor sees for

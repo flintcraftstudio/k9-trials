@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"sort"
 	"strconv"
@@ -271,6 +272,8 @@ func toTrialDetailViewData(r *http.Request, st *store.Store, trial db.Trial, eve
 				if inputs, err := st.LoadInputsForEntry(r.Context(), e.ID); err == nil {
 					if res, err := scoring.EvaluateScoresheet(inputs, sheet, tpl); err == nil {
 						row.Points = int(res.TotalPoints)
+						row.Max = int(res.MaxPoints)
+						row.Percent = int(math.Round(res.Percent))
 						row.Qualified = qualified(res)
 						row.NQ = !res.Passed
 					}

@@ -120,7 +120,7 @@ templ leaderRow(row LeaderRow) {
 templ leaderScore(row LeaderRow) {
 	<div class="flex-col items-end" style="text-align:right;">
 		if row.Finalized && !row.NQ {
-			<span class="serif" style="font-size:18px;color:var(--mist-950);font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+			@components.Score(components.ScoreProps{Points: row.Points, Max: row.Max, Percent: row.Percent})
 			<span class="body-sm" style="margin:0;color:var(--green-700);">Q · qualifying</span>
 		} else if row.Finalized && row.NQ {
 			<span class="pill pill-closed">NQ</span>

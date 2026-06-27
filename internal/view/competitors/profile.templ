@@ -96,7 +96,7 @@ templ historyRow(row HistoryRow) {
 		</div>
 		<div class="flex items-center gap-2">
 			if row.HasScore {
-				<span style="font-weight:600;font-variant-numeric:tabular-nums;">{ fmt.Sprintf("%d", row.Points) }</span>
+				@components.Score(components.ScoreProps{Points: row.Points, Max: row.Max})
 			}
 			if row.Qualified {
 				<span class="body-sm" style="margin:0;color:var(--green-700);">Q</span>

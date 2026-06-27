@@ -26,14 +26,15 @@ func toDashboardVD(r *http.Request, st *store.Store, c db.Competitor, entries []
 		}
 		finalizedCount++
 		if len(recent) < recentResultsLimit {
-			pts, passed, ok := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
+			fs := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
 			recent = append(recent, account.RecentRow{
 				EntryID:   e.ID,
 				Title:     e.DogName + " · " + disciplineLevelLabel(e.Discipline, e.Level),
 				Sub:       e.EventName + " · " + shortDate(e.TrialDate),
-				Points:    pts,
-				Qualified: passed,
-				HasScore:  ok,
+				Points:    fs.Points,
+				Max:       fs.Max,
+				Qualified: fs.Passed,
+				HasScore:  fs.OK,
 			})
 		}
 	}

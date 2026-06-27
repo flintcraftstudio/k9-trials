@@ -25,7 +25,7 @@ templ obedienceBody(d ScoreViewData) {
 					<span class="trial">
 						{ d.Run.DogName }
 						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
-							{ d.Run.HandlerSh } · { d.Run.K9ID }
+							{ joinMeta(d.Run.HandlerSh, d.Run.K9ID) }
 						</span>
 					</span>
 				</div>

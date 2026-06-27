@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -102,14 +103,15 @@ func toCompetitorProfileVD(r *http.Request, st *store.Store, prof store.Competit
 
 	history := make([]competitors.HistoryRow, 0, len(prof.History))
 	for _, e := range prof.History {
-		pts, passed, ok := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
+		fs := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
 		history = append(history, competitors.HistoryRow{
 			EntryID:   e.ID,
 			Title:     e.DogName + " · " + disciplineLevelLabel(e.Discipline, e.Level),
 			Sub:       e.EventName + " · " + shortDate(e.TrialDate),
-			Points:    pts,
-			Qualified: passed,
-			HasScore:  ok,
+			Points:    fs.Points,
+			Max:       fs.Max,
+			Qualified: fs.Passed,
+			HasScore:  fs.OK,
 		})
 	}
 
@@ -152,7 +154,7 @@ func DogProfile(st *store.Store) http.HandlerFunc {
 func toDogProfileVD(r *http.Request, st *store.Store, prof store.DogProfile) dogs.ProfileViewData {
 	history := make([]dogs.HistoryRow, 0, len(prof.History))
 	for _, e := range prof.History {
-		pts, passed, ok := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
+		fs := evalFinalizedScore(r, st, e.Discipline, e.Level, e.TemplateVersion, e.ID)
 		sub := e.EventName
 		if e.HandlerName != "" {
 			sub += " · " + handlerShort(e.HandlerName)
@@ -162,9 +164,10 @@ func toDogProfileVD(r *http.Request, st *store.Store, prof store.DogProfile) dog
 			EntryID:   e.ID,
 			Title:     disciplineLevelLabel(e.Discipline, e.Level),
 			Sub:       sub,
-			Points:    pts,
-			Qualified: passed,
-			HasScore:  ok,
+			Points:    fs.Points,
+			Max:       fs.Max,
+			Qualified: fs.Passed,
+			HasScore:  fs.OK,
 		})
 	}
 	return dogs.ProfileViewData{
@@ -179,29 +182,46 @@ func toDogProfileVD(r *http.Request, st *store.Store, prof store.DogProfile) dog
 	}
 }
 
+// finalizedScore is a finalized entry's evaluated result, flattened for
+// list-row rendering. OK is false when no template is registered or
+// evaluation fails; callers then render the row without a score.
+type finalizedScore struct {
+	Points  int
+	Max     int
+	Percent int // 100 * points / max, rounded
+	Passed  bool
+	OK      bool
+}
+
 // evalFinalizedScore looks up the trial's template, builds a concrete
 // sheet, loads the entry's logged inputs, and runs the scoring engine.
-// Returns (points, passed, true) on success; (0, false, false) when no
-// template is registered or evaluation fails — callers render the row
-// without a score rather than failing the whole page.
-func evalFinalizedScore(r *http.Request, st *store.Store, discipline string, level int64, version string, entryID int64) (int, bool, bool) {
+// Returns OK=false (a zero score) when no template is registered or
+// evaluation fails — callers render the row without a score rather than
+// failing the whole page.
+func evalFinalizedScore(r *http.Request, st *store.Store, discipline string, level int64, version string, entryID int64) finalizedScore {
 	tpl, ok := templates.Lookup(scoring.Discipline(discipline), scoring.Level(level), version)
 	if !ok {
-		return 0, false, false
+		return finalizedScore{}
 	}
 	sheet, err := tpl.BuildConcrete(nil)
 	if err != nil {
-		return 0, false, false
+		return finalizedScore{}
 	}
 	inputs, err := st.LoadInputsForEntry(r.Context(), entryID)
 	if err != nil {
-		return 0, false, false
+		return finalizedScore{}
 	}
 	res, err := scoring.EvaluateScoresheet(inputs, sheet, tpl)
 	if err != nil {
-		return 0, false, false
+		return finalizedScore{}
 	}
-	return int(res.TotalPoints), res.Passed, true
+	return finalizedScore{
+		Points:  int(res.TotalPoints),
+		Max:     int(res.MaxPoints),
+		Percent: int(math.Round(res.Percent)),
+		Passed:  res.Passed,
+		OK:      true,
+	}
 }
 
 // dogMetaLine composes the "Breed · age" sub-line for a dog card, dropping

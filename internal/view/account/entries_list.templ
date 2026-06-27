@@ -78,8 +78,13 @@ templ entryRow(row EntryRow) {
 			<span style="color:var(--mist-950);">{ row.Title }</span>
 			<span class="body-sm" style="margin:0;">{ row.Sub }</span>
 		</div>
-		@components.Pill(row.StatusKind) {
-			{ row.StatusLabel }
-		}
+		<div class="flex items-center gap-2">
+			if row.HasScore {
+				@components.Score(components.ScoreProps{Points: row.Points, Max: row.Max})
+			}
+			@components.Pill(row.StatusKind) {
+				{ row.StatusLabel }
+			}
+		</div>
 	</a>
 }

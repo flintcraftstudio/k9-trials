@@ -1,5 +1,16 @@
 package admin
 
+import "fmt"
+
+// countLabel renders "1 singular" for n == 1 and "N plural" otherwise, with a
+// single space (never a middot) between the count and its noun.
+func countLabel(n int, singular, plural string) string {
+	if n == 1 {
+		return "1 " + singular
+	}
+	return fmt.Sprintf("%d %s", n, plural)
+}
+
 // eventStatusLabel maps an event status to its display label.
 func eventStatusLabel(status string) string {
 	switch status {

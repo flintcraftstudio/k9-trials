@@ -82,7 +82,7 @@ templ trialDay(eventID int64, day TrialDay) {
 			@components.Eyebrow() {
 				{ day.Label }
 			}
-			<span class="body-sm" style="margin:0;">{ fmt.Sprintf("%d", day.Count) + " · " + trialsWord(day.Count) }</span>
+			<span class="body-sm" style="margin:0;">{ countLabel(day.Count, "trial", "trials") }</span>
 		</div>
 		for _, t := range day.Trials {
 			@trialRow(eventID, t)
@@ -244,17 +244,11 @@ func trialsListHref(eventID int64) templ.SafeURL {
 	return templ.SafeURL(fmt.Sprintf("/admin/events/%d/trials", eventID))
 }
 
-// daysWord / trialsWord render the singular/plural unit words.
+// daysWord renders the singular/plural unit word for a day count. (Trial
+// counts go through countLabel, which also drops the orphan middot.)
 func daysWord(n int) string {
 	if n == 1 {
 		return "day"
 	}
 	return "days"
-}
-
-func trialsWord(n int) string {
-	if n == 1 {
-		return "trial"
-	}
-	return "trials"
 }

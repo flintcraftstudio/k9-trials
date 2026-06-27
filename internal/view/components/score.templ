@@ -1,0 +1,29 @@
+package components
+
+import "strconv"
+
+// ScoreProps backs Score — the shared finalized-score readout. Points and Max
+// always render together as "points / max"; Percent, when greater than zero,
+// appends "· NN%" (used on leaderboards). The result pill (Q / NQ / tier) is
+// rendered by the caller adjacent to this readout, since each surface frames
+// status differently.
+type ScoreProps struct {
+	Points  int
+	Max     int
+	Percent int    // 0 = omit the percent clause
+	Class   string // extra classes appended to the wrapper
+}
+
+// Score renders a finalized score as "points / max" (+ "· NN%" on
+// leaderboards) with tabular figures. The single sanctioned score readout —
+// never render a bare points number. The big headline variant on A6/P4 (the
+// reference scoresheets) renders "points / max" inline for the same reason.
+templ Score(p ScoreProps) {
+	<span class={ joinClasses("score-readout", p.Class) } style="font-variant-numeric:tabular-nums;white-space:nowrap;">
+		<strong style="font-weight:600;color:var(--mist-950);">{ strconv.Itoa(p.Points) }</strong>
+		<span style="color:var(--mist-500);"> / { strconv.Itoa(p.Max) }</span>
+		if p.Percent > 0 {
+			<span style="color:var(--mist-500);"> · { strconv.Itoa(p.Percent) }%</span>
+		}
+	</span>
+}

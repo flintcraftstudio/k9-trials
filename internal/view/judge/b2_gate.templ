@@ -45,12 +45,7 @@ templ gateBody(d GateViewData) {
 				<div class={ dogAvatarSquareClass(d.Run.DogVariant, "xl") }>{ d.Run.DogInit }</div>
 				<div class="col g2">
 					<div class="serif" style="font-size:26px; line-height:1;">{ d.Run.DogName }</div>
-					<div class="muted tabular" style="font-size:12px;">
-						{ d.Run.K9ID }
-						if d.Run.Breed != "" {
-							&nbsp;· { d.Run.Breed }
-						}
-					</div>
+					<div class="muted tabular" style="font-size:12px;">{ joinMeta(d.Run.K9ID, d.Run.Breed) }</div>
 				</div>
 			</div>
 			<!-- Right rail -->

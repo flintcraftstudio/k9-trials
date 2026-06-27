@@ -77,6 +77,8 @@ type LeaderRow struct {
 	Handler   string
 	K9ID      string
 	Points    int
+	Max       int
+	Percent   int // 100 * points / max, rounded — shown on the leaderboard
 	Qualified bool
 	NQ        bool
 	Scoring   bool

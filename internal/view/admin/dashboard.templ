@@ -194,5 +194,8 @@ templ eventLineRow(e EventLine) {
 
 // dashboardSub renders the at-a-glance summary line under the title.
 func dashboardSub(d DashboardViewData) string {
-	return fmt.Sprintf("%d events · %d published · %d drafts", d.Counts.Total, d.Counts.Published, d.Counts.Draft)
+	return fmt.Sprintf("%s · %d published · %s",
+		countLabel(d.Counts.Total, "event", "events"),
+		d.Counts.Published,
+		countLabel(d.Counts.Draft, "draft", "drafts"))
 }

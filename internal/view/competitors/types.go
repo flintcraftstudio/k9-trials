@@ -40,6 +40,7 @@ type HistoryRow struct {
 	Title     string // "Vex · Obedience · Level 2"
 	Sub       string // "Cedar Creek · 14 Mar"
 	Points    int
+	Max       int
 	Qualified bool
 	HasScore  bool
 }

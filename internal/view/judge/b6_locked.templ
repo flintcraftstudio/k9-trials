@@ -19,7 +19,7 @@ templ lockedBody(d LockedViewData) {
 					<span class="trial">
 						{ d.Run.DogName }
 						<span class="muted" style="font-size:12px; font-family:var(--font-sans); margin-left:6px;">
-							{ d.Run.HandlerSh } · { d.Run.K9ID } · { d.Trial.Discipline.Label() } { d.Trial.Class }
+							{ joinMeta(d.Run.HandlerSh, d.Run.K9ID, disciplineClass(d.Trial)) }
 						</span>
 					</span>
 				</div>
@@ -35,7 +35,11 @@ templ lockedBody(d LockedViewData) {
 			<div class="row g10 items-center">
 				<span class="bold" style="color:var(--mist-950);">🔒 Locked</span>
 				<span class="muted">
-					Submitted { d.SubmittedBy.At } by { d.SubmittedBy.Name } ({ d.SubmittedBy.Method }) · { itoa(len(d.Exercises)) }/{ itoa(len(d.Exercises)) } exercises scored · Total
+					Submitted { d.SubmittedBy.At } by { d.SubmittedBy.Name }
+					if d.SubmittedBy.Method != "" {
+						&nbsp;({ d.SubmittedBy.Method })
+					}
+					&nbsp;· { itoa(len(d.Exercises)) }/{ itoa(len(d.Exercises)) } exercises scored · Total
 					<strong style="color:var(--mist-950);">&nbsp;{ fnum(d.Total) } / { fnum(d.Max) }</strong>
 				</span>
 			</div>
@@ -73,7 +77,7 @@ templ lockedBody(d LockedViewData) {
 						<span class="avatar circ h-1 md">{ d.SubmittedBy.Inits }</span>
 						<div class="col">
 							<div class="bold" style="font-size:13px;">{ d.SubmittedBy.Name }</div>
-							<div class="muted tabular" style="font-size:11px;">{ d.SubmittedBy.At } · { d.SubmittedBy.Method }</div>
+							<div class="muted tabular" style="font-size:11px;">{ joinMeta(d.SubmittedBy.At, d.SubmittedBy.Method) }</div>
 						</div>
 					</div>
 					<div class="muted" style="font-size:11px; padding-top:6px; border-top:1px solid var(--color-divider);">
@@ -137,7 +141,7 @@ templ lockedBody(d LockedViewData) {
 		<!-- Critique pane -->
 		<div class="col f1 scroll-y p18 g14" x-show="tab === 'critique'" x-cloak>
 			<div class="row between">
-				<span class="eyebrow muted">End-of-run voice critique · { d.Critique.Duration } · recorded { d.Critique.RecordedAt }</span>
+				<span class="eyebrow muted">{ joinMeta("End-of-run voice critique", d.Critique.Duration, labeled("recorded", d.Critique.RecordedAt)) }</span>
 				<span class="muted" style="font-size:11px;">Visible to handler in their training record</span>
 			</div>
 			<div class="card p14 col g10">
