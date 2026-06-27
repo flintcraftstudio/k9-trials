@@ -63,7 +63,7 @@ templ userFilterChip(f UserFilter) {
 // usersTable renders the user rows as a true table with a header row.
 templ usersTable(d UsersViewData) {
 	<div class="card" style="padding:0;overflow:hidden;">
-		<div class="body-sm" style={ usersGridStyle() + "padding:10px 16px;background:var(--mist-100);color:var(--mist-500);text-transform:uppercase;letter-spacing:.04em;font-size:11px;" }>
+		<div class="body-sm users-head" style={ usersGridStyle() + "padding:10px 16px;background:var(--mist-100);color:var(--mist-500);text-transform:uppercase;letter-spacing:.04em;font-size:11px;" }>
 			<span>Display name / @handle</span>
 			<span>Email</span>
 			<span>Created</span>
@@ -83,7 +83,7 @@ templ usersTable(d UsersViewData) {
 }
 
 templ userRow(u UserRow) {
-	<div style={ usersGridStyle() + "padding:12px 16px;border-top:1px solid var(--color-divider);align-items:center;" }>
+	<div class="users-row" style={ usersGridStyle() + "padding:12px 16px;border-top:1px solid var(--color-divider);align-items:center;" }>
 		<div class="flex-col" style="min-width:0;">
 			<span style="font-weight:600;color:var(--mist-950);">{ u.Name }</span>
 			if u.Sub != "" {

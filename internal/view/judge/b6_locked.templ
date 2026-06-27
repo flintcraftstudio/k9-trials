@@ -55,7 +55,7 @@ templ lockedBody(d LockedViewData) {
 
 		<!-- Summary & audit pane -->
 		<div class="col f1 scroll-y p18 g14" x-show="tab === 'summary'">
-			<div class="row g14">
+			<div class="row g14 pane-row">
 				<div class="col card event-rail f1 p14 g6" style="flex:2;">
 					<span class="eyebrow">Result</span>
 					<div class="row g8 items-baseline">
@@ -98,7 +98,7 @@ templ lockedBody(d LockedViewData) {
 
 		<!-- Exercise breakdown pane -->
 		<div class="col f1 scroll-y p18 g12" x-show="tab === 'breakdown'" x-cloak>
-			<div class="row g14" style="align-items:flex-start;">
+			<div class="row g14 pane-row" style="align-items:flex-start;">
 				<div class="col f1 g6">
 					<span class="eyebrow muted">Exercises · final scores · read-only</span>
 					<div class="card" style="overflow:hidden;">

@@ -125,3 +125,76 @@
   border-bottom: 1px solid var(--orange-300);
   font-size: 12.5px;
 }
+
+/* =========================================================================
+   Responsive layer (UI fix pass — Batch 4). Collapses the operator surfaces
+   (admin + judge) to a single column at phone / small-tablet width, matching
+   the competitor surface, which is the responsive reference. Lives here (not
+   the vendored design-system styles.css) so the brand CSS stays pristine;
+   these rules come after the @imports at the top, so they win on the cascade.
+   Inline grid/width styles are overridden with !important where the markup
+   exposes no class hook.
+   ========================================================================= */
+
+/* Public top bar — stack into two rows so the "K9 Elements" wordmark never
+   overlaps the nav at phone width. The links drop to their own scrollable
+   row under the logo + actions. */
+@media (max-width: 768px) {
+  .navbar .inner { flex-wrap: wrap; height: auto; padding: 10px 16px; gap: 8px 12px; }
+  .navbar .links {
+    order: 3; flex-basis: 100%; flex-grow: 0;
+    justify-content: flex-start; gap: 18px;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .navbar .links::-webkit-scrollbar { display: none; }
+  .navbar .links a.active::after { bottom: -6px; }
+}
+
+/* Admin sidebar — collapse the fixed 240px rail to a horizontal, scrollable
+   top strip; it must never sit at 240px on a 390px screen. */
+@media (max-width: 860px) {
+  .adm-shell { flex-direction: column; min-height: 0; }
+  .adm-side {
+    width: auto; flex-direction: row; align-items: center;
+    gap: 6px; overflow-x: auto; scrollbar-width: none;
+    padding: 10px 16px;
+    border-right: 0; border-bottom: 1px solid var(--color-divider);
+  }
+  .adm-side::-webkit-scrollbar { display: none; }
+  .adm-side .grp { flex-direction: row; align-items: center; gap: 6px; }
+  .adm-side .grp + .grp {
+    margin-top: 0; padding-left: 6px;
+    border-left: 1px solid var(--color-divider);
+  }
+  .adm-side .grp-label { display: none; }
+  .adm-side a { white-space: nowrap; }
+}
+
+/* Two-column admin boards / split-panes → single column. */
+@media (max-width: 860px) {
+  .dash-board { grid-template-columns: 1fr !important; } /* D1 dashboard board */
+  .adm-split  { grid-template-columns: 1fr !important; } /* D7 review split-pane */
+}
+
+/* D8 users "table" (CSS grid) → card-per-row: drop the header row and stack
+   each row's cells. */
+@media (max-width: 768px) {
+  .users-head { display: none !important; }
+  .users-row {
+    grid-template-columns: 1fr !important;
+    gap: 4px !important;
+    align-items: start !important;
+  }
+}
+
+/* Judge surface — collapse the two-pane scoring/review/locked layouts to one
+   column, and let the appbar wrap instead of colliding at narrow widths. */
+@media (max-width: 860px) {
+  .pane-row { flex-direction: column; }
+  .pane-row > * { width: auto !important; flex: none !important; }
+}
+@media (max-width: 560px) {
+  .appbar { flex-wrap: wrap; }
+  .appbar .a-left  { flex: 1 1 100%; min-width: 0; }
+  .appbar .a-right { flex: 1 1 100%; justify-content: flex-start; flex-wrap: wrap; }
+}
